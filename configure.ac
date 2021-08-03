@@ -44,7 +44,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 src/plugins/ssh/Makefile
-src/plugins/rdesktop/Makefile
+src/plugins/xfreerdp/Makefile
 share/Makefile
 man/Makefile
 po/Makefile.in

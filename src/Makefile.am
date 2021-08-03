@@ -1,4 +1,4 @@
-SUBDIRS = plugins/ssh plugins/rdesktop
+SUBDIRS = plugins/ssh plugins/xfreerdp
 
 sbin_PROGRAMS = ldm
 ldmlibexecdir = $(libexecdir)/ldm
