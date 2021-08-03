@@ -1,0 +1,179 @@
+# ldm gettext messages for Chinese
+# Copyright (C) 2010 xiaoqi zhao
+# This file is distributed under the same license as the ldm package.
+# xiaoqi zhao <xiaoqi.zhao@volvo.com>.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2011-07-12 21:42-0700\n"
+"PO-Revision-Date: 2010-01-27 15:51+0800\n"
+"Last-Translator: xiaoqi zhao <xiaoqi.zhao@volvo.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "用户名"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "口令"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "正在核实口令。请等待。"
+
+#: ../src/plugins/ssh/ssh.c:386
+msgid "No response from server, restarting..."
+msgstr "服务器没有响应，重新启动..."
+
+#: ../gtkgreet/greeter.c:255
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "在%d秒以后自动登录"
+
+#: ../gtkgreet/greeter.c:514
+msgid "Select _Language ..."
+msgstr "选择语言..."
+
+#: ../gtkgreet/greeter.c:519
+msgid "Select _Session ..."
+msgstr "选择进程..."
+
+#: ../gtkgreet/greeter.c:524
+msgid "Select _Host ..."
+msgstr "选择主机..."
+
+#: ../gtkgreet/greeter.c:529
+msgid "_Reboot"
+msgstr "重启"
+
+#: ../gtkgreet/greeter.c:533
+msgid "Shut_down"
+msgstr "关闭"
+
+#: ../gtkgreet/greeter.c:697
+msgid "_Preferences"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:801
+msgid "Login as Guest"
+msgstr "以客户身份登录"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:93
+msgid "Default"
+msgstr "默认"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "失败安全的xterm"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "变更进程"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "选择您的进程管理器："
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "为您要使用的进程选择相应主机："
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "变更语言"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "为您要使用的进程选择相应语言："
+
+#~ msgid "Out of memory"
+#~ msgstr "内存溢出"
+
+#~ msgid "No configured interface found\n"
+#~ msgstr "未找到配置界面\n"
+
+#~ msgid "ldm_spawn failed to execute: %s"
+#~ msgstr "Idm_spawn执行失败：%s"
+
+#~ msgid "Exiting ldm"
+#~ msgstr "退出Idm"
+
+#~ msgid "Waiting for process %d\n"
+#~ msgstr "等待进程 %d\n"
+
+#~ msgid "waitid returned an error:"
+#~ msgstr "等待编号返回一个错误："
+
+#~ msgid "Unexpected terminated process: pid = %d"
+#~ msgstr "未预期的中止进程：pid = %d"
+
+#~ msgid "Process %d exited with status %d"
+#~ msgstr "进程%d以状态%d退出"
+
+#~ msgid "Process %d killed by signal %d"
+#~ msgstr "信号%d中止了进程%d"
+
+#~ msgid "ERROR: no Xsession"
+#~ msgstr "错误：没有Xsession"
+
+#~ msgid "Logging in as guest"
+#~ msgstr "以访客身份登录"
+
+#~ msgid "LDM2 running on ip address %s"
+#~ msgstr "LDM2运行在IP地址%s之上"
+
+#~ msgid "Spawning greeter: %s"
+#~ msgstr "孵化：%s"
+
+#~ msgid "ERROR: %s from greeter failed"
+#~ msgstr "错误：从greeter错误%s"
+
+#~ msgid "ERROR: no username"
+#~ msgstr "错误：没有用户名"
+
+#~ msgid "ERROR: no password"
+#~ msgstr "错误：没有口令"
+
+#~ msgid "ERROR: no server"
+#~ msgstr "错误：没有服务器"
+
+#~ msgid "Fatal error, missing mandatory information"
+#~ msgstr "致命错误，缺失必需的信息"
+
+#~ msgid "Established ssh session."
+#~ msgstr "建立ssh连接。"
+
+#~ msgid "Executing rc files."
+#~ msgstr "执行rc文件。"
+
+#~ msgid "Beginning X session."
+#~ msgstr "启动X进程。"
+
+#~ msgid "X session ended."
+#~ msgstr "X进程完成。"
+
+#~ msgid "Ending ssh session."
+#~ msgstr "完成ssh进程。"
+
+#~ msgid "expect saw: %s"
+#~ msgstr "期望的往复：%s"
+
+#~ msgid "Logged in successfully.\n"
+#~ msgstr "成功登录。\n"
+
+#~ msgid "No response, restarting"
+#~ msgstr "没有响应，重新启动"
+
+#~ msgid "login_tty failed"
+#~ msgstr "登录窗口login_tty失败"
+
+#~ msgid "Shutting down ssh session: %s"
+#~ msgstr "关闭ssh进程：%s"

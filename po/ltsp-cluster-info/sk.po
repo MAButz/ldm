@@ -1,0 +1,64 @@
+# Slovak translations for ldm package
+# Copyright (C) 2010 THE ldm's COPYRIGHT HOLDER
+# This file is distributed under the same license as the ldm package.
+# Slavko <linux@slavino.sk>, 2010, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.2.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Slavko <Unknown>\n"
+"Language-Team: Slovak <nomail>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-10-10 04:30+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
+"Language: \n"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:21
+#, sh-format
+msgid "Information on this thin client."
+msgstr "Informácie o tenkom klientovi."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:23
+#, sh-format
+msgid "This thin client hasn't been configured yet."
+msgstr "Tento tenký klient ešte nebol nastavený."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:43
+#, sh-format
+msgid "MAC address"
+msgstr "MAC adresa"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:44
+#, sh-format
+msgid "IP address"
+msgstr "IP adresa"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:45
+#, sh-format
+msgid "CPU"
+msgstr "CPU"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:46
+#, sh-format
+msgid "RAM"
+msgstr "RAM"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:47
+#, sh-format
+msgid "Video"
+msgstr "Video"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:48
+#, sh-format
+msgid "Application server"
+msgstr "Aplikačný server"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:50
+#, sh-format
+msgid "Web interface"
+msgstr "Webové rozhranie"

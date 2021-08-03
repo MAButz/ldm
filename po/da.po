@@ -1,0 +1,100 @@
+# Danish LDM translation
+# Copyright (C) 2011 Dennis Duggen
+# This file is distributed under the same license as the ldm package.
+# Dennis Duggen <dennis@riberhusprivatskole.dk>, 2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.1.1\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Dennis Duggen <dennis@riberhusprivatskole.dk>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"X-Poedit-Country: DANISH\n"
+"Language: da\n"
+"X-Poedit-Language: Danish\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Brugernavn"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Adgangskode"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Adgangskoden kontrolleres. Vent venligst ..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Serveren svarede ikke, genstarter ..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Logger automatisk på om %d sekunder"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Vælg sprog ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Vælg _session ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Vælg _computer ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Genstart"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Luk ned"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Indstillinger"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Log på som gæst"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Standard"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm nød løsning"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "ændre _session"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Vælg session manager:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Vælg computeren for denne session:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "_Skift sprog"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Vælg sprog for denne session:"

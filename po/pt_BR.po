@@ -1,0 +1,96 @@
+# Brazilian Portuguese translation for ltsp
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ltsp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ltsp\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-11-22 10:55+0000\n"
+"Last-Translator: Mario A. C. Silva (Exp4nsion) <marioancelmo@gmail.com>\n"
+"Language-Team: Brazilian Portuguese <pt_BR@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Usuário"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Senha"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Verificando a senha. Por favor aguarde."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Sem resposta do servidor, reiniciando..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Login automático em %d segundos"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Selecionar _Linguagem ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Selecionar _Sessão ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Selecionar _Host ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Reiniciar"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Desligar"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Preferências"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Login como Visitante"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Padrão"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm Seguro Contra Falhas"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Trocar _Sessão"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Selecione seu gerenciador de sessão:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Selecione a máquina para usar na sua sessão:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Trocar _Linguagem"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Selecione a linguagem para sua sessão:"

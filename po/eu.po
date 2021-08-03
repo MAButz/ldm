@@ -1,0 +1,98 @@
+# translation of ldm_2.2.1_eu.po to Basque
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# Piarres Beobide <pi@beobide.net>, 2008, 2009.
+# Iñaki Larrañaga Murgoitio <dooteo@euskalgnu.org>, 2009, 2010, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm_2.2.1_eu\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Oier Mees <Unknown>\n"
+"Language-Team: Basque <debian-l10n-basque@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: eu\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Erabiltzaile-izena"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Pasahitza"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Pasahitza egiaztatzen. Itxaron..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Ez dago erantzunik zerbitzaritik, berrabiarazten..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Saio-hasiera automatikoa %d segundotan"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Hautatu _hizkuntza..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Hautatu _saioa..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Hautatu _ostalaria..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "Be_rrabiarazi"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "I_tzali"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Hobespenak"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Hasi saioa gonbidatu gisa"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Lehenetsia"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm segurua"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Aldatu _saioa"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Hautatu zure saio-kudeatzailea:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Hautatu ostalaria zure saioan erabiltzeko:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Aldatu _hizkuntza"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Hautatu hizkuntza zure saioan erabiltzeko:"

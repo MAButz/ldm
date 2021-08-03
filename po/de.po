@@ -1,0 +1,101 @@
+# German LDM translation
+# Copyright (C) 2007 Scott Balneaves
+# This file is distributed under the same license as the ldm package.
+# Oliver Grawert <ogra@ubuntu.com>, 2007.
+# Wolfgang Schweer <schweer@cityweb.de>, 2008-2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.1.1\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Wolfgang Schweer <schweer@cityweb.de>\n"
+"Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"X-Poedit-Country: GERMANY\n"
+"Language: de\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-SourceCharset: utf-8\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Benutzername"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Passwort"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Passwort wird überprüft. Bitte warten ..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Keine Antwort des Servers, Neustart ..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Automatische Anmeldung in %d Sekunden"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "_Sprache wählen ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "_Sitzungsart wählen ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "_Rechner wählen ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Neustart"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Ausschalten"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Einstellungen"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Anmeldung als Gast"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Voreinstellung"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm als Notlösung"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "_Sitzungsart ändern"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Sitzungsmanager auswählen:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Rechner für diese Sitzung auswählen:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "_Sprache wechseln"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Sprache für diese Sitzung auswählen:"

@@ -1,0 +1,62 @@
+# ldm gettext messages for Chinese
+# Copyright (C) 2010 xiaoqi zhao
+# This file is distributed under the same license as the ldm package.
+# xiaoqi zhao <xiaoqi.zhao@volvo.com>.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2010-01-27 15:51+0800\n"
+"Last-Translator: xiaoqi zhao <xiaoqi.zhao@volvo.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:21
+#, sh-format
+msgid "Information on this thin client."
+msgstr "在此瘦客户端上的信息。"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:23
+#, sh-format
+msgid "This thin client hasn't been configured yet."
+msgstr "此瘦客户端还未进行配置。"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:43
+#, sh-format
+msgid "MAC address"
+msgstr "MAC地址"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:44
+#, sh-format
+msgid "IP address"
+msgstr "IP地址"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:45
+#, sh-format
+msgid "CPU"
+msgstr "CPU中央处理器"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:46
+#, sh-format
+msgid "RAM"
+msgstr "RAM内存"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:47
+#, sh-format
+msgid "Video"
+msgstr "视频"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:48
+#, sh-format
+msgid "Application server"
+msgstr "应用服务器"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:50
+#, sh-format
+msgid "Web interface"
+msgstr "Web接口"

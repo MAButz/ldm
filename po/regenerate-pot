@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# regenerate the .pot file with appropriate values substituted for package
+# name, description and version.
+
+set -e
+
+cd ..
+# get name and version values
+. release.conf
+cd -
+
+pot=$NAME.pot
+rm $pot
+make $pot
+
+sed -i -e "s,SOME DESCRIPTIVE TITLE.,$NAME gettext messages for LANGUAGE.,g" \
+    -i -e "s,PACKAGE ,$NAME ,g" \
+    -i -e "s,VERSION,$VERSION,g" \
+    $pot

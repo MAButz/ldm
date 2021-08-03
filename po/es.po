@@ -1,0 +1,97 @@
+# translation of es.po to spanish
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#
+# José L. Redrejo Rodríguez <jredrejo@debian.org>, 2008, 2009, 2010, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: es\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Paco Molinero <paco@byasl.com>\n"
+"Language-Team: spanish <es@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: \n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Nombre de usuario"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Contraseña"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Comprobando la contraseña, espere."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "No hay respuesta del servidor, reiniciando..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Login automático en %d segundos"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Elegir _Idioma ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Elegir _Sesión ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Elegir _Servidor ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Reiniciar"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "Apagar"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Preferencias"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Entrar como Invitado"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Predeterminada"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "xterm a prueba de fallos"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Cambiar _Sesión"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Seleccione su gestor de sesiones:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Seleccione el servidor a usar en su sesión:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Cambiar _Idioma"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Seleccione el idioma para su sesión:"

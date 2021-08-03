@@ -1,0 +1,39 @@
+.TH "ldm-dialog" "1" "20090515" "Vagrant Cascadian" ""
+.SH "NAME"
+ldm-dialog \(em simple dialog implementation for ldm
+
+.SH "SYNOPSIS"
+.PP
+\fBldm-dialog\fR \-\-message|\-\-question|\-\-progress [\-\-auto-close] "message"
+
+.SH "DESCRIPTION"
+.PP
+\fBldm-dialog\fR is a simple program to display information or ask questions of
+the user.
+
+.PP
+\-\-message
+display a message to a user.
+
+.PP
+\-\-question
+ask the user a question. exit 0 if user clicks on ok button, exit 1 otherwise.
+
+.PP
+\-\-progress [\-\-auto-close]
+display a progress bar. if \-\-auto-close is specified, exit after reaching 100%.
+
+.SH "SEE ALSO"
+.PP
+ldm(1).
+
+.SH "AVAILABILITY"
+.PP
+\fBldm-dialog\fR is part of \fBldm\fP package
+and the latest versions are available in source form from
+\fIhttps://launchpad.net/products/ltsp\fR.
+
+.SH "MAN PAGE AUTHOR"
+.PP
+copyright 2009 Vagrant Cascadian <vagrant@freegeek.org>, distributed under
+the terms of the GNU General Public License version 2 or any later version.

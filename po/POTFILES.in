@@ -1,0 +1,17 @@
+# List of source files which contain translatable strings.
+src/ldm.c
+src/ldmgreetercomm.c
+src/ldmutils.c
+src/plugin.c
+src/plugins/rdesktop/rdesktop.c
+src/plugins/ssh/ssh.c
+gtkgreet/greeter.c
+gtkgreet/sesswin.c
+gtkgreet/hostwin.c
+gtkgreet/langwin.c
+gtkgreet/prefwin.c
+rc.d/I01-nbd-checkupdate
+rc.d/S15-userLoginCheck
+rc.d/S20-restrictUser
+rc.d/S99-ltsp-cluster
+misc/ldm-dialog.c

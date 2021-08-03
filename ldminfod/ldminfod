@@ -1,0 +1,260 @@
+#!/usr/bin/python
+
+#  Copyright (c) 2006 Canonical LTD
+#
+#  Author: Oliver Grawert <ogra@canonical.com>
+#
+#  2006, Oliver Grawert <ogra@canonical.com>
+#        Vagrant Cascadian <vagrant@freegeek.org>
+#  2007, Oliver Grawert <ogra@canonical.com>
+#        Francis Giraldeau <francis.giraldeau@revolutionlinux.com>
+#        Scott Balneaves <sbalneav@ltsp.org>
+#  2008, Vagrant Cascadian <vagrant@freegeek.org>
+#        Ryan Niebur <RyanRyan52@gmail.com>
+#        Warren Togami <wtogami@redhat.com>
+#  2009, Vagrant Cascadian <vagrant@freegeek.org>
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License as
+#  published by the Free Software Foundation; either version 2 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program.  If not, you can find it on the World Wide
+#  Web at http://www.gnu.org/copyleft/gpl.html, or write to the Free
+#  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+#  MA 02110-1301, USA.
+
+import sys
+import os
+import locale
+from subprocess import *
+
+def get_memory_usage():
+    memusg = {}
+
+    # Get memory usage information, according to /proc/meminfo
+    f = open('/proc/meminfo', 'r')
+    swap_free = 0
+    mem_physical_free = 0
+    mem_buffers = 0
+    mem_cached = 0
+    for line in f.readlines():
+        tokens = line.split()
+        label = tokens[0]
+        size = tokens[1]
+        try:
+            size = int(size)
+        except:
+            # The line is an header, skip it.
+            continue
+
+        # We approximate kb to bytes
+        size = size * 1024
+        if label == 'MemTotal:':
+            memusg['ram_total'] = size
+        elif label == 'MemFree:':
+            mem_physical_free = size
+        elif label == 'Buffers:':
+            mem_buffers = size
+        elif label == 'Cached:':
+            mem_cached = size
+        elif label == 'SwapTotal:':
+            memusg['swap_total'] = size
+        elif label == 'SwapFree:':
+            swap_free = size
+    f.close()
+
+    memusg['ram_used'] = memusg['ram_total'] - mem_physical_free - mem_buffers - mem_cached
+    memusg['swap_used'] = memusg['swap_total'] - swap_free
+
+    return memusg
+
+def get_load_average():
+    # Gets the current system load, according to /proc/loadavg
+    loadavg = {}
+    load_file = open('/proc/loadavg')
+    load_infos = load_file.read().split()
+    loadavg['one_min_avg'] = load_infos[0]
+    loadavg['five_min_avg'] = load_infos[1]
+    loadavg['fifteen_min_avg'] = load_infos[2]
+    # scheduling_info = load_infos[3] # not used
+    # last_pid = load_infos[4]
+    load_file.close()
+    return loadavg
+
+def compute_server_rating():
+    """Compute the server rating from it's state
+       The rating is computed by using load average and the memory
+       used. The returned value is betweed 0 and 100, higher is better
+    """
+    max_acceptable_load_avg = 8.0
+    mem = get_memory_usage()
+    load = get_load_average()
+    rating = 100 - int( \
+        50 * ( float(load['fifteen_min_avg']) / max_acceptable_load_avg ) + \
+        50 * ( float(mem['ram_used']) / float(mem['ram_total']) ) \
+        )
+    if rating < 0:
+        rating = 0
+    return rating
+
+def get_sessions (dir):
+    """Get a list of available sessions.
+       Returns a list of sessions gathered from .desktop files
+    """
+    sessions = []
+    if os.path.isdir(dir):
+        for f in os.listdir(dir):
+            if f.endswith('.desktop') and os.path.isfile(os.path.join(dir, f)):
+                x=dict()
+                for line in open(os.path.join(dir, f), 'r').readlines():
+                    line = line.rstrip()
+
+                    if line.count('Exec=') > 0 or line.count('Hidden=') > 0:
+                        variable, value = line.split('=', 1)
+                        x[variable]=value
+
+                if 'Exec' not in x:
+                    continue
+
+                if 'Hidden' in x and x['Hidden'].lower() == "true":
+                    continue
+
+                if 'TryExec' in x and call(['which',x['TryExec']], stdout=PIPE, stderr=PIPE) != 0:
+                    continue
+
+                sessions.append(x['Exec'])
+    return sessions
+
+def get_sessions_with_names (dir):
+    """Get a list of available sessions with their name.
+       Returns a list of sessions gathered from .desktop files
+    """
+    sessions = []
+    if os.path.isdir(dir):
+        for f in os.listdir(dir):
+            if f.endswith('.desktop') and os.path.isfile(os.path.join(dir, f)):
+                x=dict()
+                for line in open(os.path.join(dir, f), 'r').readlines():
+                    line = line.rstrip()
+
+                    if line.count('Exec=') > 0 or line.count("Name=") > 0 or line.count('Hidden=') > 0:
+                        variable, value = line.split('=', 1)
+                        x[variable]=value
+
+                if 'Exec' not in x:
+                    continue
+
+                if 'Hidden' in x and x['Hidden'].lower() == "true":
+                    continue
+
+                if 'TryExec' in x and call(['which',x['TryExec']], stdout=PIPE, stderr=PIPE) != 0:
+                    continue
+
+                if 'Name' in x:
+                    thing = x['Name']
+                else:
+                    thing = f.replace(".desktop", "")
+
+                sessions.append(thing + ":" + x['Exec'])
+    return sessions
+
+def get_xsession():
+    """Return the full path to the default Xsession script"""
+    xsessionlist=("/etc/X11/xinit/Xsession",
+             "/etc/X11/Xsession",
+             "/usr/lib/X11/xdm/Xsession",
+             "/etc/X11/xdm/Xsession")
+    for xsession in xsessionlist:
+        # check if file exists and is executable
+        if os.access(xsession, 5):
+            return xsession
+    return None
+
+if __name__ == "__main__":
+    # Get the server's default locale
+    # We want it to appear first in the list
+    try:
+        lines = Popen(['locale'], stdout=PIPE).communicate()[0]
+    except OSError:
+        print("ERROR: failed to run locale")
+        sys.exit(0)
+    for line in lines.split():
+        line=line.decode()
+        if line.startswith('LANG='):
+            defaultlocale = line.split('=')[1].strip('"')
+
+    defaultlocale = defaultlocale.replace('UTF8', 'UTF-8')
+    print("language:" + defaultlocale)
+    # Get list of valid locales from locale -a
+    try:
+        lines = Popen(['locale', '-a'], stdout=PIPE).communicate()[0]
+    except OSError:
+        print("ERROR")
+        sys.exit(0)
+    langs = lines.split(None)
+
+    locale_whitelist_file='/etc/ldm/ldminfod-locale-whitelist'
+    if os.access(locale_whitelist_file, 4):
+        # limit the list of valid locales
+        whitelisted_locales=open(locale_whitelist_file, 'r').readlines()
+        new_langs=list()
+        for l in whitelisted_locales:
+            l=l.strip().replace('.UTF-8', '.utf8')
+            if langs.count(l) > 0:
+                new_langs.append(l)
+        if new_langs:
+            langs=new_langs
+
+    langs.sort()
+    for lang in langs:
+        lang = lang.rstrip().decode()
+        if lang.endswith('.utf8'):
+            # locale returns .utf8 when we want .UTF-8
+            lang = lang.replace('.utf8','.UTF-8')
+        else:
+            # if locale did not end with .utf8, do not add to list
+            continue
+        if lang != 'POSIX' and lang != 'C' and lang != defaultlocale:
+            print("language:" + lang)
+    try:
+        lines = get_sessions('/usr/share/xsessions/')
+
+    except OSError:
+        print("ERROR")
+        sys.exit(0)
+    for line in lines:
+        print("session:" + line)
+
+    try:
+        lines = get_sessions_with_names('/usr/share/xsessions/')
+
+    except OSError:
+        print("ERROR")
+        sys.exit(0)
+    for line in lines:
+        print("session-with-name:" + line)
+
+    try:
+        xsession = get_xsession()
+    except:
+        print("ERROR")
+        sys.exit(0)
+    if xsession:
+        print("xsession:" + xsession)
+
+    # Get the rating of this server
+    rate = 0
+    try:
+        rate = compute_server_rating()
+    except:
+        print("ERROR")
+        sys.exit(0)
+    print("rating:" + str(compute_server_rating()))
+

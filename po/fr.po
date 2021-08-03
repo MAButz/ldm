@@ -1,0 +1,97 @@
+# French translation of ldm.
+# Copyright (C) 2007 Scott Balneaves
+# This file is distributed under the same license as the PACKAGE package.
+# Jean-Baka Domelevo-Entfellner <domelevo@gmail.com>, 2007
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Stephane Graber <stgraber@ubuntu.com>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: fr\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Nom d'utilisateur"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Mot de passe"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Vérification du mot de passe, merci de patienter..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Pas de réponse du serveur, redémarrage..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Connexion automatique dans %d secondes"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Veuillez choisir la _Langue ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Veuillez choisir la _Session ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Veuillez choisir l'_Hôte ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Redémarrer"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "É_teindre"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Préférences"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "S'identifier en tant qu'invité"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Par défaut"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm en mode sans échec"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Changer de _session"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Veuillez choisir votre gestionnaire de sessions :"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Veuillez choisir l'hôte à utiliser lors de votre session :"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Changer de _Langue"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Veuillez choisir la langue à utiliser lors de votre session :"

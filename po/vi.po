@@ -1,0 +1,96 @@
+# Vietnamese translation for LDM.
+# Copyright © 2009 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2008-2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
+"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: vi\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Tên người dùng"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Mật khẩu"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Đang thẩm tra mật khẩu. Hãy đợi..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Máy phục vụ không đáp ứng, đang khởi chạy lại..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Tự động đăng nhập trong vòng %d giây"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Chọn _Ngôn ngữ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Chọn _Buổi hợp..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Chọn _Máy..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Khởi động lại"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Tắt máy"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Đăng nhập như Khách"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Mặc định"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm dự phòng"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Đổi _Buổi hợp"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Chọn bộ quản lý buổi hợp:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Chọn máy cần dùng trong buổi hợp:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Đổi _Ngôn ngữ"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Chọn ngôn ngữ cần dùng trong buổi hợp:"

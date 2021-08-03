@@ -1,0 +1,96 @@
+# translation to Norwegian Bokmål for ldm
+# Copyright (C) 2008 Klaus Ade Johnstad <klaus@skolelinux.no>.
+# This file is distributed under the same license as the ldm package.
+# Klaus Ade Johnstad <klaus@bzz.no>, 2010, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.0.0\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Klaus Ade Johnstad <klaus@bzz.no>\n"
+"Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: \n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Brukernavn"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Passord"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Sjekker passord, vennligst vent..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Fikk ikke noe svar fra server, starter omigjen ..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Logger automatisk på om %d sekunder"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Velg _språk ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Velg s_esjon ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Velg _tjener ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "Start omigjen datamaskinen"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "Skru av _datamaskinen"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Innstillinger"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Logg inn som gjest"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Standard"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Feilsikker xterm"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Bytt s_esjon"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Velg din sesjonsbehandler:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Velg hvilken server du vil koble din sesjon opp mot:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Bytt _språk"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Velg språk for denne sesjonen:"

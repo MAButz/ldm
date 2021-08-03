@@ -1,0 +1,45 @@
+# Greek translation for ltsp
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ltsp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ltsp\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-01-13 22:31+0000\n"
+"Last-Translator: Fotis Tsamis <ftsamis@gmail.com>\n"
+"Language-Team: Greek <el@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-10-10 04:30+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
+
+#: ../../rc.d/S15-userLoginCheck:34 ../../rc.d/S99-ltsp-cluster:12
+#, sh-format
+msgid ""
+"The system thinks you are logged in elsewhere.  Would you like to close the "
+"other session and continue to log in?"
+msgstr ""
+"Το σύστημα πιστεύει πως έχετε συνδεθεί κάπου αλλού. Θα θέλατε να κλείσετε "
+"την άλλη συνεδρία και να συνεχίσετε την είσοδο;"
+
+#: ../../rc.d/I01-halt-check:9
+#, sh-format
+msgid "This system will halt in 10s."
+msgstr "Το σύστημα θα τερματίσει σε 10\"."
+
+#: ../../rc.d/S20-restrictUser:21
+#, sh-format
+msgid "User ${LDM_USERNAME} is not allowed to log into this workstation."
+msgstr ""
+"Ο χρήστης ${LDM_USERNAME} δεν επιτρέπεται να συνδεθεί σε αυτόν τον σταθμό "
+"εργασίας."
+
+#: ../../rc.d/I01-nbd-checkupdate:36
+#, sh-format
+msgid "A new version of the system is available, rebooting in 10s."
+msgstr ""
+"Μια νέα έκδοση του συστήματος είναι διαθέσιμη, γίνεται επανεκκίνηση σε 10\"."

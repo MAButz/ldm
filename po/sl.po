@@ -1,0 +1,96 @@
+# Slovenian translation for ldm
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ldm package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-10-01 18:54+0000\n"
+"Last-Translator: Sasa Batistic <Unknown>\n"
+"Language-Team: Slovenian <sl@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Uporabniško ime"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Geslo"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Preverjanje gesla. Prosimo počakajte."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Ni odgovora s strežnika,"
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Samodejna prijava v %d sekundah"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Izberi _jezik ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Izberi _sejo ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Izberi _gostitelja ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Ponovni zagon"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "Iz_klopi"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Možnosti"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Prijava kot gost"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Privzeto"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Zasilni x terminal"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Spremeni _sejo"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Izberite svojega upravitelja seje:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Izberite gostitelja za svojo sejo, ki jo uporabljate:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Spremeni _jezik"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Izberite jezik za svojo sejo, ki jo uporabljate:"

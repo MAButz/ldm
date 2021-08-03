@@ -1,0 +1,95 @@
+# translation of pl.po to Polish
+# Piotr Drąg <piotrdrag@gmail.com>, 2008.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: pl\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
+"Language-Team: Polish <trans-pl@lists.fedoraproject.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: pl\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Nazwa użytkownika"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Hasło"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Sprawdzanie hasła. Proszę czekać."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Brak odpowiedzi od serwera, ponowne uruchamianie..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Automatyczne logowanie nastąpi za %d sekund"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "_Wybierz język..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Wybierz _sesję..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Wybierz _komputer..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "U_ruchom ponownie"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "Wyłą_cz"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Preferencje"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Zaloguj jako gość"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Domyślna"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Bezpieczny xterm"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Zmień _sesję"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Proszę wybrać menedżera sesji:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Proszę wybrać komputer używany przez sesję:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "_Zmień język"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Proszę wybrać język sesji:"

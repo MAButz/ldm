@@ -1,0 +1,62 @@
+# French translation of ldm.
+# Copyright (C) 2007 Scott Balneaves
+# This file is distributed under the same license as the ldm package.
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Stéphane Graber <stgraber@stgraber.org>\n"
+"Language-Team: French <debian-l10n-french@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-10-10 04:30+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
+"Language: fr\n"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:21
+#, sh-format
+msgid "Information on this thin client."
+msgstr "Information sur ce client léger."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:23
+#, sh-format
+msgid "This thin client hasn't been configured yet."
+msgstr "Ce client léger n'est pas encore configuré."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:43
+#, sh-format
+msgid "MAC address"
+msgstr "Addresse MAC"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:44
+#, sh-format
+msgid "IP address"
+msgstr "Addresse IP"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:45
+#, sh-format
+msgid "CPU"
+msgstr "Processeur"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:46
+#, sh-format
+msgid "RAM"
+msgstr "Mémoire"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:47
+#, sh-format
+msgid "Video"
+msgstr "Carte graphique"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:48
+#, sh-format
+msgid "Application server"
+msgstr "Serveur d'application"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:50
+#, sh-format
+msgid "Web interface"
+msgstr "Interface web"

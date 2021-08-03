@@ -1,0 +1,56 @@
+#!/bin/sh
+export TEXTDOMAIN=ltsp-cluster-info
+
+if [ -f /usr/bin/gettext.sh ]; then
+    . /usr/bin/gettext.sh
+else
+    eval_gettext() {
+        if [ $"test" = "\$test" ]; then
+            eval "echo $*"
+        else
+            echo $"$*"
+        fi
+    }
+fi
+
+if [ -z "$LDM_SERVER" ]; then
+    eval $(getltscfg -a -c /var/cache/getltscfg-cluster/lts.conf) || true
+fi
+
+if [ -z "$CLUSTER_CONFIGURED" ]; then
+    title=`eval_gettext "Information on this thin client."`
+else
+    title=`eval_gettext "This thin client hasn't been configured yet."`
+fi
+
+test -f /etc/ltsp/getltscfg-cluster.conf && . /etc/ltsp/getltscfg-cluster.conf
+INTERFACE=$(ip route | grep default | cut -d " " -f5)
+INTERFACE_MAC=$(/sbin/ifconfig | grep ${INTERFACE} | cut -f11 -d" ")
+INTERFACE_IP=$(/sbin/ifconfig ${INTERFACE} | grep inet | cut -f2 -d":" | cut -f1 -d" ")
+CPU=$(cat /proc/cpuinfo | grep "^model name" | head -1 | sed "s/.*: //")
+RAM=$(free -m | grep "^Mem" | awk '{print $2}')
+VGA=$(lspci | grep "VGA" | sed "s/.* \[//" | sed "s/\]//")
+APPSERVER=${LDM_SERVER:-$RDP_SERVER}
+URL="http://$CC_SERVER/ltsp-cluster-control/Admin"
+
+BROWSER=$(which firefox)
+if [ -n "$BROWSER" ]; then
+    URL="<a href=\"$URL\">$URL</a>"
+fi
+
+output=$(ldm-dialog --message "<b>${title}</b>
+
+<b>`eval_gettext "MAC address"`:</b> ${INTERFACE_MAC}
+<b>`eval_gettext "IP address"`:</b> ${INTERFACE_IP}
+<b>`eval_gettext "CPU"`:</b> ${CPU}
+<b>`eval_gettext "RAM"`:</b> ${RAM}MB
+<b>`eval_gettext "Video"`:</b> ${VGA}
+<b>`eval_gettext "Application server"`:</b> ${APPSERVER}
+
+<b>`eval_gettext "Web interface"`:</b> ${URL}
+")
+
+url=$(echo $output | grep "^url: " | sed "s/^url: //g")
+if [ -n "$BROWSER" ] && [ -n "$url" ]; then
+    $BROWSER $url
+fi

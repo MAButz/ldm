@@ -1,0 +1,83 @@
+# -*- Shell-Script -*- 
+
+# Set up the LTSP_* environment variables.
+CLIENT_ENV="$CLIENT_ENV LTSP_CLIENT=$LDMINFO_IPADDR LTSP_CLIENT_HOSTNAME=$(hostname)"
+test -n "$LTSP_CLIENT_MAC" && CLIENT_ENV="$CLIENT_ENV LTSP_CLIENT_MAC=$LTSP_CLIENT_MAC"
+if boolean_is_true "$LTSP_FATCLIENT"; then
+    CLIENT_ENV="$CLIENT_ENV LTSP_FATCLIENT=$LTSP_FATCLIENT"
+fi
+
+# Some DEs *require* certain environment variables to be set by the DM,
+# notably DESKTOP_SESSION and XDG_CURRENT_DESKTOP. Let's try to set them here.
+# At this point, LDM_SESSION is either unset,
+# or it's set to the Exec= line of an xsession.desktop file,
+# or it's user-defined, in which case we don't need to set any vars.
+# do_command() was defined in X50-dmrc-processing.
+if [ -z "$LDM_SESSION" ]; then
+    default_session=$(basename "$(do_command "readlink -qs /etc/alternatives/x-session-manager")")
+    # If default_session is empty, we select the first one with an Exec= line
+    DESKTOP_SESSION=$(do_command "grep -lR '^Exec=.*$default_session' /usr/share/xsessions/ | sed -n '/\/usr\/share\/xsessions\/\(.*\)\.desktop/{s//\1/p;q}'")
+else
+    DESKTOP_SESSION=$(do_command "grep -lR '^Exec=.*$LDM_SESSION$' /usr/share/xsessions/ | sed -n '/\/usr\/share\/xsessions\/\(.*\)\.desktop/{s//\1/p;q}'")
+fi
+if [ -n "$DESKTOP_SESSION" ]; then
+    # We're setting the default LDM_SESSION instead of leaving it empty,
+    # only as a workaround for LP #1457730.
+    LDM_SESSION=$(do_command "sed -n 's/^Exec=//p' '/usr/share/xsessions/$DESKTOP_SESSION.desktop'")
+    # Match the deprecated X-LightDM-DesktopName and the newer DesktopNames.
+    XDG_CURRENT_DESKTOP=$(do_command "sed -n 's/^[^=]*DesktopName[^=]*=//p' '/usr/share/xsessions/$DESKTOP_SESSION.desktop'")
+    if [ -z "$XDG_CURRENT_DESKTOP" ]; then
+        XDG_CURRENT_DESKTOP=$(do_command "sed -n 's/^Name=//p' '/usr/share/xsessions/$DESKTOP_SESSION.desktop'")
+    fi
+    # DesktopNames is separated by ";" while XDG_CURRENT_DESKTOP by ":".
+    XDG_CURRENT_DESKTOP=$(echo "${XDG_CURRENT_DESKTOP%;}" | tr ';' ':')
+fi
+test -n "$DESKTOP_SESSION" && CLIENT_ENV="$CLIENT_ENV DESKTOP_SESSION='$DESKTOP_SESSION'"
+test -n "$XDG_CURRENT_DESKTOP" && CLIENT_ENV="$CLIENT_ENV XDG_CURRENT_DESKTOP='$XDG_CURRENT_DESKTOP'"
+
+export CLIENT_ENV
+
+# Set our language, if a different one is picked.
+if [ -n "$LDM_LANGUAGE" ]; then
+    MY_LANG="LANG=$LDM_LANGUAGE"
+    export MY_LANG
+fi
+
+# Set the DISPLAY env, if not running over encrypted ssh
+if boolean_is_true "$LDM_DIRECTX"; then
+    MY_DISP="DISPLAY=${LDMINFO_IPADDR}${DISPLAY}"
+    export MY_DISP
+fi
+
+# Handle scanner
+if boolean_is_true "$SCANNER"; then
+    MY_SCANNER="SANE_NET_HOSTS=$LDMINFO_IPADDR"
+    export MY_SCANNER
+    # Allow the application server to connect to saned
+    if [ -f /etc/sane.d/saned.conf ]; then
+       echo $LDM_SERVER > /etc/sane.d/saned.conf
+    fi
+fi
+
+# Handle sound
+if boolean_is_true "$SOUND"; then
+    if [ -z "$SOUND_DAEMON" ]; then
+        SOUND_DAEMON=pulse
+    fi
+    case $SOUND_DAEMON in
+        pulse)
+            MY_SOUND="PULSE_SERVER=tcp:$LDMINFO_IPADDR:4713 ESPEAKER=$LDMINFO_IPADDR:16001 LTSP_ALSA_DEFAULT=pulse"
+        ;;
+
+        esd)
+            esd -nobeeps -public -tcp &
+            ESD_PID=$!
+            MY_SOUND="ESPEAKER=$LDMINFO_IPADDR:16001"
+        ;;
+
+        nasd)
+            MY_SOUND="AUDIOSERVER=$LDMINFO_IPADDR:0"
+        ;;
+    esac
+    export MY_SOUND
+fi

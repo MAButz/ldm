@@ -1,0 +1,101 @@
+# Greek translations for LDM package.
+# Copyright (C) 2007 Scott Balneaves
+# This file is distributed under the same license as the ldm package.
+# Alkis Georgopoulos <alkisg@gmail.com>, 2009-2011.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.0.0\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-14 10:58+0000\n"
+"Last-Translator: Kainourgiakis Giorgos <kaingeo@yahoo.gr>\n"
+"Language-Team: Greek\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"X-Poedit-Country: GREECE\n"
+"Language: \n"
+"X-Poedit-Language: Greek\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-Basepath: /home/alkisg/tmp/ltsp-upstream/ldm-trunk/po\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Όνομα χρήστη"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Κωδικός πρόσβασης"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Επαλήθευση του κωδικού πρόσβασης, παρακαλώ περιμένετε."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Ο εξυπηρετητής δεν ανταποκρίθηκε, γίνεται επανεκκίνηση..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Αυτόματη σύνδεση σε %d δευτερόλεπτα"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Επιλογή _Γλώσσας ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Επιλογή _Συνεδρίας ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Επιλογή Ε_ξυπηρετητή ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Επανεκκίνηση"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Τερματισμός"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_Προτιμήσεις"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Είσοδος ως επισκέπτης"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Προεπιλογή"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Τερματικό σε ασφαλή λειτουργία"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Αλλαγή _Συνεδρίας"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Επιλέξτε διαχειριστή συνεδρίας:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Επιλέξτε εξυπηρετητή για τη συνεδρία σας:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Αλλαγή _γλώσσας"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Επιλέξτε γλώσσα για τη συνεδρία σας:"

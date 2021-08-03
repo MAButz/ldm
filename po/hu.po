@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: SZERVÁC Attila <sas@321.hu>\n"
+"Language-Team: Hungarian <debian-l10n-hungarian@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"X-Poedit-Country: HUNGARY\n"
+"Language: hu\n"
+"X-Poedit-Language: Hungarian\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Felhasználó"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Jelszó"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Jelszó ellenőrzése, kis türelmet..."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr ""
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Válassz _nyelvet ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Válassz _folyamatot ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Válassz _gépet ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "Új_raindítás"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Leállítás"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Bejelentkezés vendégként"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Alap"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr ""
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "_Folyamat cseréje"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Válaszd ki folyamat-kezelődet:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Válaszd ki a folyamathoz használt gépet:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "_Nyelv cseréje"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Válaszd ki a folyamathoz használt nyelvet:"

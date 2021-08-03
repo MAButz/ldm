@@ -1,0 +1,134 @@
+wwm 1.1.6 - mods by Scott Balneaves
+
+Based on evilwm 0.3 by Ciaran Anscomb <ciarana@rd.bbc.co.uk>
+
+wwm is a minimalist window manager for the X Window System, which is pretty
+close to evilwm.
+
+I first bumped into evilwm 6 or so years ago, and was thrilled.  It was
+pretty much exactly what I wanted.  But not quite.
+
+It started out fairly simply: I just wanted to change the border colours.
+However, as time went on, I just sort of kept adding things here and there.
+I kept an eye on evilwm's development, and as Ciaran fixed things, or
+added things, I moved them into my tree.
+
+I used wwm basically unchanged for about 4 years, but recently, I went
+back and re-looked at evilwm again.  I liked the Makefile, and some of
+the bug fixes, (i.e. the numlock fix) and so, I hacked around a bit, and
+here I am.
+
+wwm stands for "Wicked Window Manager", which is sort of a play on words,
+as, since I've refined evilwm to my liking, wickedness is simply refined
+evil.  Or something like that.
+
+wwm has a few features added, and a few taken away that I didn't use.
+
+FEATURES ADDED:
+
+ * Different keymaping method to make it easier to change keymaps.
+ * "passthrough" keystrokes.  For example, alt-f is "bring forward" in wwm,
+   but if you press alt-v, alt-f, the alt-f keystroke is passed through to
+   the application.
+ * If you've got a scrolly-wheel mouse, scrolling on the root window changes
+   vdesks.
+ * You can resize a window horizontally (in 16 pixel increments) with alt-u
+   and alt-p and vertically with alt-i and alt-o.
+ * alt-m maximizes both horizontally and vertically.
+
+
+ * No window decorations apart from a simple 2 pixel border.
+ * No icons.
+ * Good keyboard control
+ * Box window drags
+ * Virtual desktops
+ * Small binary size (~16k!)
+ * Scrolly wheel mouse desktop changes
+ * passthrough keyboard grabs.
+
+INSTALLATION
+
+Compile and copy the wwm executable to wherever you'd like
+
+CONTROLS
+
+You can use the mouse to manipulate windows either by click/dragging
+the 2 pixel border, or by holding down Meta1 (The "ALT" key)
+and doing so anywhere in the client window.  The controls are:
+
+Button 1    Move window
+Button 3    Resize window
+
+All keyboard controls are used by holding down Meta1 ("ALT" key), then
+pressing a key.  Available functions are:
+
+Return      Spawn new xterm
+Escape      Delete current window
+b           Lower current window (fore)
+f           raise current window (back)
+x           Maximize window horizontally
+y           Maximize window vertically
+m           Maximize window fully
+v           Passthrough
+=           Fix or unfix current window
+1 - 8       Switch virtual desktop
+Tab         Rotate windows on the screen
+Left        Rotate virtual desktop LEFT
+Right       Rotate virtual desktop RIGHT
+h,j,k,l     Move window 16 pixels
+u,i,o,p     Resize window 16 pixels
+[,],;,'     Position window top left, right, bottom left, right
+End key     Exit wm
+
+
+ACKNOWLEDGEMENTS
+
+The original code base for this project was that of aewm by Decklin
+Foster.  His code is very clean and, in later versions, very well
+commented.  I'd recommend it if you want to learn more about window
+manager theory (or indeed want title bars, etc ;).
+
+http://www.red-bean.com/~decklin/aewm/
+        - aewm homepage
+
+LICENCE
+
+Since it's based on evilwm, here's the license for that.
+
+evilwm-0.3
+Copyright (C) 1999-2001 Ciaran Anscomb <ciarana@rd.bbc.co.uk>
+
+This is free software.  You can do what you want to it, but if it
+breaks something, you get to pay for the counselling.  The code was
+originally based on aewm, so this is distributed under the same terms,
+which follow.
+
+AEWM LICENCE
+
+Copyright (c) 1998-2000 Decklin Foster.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS", WITHOUT ANY EXPRESS
+OR IMPLIED WARRANTIES OF ANY KIND. IN NO EVENT SHALL THE AUTHOR BE
+HELD LIABLE FOR ANY DAMAGES CONNECTED WITH THE USE OF THIS PROGRAM.
+
+You are granted permission to copy, publish, distribute, and/or sell
+copies of this program and any modified versions or derived works,
+provided that this copyright and notice are not removed or altered.
+
+Portions of the code were based on 9wm, which contains this license:
+
+> 9wm is free software, and is Copyright (c) 1994 by David Hogan.
+> Permission is granted to all sentient beings to use this software,
+> to make copies of it, and to distribute those copies, provided
+> that:
+>
+>     (1) the copyright and licence notices are left intact
+>     (2) the recipients are aware that it is free software
+>     (3) any unapproved changes in functionality are either
+>           (i) only distributed as patches
+>       or (ii) distributed as a new program which is not called 9wm
+>               and whose documentation gives credit where it is due
+>     (4) the author is not held responsible for any defects
+>         or shortcomings in the software, or damages caused by it.
+>
+> There is no warranty for this software.  Have a nice day.

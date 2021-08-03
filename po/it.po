@@ -1,0 +1,97 @@
+# ldm gettext messages for Italian.
+# COPYRIGHT (C) 2010 THE LDM'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the ldm package.
+# Vincenzo Campanella <vinz65@gmail.com>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.1.1\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-13 21:30+0000\n"
+"Last-Translator: Vincenzo Campanella <vinz65@gmail.com>\n"
+"Language-Team: Italian <tp@lists.linux.it>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: it\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Nome utente"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Password"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "Verifica della password in corso. Attendere."
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Nessuna risposta dal server, riavvio in corso."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Accesso automatico fra %d secondi"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "Seleziona la _lingua..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "Seleziona la _sessione..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "Seleziona l'_host..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Riavvia"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Arresta"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Accedi come ospite"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Predefinito"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Xterm di emergenza"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "Cambia _sessione"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Selezionare il gestore di sessione:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Selezionare l'host da utilizzare per la sessione:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "Cambia _lingua"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Selezionare la lingua da utilizzare per la sessione:"

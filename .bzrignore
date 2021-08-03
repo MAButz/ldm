@@ -1,0 +1,12 @@
+messages.mo
+*.tar.gz
+*.tar.bz2
+*.rpm
+rpmbuild.log
+ldm.spec
+Makefile
+*.gmo
+configure
+intltool*
+Makefile.in
+*.patch

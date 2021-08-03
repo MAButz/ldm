@@ -1,0 +1,41 @@
+# ldm gettext messages for Chinese
+# Copyright (C) 2010 xiaoqi zhao
+# This file is distributed under the same license as the ldm package.
+# xiaoqi zhao <xiaoqi.zhao@volvo.com>.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2010-01-27 15:51+0800\n"
+"Last-Translator: xiaoqi zhao <xiaoqi.zhao@volvo.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../rc.d/S15-userLoginCheck:34 ../../rc.d/S99-ltsp-cluster:12
+#, sh-format
+msgid ""
+"The system thinks you are logged in elsewhere.  Would you like to close the "
+"other session and continue to log in?"
+msgstr ""
+"系统认为您已经在其他地方登录了。可否请您关闭其他的登录进程，再进行继续的登"
+"录？"
+
+#: ../../rc.d/I01-halt-check:9
+#, sh-format
+msgid "This system will halt in 10s."
+msgstr "此系统将在10秒后停止。"
+
+#: ../../rc.d/S20-restrictUser:21
+#, sh-format
+msgid "User ${LDM_USERNAME} is not allowed to log into this workstation."
+msgstr "此工作站禁止用户${LDM_USERNAME}登入"
+
+#: ../../rc.d/I01-nbd-checkupdate:36
+#, sh-format
+msgid "A new version of the system is available, rebooting in 10s."
+msgstr "系统的一个新版本现在可用，将在10秒后重启。"

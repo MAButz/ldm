@@ -1,0 +1,42 @@
+# translation of sk.po to Slovenský
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Slavko <linux@slavino.sk>, 2009, 2010.
+msgid ""
+msgstr ""
+"Project-Id-Version: sk\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Slavko <Unknown>\n"
+"Language-Team: Slovenský <nomail>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-10-10 04:30+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
+"Language: \n"
+
+#: ../../rc.d/S15-userLoginCheck:34 ../../rc.d/S99-ltsp-cluster:12
+#, sh-format
+msgid ""
+"The system thinks you are logged in elsewhere.  Would you like to close the "
+"other session and continue to log in?"
+msgstr ""
+"V systéme je záznam, že ste prihlásený aj inde. Zatvoriť druhú reláciu a "
+"pokračovať v prihlasovaní?"
+
+#: ../../rc.d/I01-halt-check:9
+#, sh-format
+msgid "This system will halt in 10s."
+msgstr "Systém bude vypnutý za 10s."
+
+#: ../../rc.d/S20-restrictUser:21
+#, sh-format
+msgid "User ${LDM_USERNAME} is not allowed to log into this workstation."
+msgstr "Používateľ ${LDM_USERNAME} nemá právo prihlásiť sa k tejto stanici."
+
+#: ../../rc.d/I01-nbd-checkupdate:36
+#, sh-format
+msgid "A new version of the system is available, rebooting in 10s."
+msgstr "Je dostupná nová verzia systému, reštart za 10 s."

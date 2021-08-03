@@ -1,0 +1,97 @@
+# ldm gettext messages for Dutch (Nederlands).
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the ldm package.
+# Jan Middelkoop <firstname@lastname.cc>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm 2.1.3\n"
+"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-01-14 03:07+0000\n"
+"Last-Translator: Balaam's Miracle <Unknown>\n"
+"Language-Team: Dutch <nl@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+"Language: nl\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr ""
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "Server reageert niet; systeem start opnieuw..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr "Automatisch aanmelden in %d seconden"
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "_Taal instellen..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "_Sessie instellen..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "_Host instellen"
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_Opnieuw opstarten"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "_Afsluiten"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "Aanmelden als Gast"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "Standaard"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr "Systeemherstel xterm"
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "_Sessie wijzigen"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "Kies de gewenste sessiemanager:"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "Kies de host voor deze sessie:"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "_Taal wijzigen"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "Kies de taal voor deze sessie:"

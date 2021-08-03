@@ -1,0 +1,44 @@
+# Brazilian Portuguese translation for ltsp
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ltsp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ltsp\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-11-22 11:03+0000\n"
+"Last-Translator: Guilherme Benkenstein <gb@gbti.com.br>\n"
+"Language-Team: Brazilian Portuguese <pt_BR@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-23 04:30+0000\n"
+"X-Generator: Launchpad (build 16831)\n"
+
+#: ../../rc.d/S15-userLoginCheck:34 ../../rc.d/S99-ltsp-cluster:12
+#, sh-format
+msgid ""
+"The system thinks you are logged in elsewhere.  Would you like to close the "
+"other session and continue to log in?"
+msgstr ""
+"O Sistema acha que você está logado em outro local. Você gostaria de fechar "
+"a outra sessão e continuar no login?"
+
+#: ../../rc.d/I01-halt-check:9
+#, sh-format
+msgid "This system will halt in 10s."
+msgstr "O Sistema irá desligar em 10 segundos."
+
+#: ../../rc.d/S20-restrictUser:21
+#, sh-format
+msgid "User ${LDM_USERNAME} is not allowed to log into this workstation."
+msgstr ""
+"Usuário ${LDM_USERNAME} não é permitido logar nesta estação de trabalho."
+
+#: ../../rc.d/I01-nbd-checkupdate:36
+#, sh-format
+msgid "A new version of the system is available, rebooting in 10s."
+msgstr ""
+"Uma nova verão do sistema está disponível, reiniciando em 10 segundos."

@@ -1,0 +1,96 @@
+# Burmese translation for ldm
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ldm package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ldm\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"PO-Revision-Date: 2013-05-20 07:46+0000\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Burmese <my@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
+"X-Generator: Launchpad (build 16840)\n"
+
+#: ../src/plugin.c:20
+msgid "Username"
+msgstr "အသုံးပြုသူအမည်"
+
+#: ../src/plugin.c:32
+msgid "Password"
+msgstr "စကားဝွက္"
+
+#: ../src/plugin.c:35
+msgid "Verifying password.  Please wait."
+msgstr "စကားဝှက်အားစစ်ဆေးနေသည်။ ကျေးဇူးပြု၍ခေတ္တစောင့်ပါ။"
+
+#: ../src/plugins/ssh/ssh.c:388
+msgid "No response from server, restarting..."
+msgstr "ဆာဗာမှတုံ့ပြန်မှ ုမရှိ ၊ ပြန်လည်စတင်ခြင်း..."
+
+#: ../gtkgreet/greeter.c:250
+#, c-format
+msgid "Automatic login in %d seconds"
+msgstr ""
+
+#: ../gtkgreet/greeter.c:513
+msgid "Select _Language ..."
+msgstr "ရွေးချယ်ပါ _ဘာသာစကား ..."
+
+#: ../gtkgreet/greeter.c:523
+msgid "Select _Session ..."
+msgstr "ရွေးချယ်ပါ _ကဏ္ဍ ..."
+
+#: ../gtkgreet/greeter.c:533
+msgid "Select _Host ..."
+msgstr "ရွေးချယ်ပါ _Host ..."
+
+#: ../gtkgreet/greeter.c:566
+msgid "_Reboot"
+msgstr "_ပြန်လည်စတင်ခြင်း"
+
+#: ../gtkgreet/greeter.c:574
+msgid "Shut_down"
+msgstr "ပိတ်သည်။"
+
+#: ../gtkgreet/greeter.c:718
+msgid "_Preferences"
+msgstr "_ဦးစားပေးချက်များ"
+
+#: ../gtkgreet/greeter.c:812
+msgid "Login as Guest"
+msgstr "guest တစ်ယောက်အနေဖြင့်စတင်ဝင်ရောက်ခြင်း"
+
+#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
+#: ../gtkgreet/prefwin.c:89
+msgid "Default"
+msgstr "မူရင်းအတိုင်း"
+
+#: ../gtkgreet/sesswin.c:107
+msgid "Failsafe xterm"
+msgstr ""
+
+#: ../gtkgreet/sesswin.c:130
+msgid "Change _Session"
+msgstr "အပြောင်းအလဲ _ကဏ္ဍ"
+
+#: ../gtkgreet/sesswin.c:141
+msgid "Select your session manager:"
+msgstr "သင်၏အခန်းကဏ္ဍမန်နေဂျာအားရွေးချယ်ပါ-"
+
+#: ../gtkgreet/hostwin.c:123
+msgid "Select the host for your session to use:"
+msgstr "သင်၏အခန်းကဏ္ဍကိုအသုံးပြုရန်အတွက် host အားရွေးချယ်ပါ-"
+
+#: ../gtkgreet/langwin.c:127
+msgid "Change _Language"
+msgstr "ေျပာင္းျခင္း _ဘာသာစကား"
+
+#: ../gtkgreet/langwin.c:138
+msgid "Select the language for your session to use:"
+msgstr "သင်၏အခန်းကဏ္ဍကိုအသုံးပြုရန်အတွက်ဘာသာစကားအားရွေးချယ်ပါ-"

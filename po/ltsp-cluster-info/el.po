@@ -1,0 +1,63 @@
+# Greek translation for ltsp
+# Copyright (c) 2013 Rosetta Contributors and Canonical Ltd 2013
+# This file is distributed under the same license as the ltsp package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: ltsp\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2010-11-10 10:25-0500\n"
+"PO-Revision-Date: 2013-01-13 22:33+0000\n"
+"Last-Translator: Fotis Tsamis <ftsamis@gmail.com>\n"
+"Language-Team: Greek <el@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Launchpad-Export-Date: 2013-10-10 04:30+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:21
+#, sh-format
+msgid "Information on this thin client."
+msgstr "Πληροφορίες για αυτόν τον thin client."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:23
+#, sh-format
+msgid "This thin client hasn't been configured yet."
+msgstr "Αυτός ο thin client δεν έχει ρυθμιστεί ακόμη."
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:43
+#, sh-format
+msgid "MAC address"
+msgstr "Διεύθυνση MAC"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:44
+#, sh-format
+msgid "IP address"
+msgstr "Διεύθυνση IP"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:45
+#, sh-format
+msgid "CPU"
+msgstr "CPU"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:46
+#, sh-format
+msgid "RAM"
+msgstr "RAM"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:47
+#, sh-format
+msgid "Video"
+msgstr "Βίντεο"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:48
+#, sh-format
+msgid "Application server"
+msgstr "Διακομιστής εφαρμογών"
+
+#: ../../ltsp-cluster-info/ltsp-cluster-info:50
+#, sh-format
+msgid "Web interface"
+msgstr "Περιβάλλον ιστού"
