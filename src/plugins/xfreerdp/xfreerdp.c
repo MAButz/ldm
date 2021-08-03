@@ -167,13 +167,13 @@ xfreerdp_session()
 {
     gchar *cmd;
 
-    cmd = g_strjoin(" ", "xfreerdp", "-f",
-                    "-u", rdpinfo->username,
-                    "-p", rdpinfo->password, NULL);
+    cmd = g_strjoin(NULL, " ", "xfreerdp", " ",
+                    "/u:", rdpinfo->username,
+                    "/p:", rdpinfo->password, NULL);
 
     /* Only append the domain if it's set */
     if (g_strcmp0(rdpinfo->domain, "None") != 0) {
-        cmd = g_strjoin(" ", cmd, "-d", rdpinfo->domain, NULL);
+        cmd = g_strjoin(" ", cmd, "/d:", rdpinfo->domain, NULL);
     }
 
     /* If we have custom options, append them */
@@ -181,7 +181,12 @@ xfreerdp_session()
         cmd = g_strjoin(" ", cmd, rdpinfo->rdpoptions, NULL);
     }
 
-    cmd = g_strjoin(" ", cmd, rdpinfo->server, NULL);
+    cmd = g_strconcat(cmd, " ", rdpinfo->server, " ", "/f", NULL);
+
+    /* Set Environment for xfreerdp Error logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
+    setenv("WLOG_LEVEL", "ERROR", 1);
+    setenv("WLOG_APPENDER" "SYSLOG", 1);
+    setenv("HOME", "/root", 1);
 
     /* Spawning xfreerdp session */
     rdpinfo->rdppid = ldm_spawn(cmd, NULL, NULL, NULL);
