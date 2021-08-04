@@ -182,7 +182,8 @@ xfreerdp_session()
         cmd = g_strjoin(" ", cmd, rdpinfo->rdpoptions, NULL);
     }
 
-    cmd = g_strconcat(cmd, " ", rdpinfo->server, " ", "/f", NULL);
+    /* Append Option for RDP-Server and Display Full-Screen */
+    cmd = g_strconcat(cmd, " ", "/v:", rdpinfo->server, " ", "/f", NULL);
 
     /* Set Environment for xfreerdp Error logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
     setenv("WLOG_LEVEL", "ERROR", 1);
