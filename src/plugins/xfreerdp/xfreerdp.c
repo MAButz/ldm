@@ -167,6 +167,7 @@ xfreerdp_session()
 {
     gchar *cmd;
 
+    /* The Password should not contain space(s) character(s) */
     cmd = g_strjoin(NULL, " ", "xfreerdp", " ",
                     "/u:", rdpinfo->username,
                     "/p:", rdpinfo->password, NULL);
