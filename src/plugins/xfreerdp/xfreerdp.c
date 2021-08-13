@@ -187,7 +187,7 @@ xfreerdp_session()
 
     /* Set Environment for xfreerdp Error logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
     setenv("WLOG_LEVEL", "ERROR", 1);
-    setenv("WLOG_APPENDER" "SYSLOG", 1);
+    setenv("WLOG_APPENDER", "SYSLOG", 1);
     setenv("HOME", "/root", 1);
 
     /* Spawning xfreerdp session */

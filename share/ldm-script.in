@@ -63,7 +63,7 @@ for SCRIPT in $(find -L $RCDIRS -type f -name "$SCRIPTS" -printf '%f\n' |
 do
     # only source the first instance of the script found
     for DIR in $RCDIRS ; do
-        if [ -f "$DIR/$SCRIPT" ]; then
+        if [ -f "$DIR/$SCRIPT" ]; then     
             . "$DIR/$SCRIPT"
             break
         fi
