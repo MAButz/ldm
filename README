@@ -12,7 +12,7 @@ it more pretty.
 If you'd like to play with ldm, here's the steps.
 
 1) Get the branch (you've obviously done this already)
-2) Build ldm (standard ./configure --prefix=usr && make)
+2) Build ldm (standard ./configure --prefix=usr/local && make)
 3) Copy ldm to $CHROOT/usr/sbin
 4) Copy share/ldm-script to $CHROOT/usr/share/ldm
 5) Copy scripts/* to $CHROOT/usr/share/ldm/rc.d
