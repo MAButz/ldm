@@ -1,0 +1,46 @@
+Zum installieren nach dem compellieren....
+
+Um die Dateien in ein "Image zu bekommen" (chroot Umgebung..) ist der "Austausch" der Dateien über /tmp möglich....
+
+Folgende Dateien sind nach /usr/lib/x86_64-linux-gnu/ldm zu kopieren:
+
+ldmgtkgreet
+wwm
+
+
+libssh.la
+libssh.a
+
+libssh.so.0.0.0
+ln -s libssh.so.0.0.0 libssh.so.0
+ln -s libssh.so.0.0.0 libssh.so
+
+libxfreerdp.la
+libxfreerdp.a
+
+libxfreerdp.so.0.0.0
+ln -s libxfreerdp.so.0.0.0 libxfreerdp.so.0
+ln -s libxfreerdp.so.0.0.0 libxfreerdp.so
+
+
+
+Befehle:
+cp /root/ldm/ldm/src/plugins/xfreerdp/.libs/libxfreerdp.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.so.0.0.0
+ln -s /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.so.0
+ln -s /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.so
+
+cp /root/ldm/ldm/src/plugins/xfreerdp/libxfreerdp.la /usr/lib/x86_64-linux-gnu/ldm/libxfreerdp.la
+cp /root/ldm/ldm/src/plugins/xfreerdp/.libs/libxfreerdp.a /usr/lib/x86_64-linux-gnu/libxfreerdp.a
+
+cp /root/ldm/ldm/src/plugins/ssh/.libs/libssh.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libssh.so.0.0.0
+ln -s /usr/lib/x86_64-linux-gnu/ldm/libssh.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libssh.so.0
+ln -s /usr/lib/x86_64-linux-gnu/ldm/libssh.so.0.0.0 /usr/lib/x86_64-linux-gnu/ldm/libssh.so
+
+cp /root/ldm/ldm/src/plugins/ssh/libssh.la /usr/lib/x86_64-linux-gnu/ldm/libssh.la
+cp /root/ldm/ldm/src/plugins/ssh/.libs/libssh.a /usr/lib/x86_64-linux-gnu/libssh.a
+
+cp /root/ldm/ldm/gtkgreet /usr/lib/x86_64-linux-gnu/ldm/ldmgtkgreet
+cp /root/ldm/ldm/wwm /usr/lib/x86_64-linux-gnu/ldm/wwm
+
+chmod -R 751 /usr/lib/x86_64-linux-gnu/ldm/
+
