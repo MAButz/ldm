@@ -185,10 +185,13 @@ xfreerdp_session()
     /* Append Option for RDP-Server and Display Full-Screen */
     cmd = g_strconcat(cmd, " ", "/v:", rdpinfo->server, " ", "/f", NULL);
 
-    /* Set Environment for xfreerdp Error logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
-    setenv("WLOG_LEVEL", "ERROR", 1);
+    /* Set Environment for xfreerdp INFO logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
+    setenv("WLOG_LEVEL", "INFO", 1);
     setenv("WLOG_APPENDER", "SYSLOG", 1);
     setenv("HOME", "/root", 1);
+    
+    /* Set Enviroment??? for LIBVA_DRIVER_NAME=i965 -> older INTEL Graphics Card  OR  LIBVA_DRIVER_NAME=iHD -> newer INTEL Graphics Card */
+    /* For newer verions of freerdp the hardware acceleration over ffmpeg will not use when the LIBVA_DRIVER_NAME=XXXX not set...???? */
 
     /* Spawning xfreerdp session */
     rdpinfo->rdppid = ldm_spawn(cmd, NULL, NULL, NULL);
