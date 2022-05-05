@@ -42,5 +42,6 @@ cp /root/ldm/ldm/src/plugins/ssh/.libs/libssh.a /usr/lib/x86_64-linux-gnu/libssh
 cp /root/ldm/ldm/gtkgreet /usr/lib/x86_64-linux-gnu/ldm/ldmgtkgreet
 cp /root/ldm/ldm/wwm /usr/lib/x86_64-linux-gnu/ldm/wwm
 
+chgrp root:root -hR /usr/lib/x86_64-linux-gnu/ldm/
 chmod -R 751 /usr/lib/x86_64-linux-gnu/ldm/
 
