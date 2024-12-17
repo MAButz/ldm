@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 #  Copyright 2009 Ryan Niebur <RyanRyan52@gmail.com>
