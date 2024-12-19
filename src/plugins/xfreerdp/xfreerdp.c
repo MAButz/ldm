@@ -46,7 +46,7 @@ init_xfreerdp()
 {
     rdpinfo = (RdpInfo *) malloc(sizeof(RdpInfo));
     if (!rdpinfo) {
-        fprintf(stderr, "Fehler: Speicher für RdpInfo konnte nicht allokiert werden.\n");
+        log_entry("xfreerdp", 3, "Fehler: Speicher für RdpInfo konnte nicht allokiert werden.");
         exit(EXIT_FAILURE);
     }
     bzero(rdpinfo, sizeof(RdpInfo));
@@ -54,16 +54,18 @@ init_xfreerdp()
     /* Get current screen number */
     Display *display = XOpenDisplay(NULL);
     if (!display) {
-        fprintf(stderr, "Fehler: Kann kein X-Display öffnen.\n");
+        log_entry("xfreerdp", 3, "Fehler: Kann kein X-Display öffnen.");
         exit(EXIT_FAILURE);
     }
     int screen = DefaultScreen(display);
     XCloseDisplay(display);
+    log_entry("xfreerdp", 3, "Aktueller screen '%s'", screen);
+
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
     if (!screen_formatted) {
-        fprintf(stderr, "Fehler: Speicher konnte für screen_formatted nicht allokiert werden.\n");
+        log_entry("xfreerdp", 3, "Fehler: Speicher konnte für screen_formatted nicht allokiert werden.");
         exit(EXIT_FAILURE);
     }
     
@@ -71,7 +73,7 @@ init_xfreerdp()
     gchar *screen_rdpoptions_var = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
     gchar *screen_rdpserver_var = g_strdup_printf("RDP_SERVER_%s", screen_formatted);
     if (!screen_rdpoptions_var || !screen_rdpserver_var) {
-        fprintf(stderr, "Fehler: Speicher für Umgebungsvariablen konnte nicht allokiert werden.\n");
+        log_entry("xfreerdp", 3, "Fehler: Speicher für Umgebungsvariablen konnte nicht allokiert werden.");
         g_free(screen_formatted);
         exit(EXIT_FAILURE);
     }
