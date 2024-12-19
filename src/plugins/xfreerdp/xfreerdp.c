@@ -47,7 +47,7 @@ init_xfreerdp()
     rdpinfo = (RdpInfo *) malloc(sizeof(RdpInfo));
     if (!rdpinfo) {
         log_entry("xfreerdp", 3, "Fehler: Speicher für RdpInfo konnte nicht allokiert werden.");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
     bzero(rdpinfo, sizeof(RdpInfo));
 
@@ -66,7 +66,7 @@ init_xfreerdp()
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
     if (!screen_formatted) {
         log_entry("xfreerdp", 3, "Fehler: Speicher konnte für screen_formatted nicht allokiert werden.");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
     
    /* Dynamische Prüfung der RDP_OPTIONS_<screen> und RDP_SERVER_<screen> */
@@ -75,7 +75,7 @@ init_xfreerdp()
     if (!screen_rdpoptions_var || !screen_rdpserver_var) {
         log_entry("xfreerdp", 3, "Fehler: Speicher für Umgebungsvariablen konnte nicht allokiert werden.");
         g_free(screen_formatted);
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
 
     const gchar *rdpoptions_value = getenv(screen_rdpoptions_var);
