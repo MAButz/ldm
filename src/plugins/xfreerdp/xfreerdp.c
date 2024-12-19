@@ -55,7 +55,7 @@ init_xfreerdp()
     Display *display = XOpenDisplay(NULL);
     if (!display) {
         log_entry("xfreerdp", 3, "Fehler: Kann kein X-Display öffnen.");
-        exit(EXIT_FAILURE);
+        //exit(EXIT_FAILURE);
     }
     int screen = DefaultScreen(display);
     XCloseDisplay(display);
