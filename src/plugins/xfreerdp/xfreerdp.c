@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <utmp.h>
+#include <X11/Xlib.h>
 
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
@@ -46,9 +47,43 @@ init_xfreerdp()
     rdpinfo = (RdpInfo *) malloc(sizeof(RdpInfo));
     bzero(rdpinfo, sizeof(RdpInfo));
 
-    /* Get ENV value */
-    rdpinfo->rdpoptions = g_strdup(getenv("RDP_OPTIONS"));
-    rdpinfo->server = g_strdup(getenv("RDP_SERVER"));
+    /* Get current screen number */
+    Display *display = XOpenDisplay(NULL);
+    // Hole den Standard-Bildschirm
+    int screen = DefaultScreen(display);
+    // Close the display connection
+    XCloseDisplay(display);
+    
+    /* Format screen number as two digits (e.g., 00, 01, 02) */
+    gchar *screen_formatted = g_strdup_printf("%02d", screen);
+
+    /* Dynamische Prüfung der RDP_OPTIONS_<screen> und RDP_SERVER_<screen> */
+    gchar *screen_rdpoptions_var = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
+    gchar *screen_rdpserver_var = g_strdup_printf("RDP_SERVER_%s", screen_formatted);
+
+    const gchar *rdpoptions_value = getenv(screen_rdpoptions_var);
+    const gchar *rdpserver_value = getenv(screen_rdpserver_var);
+
+    if (rdpoptions_value) {
+        rdpinfo->rdpoptions = g_strdup(rdpoptions_value);
+        log_entry("xfreerdp", 3, "Verwende spezifische RDP_OPTIONS '%s', rdpoptions_value");
+    } else {
+        rdpinfo->rdpoptions = g_strdup(getenv("RDP_OPTIONS"));
+        log_entry("xfreerdp", 3, "Verwende Standard RDP_OPTIONS");
+    }
+
+    if (rdpserver_value) {
+        rdpinfo->server = g_strdup(rdpserver_value);
+        log_entry("xfreerdp", 3, "Verwende spezifische RDP_SERVER '%s', rdpserver_value");
+    } else {
+        rdpinfo->server = g_strdup(getenv("RDP_SERVER"));
+        log_entry("xfreerdp", 3, "Verwende Standard RDP_OPTIONS");
+    }
+
+    /* Speicher freigeben */
+    g_free(screen_rdpoptions_var);
+    g_free(screen_rdpserver_var);
+    g_free(screen_formatted);}
 }
 
 /*
