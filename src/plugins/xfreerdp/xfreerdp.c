@@ -51,7 +51,8 @@ init_xfreerdp()
     }
     bzero(rdpinfo, sizeof(RdpInfo));
 
-    /* Get current screen number */
+    /*
+    // Get current screen number
     Display *display = XOpenDisplay(NULL);
     if (!display) {
         log_entry("xfreerdp", 3, "Fehler: Kann kein X-Display öffnen.");
@@ -60,7 +61,7 @@ init_xfreerdp()
     int screen = DefaultScreen(display);
     XCloseDisplay(display);
     log_entry("xfreerdp", 3, "Aktueller screen '%s'", screen);
-
+    */
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
