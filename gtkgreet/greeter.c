@@ -85,6 +85,8 @@ int allowguest;
 gint login_timeout;
 gint timeout_left;
 
+int screen;
+
 gchar *
 ldm_theme_file(char *file)
 {
