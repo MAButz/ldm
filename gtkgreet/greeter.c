@@ -119,16 +119,6 @@ get_default_display_size(gint * width, gint * height)
     gdk_screen_get_monitor_geometry(screen, 0, &my_rect);
     *width = my_rect.width;
     *height = my_rect.height;
-
-    // Bildschirmnummer als Zeichenkette konvertieren
-    gchar screen_number[10];
-    sprintf(screen_number, "%p", (void*)screen);  // Zeigerwert ausgeben
-
-    // Setze die Bildschirmnummer als Umgebungsvariable
-    setenv("SCREEN_NUMBER", screen_number, 1);
-
-    // Protokolliere die Bildschirmnummer
-    log_entry("gtkgreet", 3, "SCREEN_NUMBER: %s", screen_number);
 }
 
 GdkPixmap *root_bg = 0;
