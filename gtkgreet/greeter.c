@@ -85,8 +85,6 @@ int allowguest;
 gint login_timeout;
 gint timeout_left;
 
-int screen;
-
 gchar *
 ldm_theme_file(char *file)
 {
@@ -121,6 +119,9 @@ get_default_display_size(gint * width, gint * height)
     gdk_screen_get_monitor_geometry(screen, 0, &my_rect);
     *width = my_rect.width;
     *height = my_rect.height;
+
+    // Setze die Bildschirmnummer als Umgebungsvariable
+    setenv("SCREEN_NUMBER", g_strdup_printf("%d", gdk_screen_get_number(screen)), 1)
 }
 
 GdkPixmap *root_bg = 0;
