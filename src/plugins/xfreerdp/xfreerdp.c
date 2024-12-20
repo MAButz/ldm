@@ -13,7 +13,7 @@
 #include <sys/ioctl.h>
 #include <utmp.h>
 #include <X11/Xlib.h>
-#include <gdk/gdk.h>
+#include <gtk/gtk.h>
 
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
