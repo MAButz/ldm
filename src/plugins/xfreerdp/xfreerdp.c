@@ -21,6 +21,8 @@
 #include "../../plugin.h"
 #include "xfreerdp.h"
 
+extern int screen; 
+
 LdmBackend *descriptor;
 RdpInfo *rdpinfo;
 
@@ -53,12 +55,6 @@ init_xfreerdp()
     bzero(rdpinfo, sizeof(RdpInfo));
     
     // Get current screen number
-    GdkDisplay* display = gdk_display_get_default();
-    if (!display) {
-        log_entry("xfreerdp", 3, "Fehler: Kann kein X-Display öffnen.");
-        //exit(EXIT_FAILURE);
-    }
-    int screen = gdk_display_get_default_screen(display);
     log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
