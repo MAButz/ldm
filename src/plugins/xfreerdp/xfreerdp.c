@@ -19,8 +19,6 @@
 #include "../../plugin.h"
 #include "xfreerdp.h"
 
-extern int screen; 
-
 LdmBackend *descriptor;
 RdpInfo *rdpinfo;
 
@@ -52,8 +50,14 @@ init_xfreerdp()
     }
     bzero(rdpinfo, sizeof(RdpInfo));
     
-    // Get current screen number
-    log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
+    // Abrufen der Bildschirmnummer aus der Umgebungsvariable
+    const char *screen_env = getenv("SCREEN_NUMBER");
+    if (screen_env) {
+        int screen = atoi(screen_env);
+        log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
+    } else {
+        log_entry("xfreerdp", 3, "Fehler: SCREEN_NUMBER Umgebungsvariable nicht gesetzt.");
+    }
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
