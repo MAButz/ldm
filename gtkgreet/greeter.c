@@ -120,10 +120,9 @@ get_default_display_size(gint * width, gint * height)
     *width = my_rect.width;
     *height = my_rect.height;
 
-    // Setze die Bildschirmnummer als Umgebungsvariable
-   // Bildschirmnummer als Zeichenkette konvertieren
+    // Bildschirmnummer als Zeichenkette konvertieren
     gchar screen_number[10];
-    sprintf(screen_number, "%d", gdk_screen_get_number(screen));
+    sprintf(screen_number, "%p", (void*)screen);  // Zeigerwert ausgeben
 
     // Setze die Bildschirmnummer als Umgebungsvariable
     setenv("SCREEN_NUMBER", screen_number, 1);
