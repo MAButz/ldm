@@ -12,8 +12,6 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <utmp.h>
-#include <X11/Xlib.h>
-#include <gtk/gtk.h>
 
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
