@@ -13,6 +13,7 @@
 #include <sys/ioctl.h>
 #include <utmp.h>
 #include <X11/Xlib.h>
+#include <gdk/gdk.h>
 
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
@@ -50,18 +51,15 @@ init_xfreerdp()
         //exit(EXIT_FAILURE);
     }
     bzero(rdpinfo, sizeof(RdpInfo));
-
-    /*
+    
     // Get current screen number
-    Display *display = XOpenDisplay(NULL);
+    GdkDisplay* display = gdk_display_get_default();
     if (!display) {
         log_entry("xfreerdp", 3, "Fehler: Kann kein X-Display öffnen.");
         //exit(EXIT_FAILURE);
     }
-    int screen = DefaultScreen(display);
-    XCloseDisplay(display);
-    log_entry("xfreerdp", 3, "Aktueller screen '%s'", screen);
-    */
+    int screen = gdk_display_get_default_screen(display);
+    log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
@@ -84,18 +82,18 @@ init_xfreerdp()
 
     if (rdpoptions_value) {
         rdpinfo->rdpoptions = g_strdup(rdpoptions_value);
-        log_entry("xfreerdp", 3, "Verwende spezifische RDP_OPTIONS '%s'", rdpoptions_value);
+        log_entry("xfreerdp", 6, "Verwende spezifische RDP_OPTIONS '%s'", rdpoptions_value);
     } else {
         rdpinfo->rdpoptions = g_strdup(getenv("RDP_OPTIONS"));
-        log_entry("xfreerdp", 3, "Verwende Standard RDP_OPTIONS");
+        log_entry("xfreerdp", 6, "Verwende Standard RDP_OPTIONS");
     }
 
     if (rdpserver_value) {
         rdpinfo->server = g_strdup(rdpserver_value);
-        log_entry("xfreerdp", 3, "Verwende spezifische RDP_SERVER '%s'", rdpserver_value);
+        log_entry("xfreerdp", 6, "Verwende spezifische RDP_SERVER '%s'", rdpserver_value);
     } else {
         rdpinfo->server = g_strdup(getenv("RDP_SERVER"));
-        log_entry("xfreerdp", 3, "Verwende Standard RDP_SERVER");
+        log_entry("xfreerdp", 6, "Verwende Standard RDP_SERVER");
     }
 
     /* Speicher freigeben */
