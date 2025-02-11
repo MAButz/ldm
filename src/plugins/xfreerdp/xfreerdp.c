@@ -56,14 +56,15 @@ init_xfreerdp()
     gchar *display_env = g_strdup(getenv("DISPLAY"));
     if (display_env != NULL) {
         log_entry("xfreerdp", 6, "DISPLAY Umgebungsvariable: '%s'", display_env);
-        // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":0.0" -> 0)
-        const char *dot = strchr(display_env, '.');
-        if (dot) {
-            screen = atoi(dot + 1);
+        // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":7" -> 7)
+        const char *colon = strchr(display_env, ':');
+        if (colon) {
+            screen = atoi(colon + 1);
         }
         log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     } else {
         log_entry("xfreerdp", 3, "Fehler: DISPLAY Umgebungsvariable nicht gesetzt.");
+        return;
     }
     
     // Format screen number as two digits (e.g., 00, 01, 02)
