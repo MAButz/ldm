@@ -10,3 +10,4 @@ configure
 intltool*
 Makefile.in
 *.patch
+.vs
