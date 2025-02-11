@@ -48,40 +48,38 @@ init_xfreerdp()
     rdpinfo = (RdpInfo *) malloc(sizeof(RdpInfo));
     if (!rdpinfo) {
         log_entry("xfreerdp", 3, "Fehler: Speicher für RdpInfo konnte nicht allokiert werden.");
-        //exit(EXIT_FAILURE);
+        return;
     }
     bzero(rdpinfo, sizeof(RdpInfo));
     
     // Abrufen der Bildschirmnummer aus der Umgebungsvariable
-    gchar * display_env = g_strdup(getenv("DISPLAY"));
+    gchar *display_env = g_strdup(getenv("DISPLAY"));
     if (display_env != NULL) {
-    log_entry("xfreerdp", 3, "DISPLAY Umgebungsvariable: '%s'", display_env);
+        log_entry("xfreerdp", 6, "DISPLAY Umgebungsvariable: '%s'", display_env);
         // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":0.0" -> 0)
         const char *dot = strchr(display_env, '.');
         if (dot) {
             screen = atoi(dot + 1);
-        //} else {
-        //    screen = 0; // Standardbildschirm, falls keine Bildschirmnummer angegeben ist
         }
         log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     } else {
         log_entry("xfreerdp", 3, "Fehler: DISPLAY Umgebungsvariable nicht gesetzt.");
     }
     
-    /* Format screen number as two digits (e.g., 00, 01, 02) */
+    // Format screen number as two digits (e.g., 00, 01, 02)
     gchar *screen_formatted = g_strdup_printf("%02d", screen);
-    if (screen_formatted != NULL) {
-        log_entry("xfreerdp", 3, "Fehler: Speicher konnte für screen_formatted nicht allokiert werden.");
-        //exit(EXIT_FAILURE);
+    if (screen_formatted == NULL) {
+        log_entry("xfreerdp", 3, "Fehler: Display Nummer konnte nicht extrahiert werden.");
+        return;
     }
     
-   /* Dynamische Prüfung der RDP_OPTIONS_<screen> und RDP_SERVER_<screen> */
+    // Dynamische Prüfung der RDP_OPTIONS_<screen> und RDP_SERVER_<screen>
     gchar *screen_rdpoptions_var = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
     gchar *screen_rdpserver_var = g_strdup_printf("RDP_SERVER_%s", screen_formatted);
-    if (screen_rdpoptions_var != NULL || screen_rdpserver_var != NULL) {
-        log_entry("xfreerdp", 3, "Fehler: Speicher für Umgebungsvariablen konnte nicht allokiert werden.");
+    if (screen_rdpoptions_var == NULL || screen_rdpserver_var == NULL) {
+        log_entry("xfreerdp", 3, "Fehler: Keine Umgebungsvariablen für spezifische RDP Optionen und oder Server gefunden.");
         g_free(screen_formatted);
-        //exit(EXIT_FAILURE);
+        return;
     }
 
     const gchar *rdpoptions_value = getenv(screen_rdpoptions_var);
@@ -103,7 +101,7 @@ init_xfreerdp()
         log_entry("xfreerdp", 6, "Verwende Standard RDP_SERVER");
     }
 
-    /* Speicher freigeben */
+    // Speicher freigeben
     g_free(display_env);
     g_free(screen_rdpoptions_var);
     g_free(screen_rdpserver_var);
