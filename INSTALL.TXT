@@ -7,6 +7,8 @@ Folgende Dateien sind nach /usr/lib/x86_64-linux-gnu/ldm zu kopieren:
 ldmgtkgreet
 wwm
 
+Stand heute sind die Dateien: ldmgtkgreet und wwm NICHT auszutauschen gegen die neuen Dateien, da dies zu Fehlern führt!
+
 
 libssh.la
 libssh.a
