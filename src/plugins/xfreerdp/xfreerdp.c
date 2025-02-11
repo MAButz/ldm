@@ -53,14 +53,15 @@ init_xfreerdp()
     bzero(rdpinfo, sizeof(RdpInfo));
     
     // Abrufen der Bildschirmnummer aus der Umgebungsvariable
-    const char *display_env = getenv("DISPLAY");
+    2.	gchar * display_env = g_strdup(getenv("DISPLAY"));
     if (display_env) {
+		log_entry("xfreerdp", 3, "DISPLAY Umgebungsvariable: '%s'", display_env);
         // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":0.0" -> 0)
         const char *dot = strchr(display_env, '.');
         if (dot) {
             screen = atoi(dot + 1);
-        } else {
-            screen = 0; // Standardbildschirm, falls keine Bildschirmnummer angegeben ist
+        //} else {
+        //    screen = 0; // Standardbildschirm, falls keine Bildschirmnummer angegeben ist
         }
         log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     } else {
@@ -103,6 +104,7 @@ init_xfreerdp()
     }
 
     /* Speicher freigeben */
+    g_free(display_env);
     g_free(screen_rdpoptions_var);
     g_free(screen_rdpserver_var);
     g_free(screen_formatted);
