@@ -53,7 +53,7 @@ init_xfreerdp()
     bzero(rdpinfo, sizeof(RdpInfo));
     
     // Abrufen der Bildschirmnummer aus der Umgebungsvariable
-    2.	gchar * display_env = g_strdup(getenv("DISPLAY"));
+    gchar * display_env = g_strdup(getenv("DISPLAY"));
     if (display_env) {
 		log_entry("xfreerdp", 3, "DISPLAY Umgebungsvariable: '%s'", display_env);
         // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":0.0" -> 0)
