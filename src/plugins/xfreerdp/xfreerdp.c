@@ -53,12 +53,18 @@ init_xfreerdp()
     bzero(rdpinfo, sizeof(RdpInfo));
     
     // Abrufen der Bildschirmnummer aus der Umgebungsvariable
-    const char *screen_env = getenv("SCREEN_NUMBER");
-    if (screen_env) {
-        screen = atoi(screen_env);
+    const char *display_env = getenv("DISPLAY");
+    if (display_env) {
+        // Extrahiere die Bildschirmnummer aus der DISPLAY-Variable (z.B., ":0.0" -> 0)
+        const char *dot = strchr(display_env, '.');
+        if (dot) {
+            screen = atoi(dot + 1);
+        } else {
+            screen = 0; // Standardbildschirm, falls keine Bildschirmnummer angegeben ist
+        }
         log_entry("xfreerdp", 6, "Aktueller screen '%d'", screen);
     } else {
-        log_entry("xfreerdp", 3, "Fehler: SCREEN_NUMBER Umgebungsvariable nicht gesetzt.");
+        log_entry("xfreerdp", 3, "Fehler: DISPLAY Umgebungsvariable nicht gesetzt.");
     }
     
     /* Format screen number as two digits (e.g., 00, 01, 02) */
