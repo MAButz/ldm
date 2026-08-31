@@ -1,0 +1,35 @@
+/*
+ * LTSP theme for LDM (GTK3 CSS)
+ *
+ * Replaces the old GTK2 "greeter-gtkrc" (gtk_rc_add_default_file()), which
+ * GTK3 no longer supports at all: the .gtkrc "style"/"engine" mechanism
+ * (including third-party engines like "clearlooks") was removed entirely in
+ * favor of CSS + GtkStyleContext. This is an approximate re-creation of the
+ * old look using CSS, not a literal translation - GTK3's theming model
+ * doesn't have a direct equivalent for some of the old per-pixel engine
+ * settings (menubarstyle, listviewitemstyle, etc.), so those are left to
+ * the widget's normal (usually Adwaita-derived) rendering.
+ */
+
+* {
+    font-family: Sans;
+    font-size: 10pt;
+}
+
+entry {
+    font-size: 9pt;
+}
+
+button:hover,
+menuitem:hover {
+    background-color: #9baada;
+}
+
+button:checked,
+button:active {
+    background-color: #637a9a;
+}
+
+tooltip {
+    background-color: #fffcbf;
+}

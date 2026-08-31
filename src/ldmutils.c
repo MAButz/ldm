@@ -159,6 +159,51 @@ ldm_spawn(gchar * command, gint * rfd, gint * wfd,
 }
 
 /*
+ * ldm_spawnv:
+ *
+ * Like ldm_spawn(), but takes a ready-made, NULL-terminated argv array
+ * instead of a command string. Use this whenever any argument (e.g. a
+ * username, password or hostname) isn't fully trusted/predictable: since
+ * no shell-like parsing is involved, arguments can contain spaces or quote
+ * characters without being mis-split or needing any escaping.
+ *
+ * The caller retains ownership of argv; it isn't freed here.
+ */
+GPid
+ldm_spawnv(gchar ** argv, gint * rfd, gint * wfd,
+           GSpawnChildSetupFunc setup)
+{
+    GPid pid;
+    GError *error = NULL;
+    GSpawnFlags flags = G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD;
+
+    if (!wfd)
+        flags |= G_SPAWN_STDOUT_TO_DEV_NULL;
+
+    g_spawn_async_with_pipes(NULL,               /* Working directory: inherit */
+                             argv,               /* Arguments, null term */
+                             NULL,               /* Environment, inherit from parent */
+                             flags,              /* Flags, set above */
+                             setup,              /* Child setup function: passed to us */
+                             NULL,               /* No user data */
+                             &pid,               /* child pid */
+                             wfd,                /* Pointer to in file descriptor */
+                             rfd,                /* Pointer to out file descriptor */
+                             NULL,               /* No stderr */
+                             &error);            /* GError handler */
+
+    if (error) {
+        log_entry("ldm", 3, "ldm_spawnv failed to execute: %s",
+                  error->message);
+        g_error_free(error);
+    } else {
+        log_entry("ldm", 7, "ldm_spawnv: pid = %d", pid);
+    }
+
+    return pid;
+}
+
+/*
  * handle_sigchld
  *
  * Handle sigchld's for ldm processes.  Empty function,

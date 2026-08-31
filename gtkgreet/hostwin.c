@@ -78,8 +78,8 @@ update_selected_host()
 void
 populate_host_combo_box(const char *hostname, GtkWidget * host_combo_box)
 {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(host_combo_box),
-                              g_strdup(hostname));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(host_combo_box),
+                              hostname);
 }
 
 void
@@ -93,10 +93,10 @@ hostwin(GtkWidget * widget, GtkWindow * win)
                             GTK_WIN_POS_CENTER_ALWAYS);
     gtk_window_set_modal((GtkWindow *) hostwin, TRUE);
 
-    vbox = gtk_vbox_new(FALSE, 0);
-    buttonbox = gtk_hbox_new(FALSE, 5);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    buttonbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
-    combo_host = gtk_combo_box_new_text();
+    combo_host = gtk_combo_box_text_new();
     g_list_foreach(host_list, (GFunc) populate_host_combo_box, combo_host);
 
     g_signal_connect(G_OBJECT(combo_host), "changed",
@@ -105,11 +105,11 @@ hostwin(GtkWidget * widget, GtkWindow * win)
     gtk_combo_box_set_active(GTK_COMBO_BOX(combo_host), selected_host_id);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 5);
 
-    cancel = gtk_button_new_from_stock("gtk-cancel");
+    cancel = gtk_button_new_with_mnemonic(_("_Cancel"));
     g_signal_connect(G_OBJECT(cancel), "clicked",
                      G_CALLBACK(destroy_popup), hostwin);
 
-    accept = gtk_button_new_from_stock("gtk-apply");
+    accept = gtk_button_new_with_mnemonic(_("_Apply"));
     g_signal_connect(G_OBJECT(accept), "clicked",
                      G_CALLBACK(hostwin_accept), hostwin);
 

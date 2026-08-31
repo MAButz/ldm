@@ -1,0 +1,53 @@
+Source: ldm
+Section: misc
+Priority: optional
+Maintainer: Marc-André Beckmann-Butz <ma@butz.online>
+Build-Depends: debhelper-compat (= 13),
+ libgtk-3-dev,
+ libx11-dev,
+ libxext-dev,
+ intltool,
+ iso-codes,
+ locales,
+ python3,
+ dctrl-tools
+Standards-Version: 4.6.2
+Homepage: https://github.com/MAButz/ldm
+
+Package: ldm
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends},
+ openssh-client,
+ xserver-xorg | xserver,
+ gettext-base,
+ procps
+Recommends:
+ freerdp3-x11 | freerdp2-x11,
+ netcat-traditional | netcat,
+ xauth
+Description: LTSP display manager (GTK3 / xfreerdp fork)
+ ldm is an X11 display manager similar to xdm, gdm and kdm, used by LTSP
+ (Linux Terminal Server Project) thin clients. This fork replaces the
+ GTK2 greeter with a GTK3 one (required to build at all on current
+ Debian releases, which no longer ship GTK2), adds an xfreerdp backend
+ plugin (auto-detecting xfreerdp3/xfreerdp2, credentials passed via
+ stdin instead of argv, optional default RDP domain) alongside the
+ original ssh backend, and carries a number of security and
+ correctness fixes found during an internal audit (argv-based process
+ spawning instead of shell word-splitting, a heap buffer overflow fix
+ in the LTSP-Cluster load-balancer client, path-traversal and
+ NULL-pointer-dereference fixes, and standard hardening compiler
+ flags).
+
+Package: ldm-server
+Architecture: all
+Depends: ${misc:Depends},
+ python3,
+ x11-common,
+ openssh-server,
+ update-inetd, openbsd-inetd | inet-superserver
+Recommends:
+ xauth
+Description: server components for LTSP display manager
+ This package includes the server-side components used by ldm to
+ discover available sessions and locales on the server (ldminfod).

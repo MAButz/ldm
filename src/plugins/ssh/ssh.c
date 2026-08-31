@@ -199,6 +199,15 @@ get_guest()
         if (!autoservers)
             autoservers = g_strdup(getenv("LDM_SERVER"));
 
+        /* g_strsplit(NULL, ...) returns NULL, and hosts_char[0] below
+         * would then be a NULL-pointer dereference: none of
+         * LDM_GUEST_SERVER/LDM_AUTOLOGIN_SERVER/LDM_SERVER are set, so
+         * there's no server to log the guest session into at all. */
+        if (!autoservers)
+            die("ssh",
+                "guest login: no server configured (LDM_GUEST_SERVER/"
+                "LDM_AUTOLOGIN_SERVER/LDM_SERVER are all unset)");
+
         hosts_char = g_strsplit(autoservers, " ", -1);
 
         good = FALSE;
@@ -455,68 +464,114 @@ ssh_tty_init(void)
 /*
  * ssh_session()
  * Start an ssh login to the server.
+ *
+ * Builds the ssh command line as an argv array and spawns it via
+ * ldm_spawnv() rather than building a single string for ldm_spawn().
+ * That matters here specifically because sshinfo->username and
+ * sshinfo->server come straight from what was typed into the greeter's
+ * login prompt, BEFORE any authentication has happened. ldm_spawn()'s
+ * string form gets word-split by g_shell_parse_argv() - so a "username"
+ * containing a space (e.g. "x -oProxyCommand=some-command") would be
+ * split into extra ssh arguments and let anyone at the login screen make
+ * ssh run an arbitrary local command as root via ProxyCommand, no valid
+ * credentials required. Passing each value as its own argv element closes
+ * that off entirely: whatever's typed there is just one -l argument.
  */
 void
 ssh_session(void)
 {
-    gchar *command;
-    gchar *port = NULL;
-    pthread_t pt;
-
-    /* Check for port Override */
-    if (sshinfo->override_port)
-        port = g_strconcat(" -p ", sshinfo->override_port, " ", NULL);
+    GPtrArray *argv = g_ptr_array_new();
+    gchar **sshoptions_argv = NULL;
+    guint i;
+    gchar *logcmd;
 
     openpty(&(sshinfo->sshfd), &(sshinfo->sshslavefd), NULL, NULL, NULL);
 
-    command = g_strjoin(" ", "ssh", "-Y", "-t", "-M",
-                        "-S", sshinfo->ctl_socket,
-                        "-o", "NumberOfPasswordPrompts=1",
-                         /* ConnectTimeout should be less than the timeout ssh_chat
-                          * passes to expect, so we get the error message from ssh
-                          * before expect gives up
-                          */
-                        "-o", "ConnectTimeout=10",
-                        "-l", sshinfo->username,
-                        port ? port : "",
-                        sshinfo->sshoptions ? sshinfo->sshoptions : "",
-                        sshinfo->server,
-                        "echo " SENTINEL "; exec /bin/sh -", NULL);
-    log_entry("ssh", 6, "ssh_session: %s", command);
+    g_ptr_array_add(argv, g_strdup("ssh"));
+    g_ptr_array_add(argv, g_strdup("-Y"));
+    g_ptr_array_add(argv, g_strdup("-t"));
+    g_ptr_array_add(argv, g_strdup("-M"));
+    g_ptr_array_add(argv, g_strdup("-S"));
+    g_ptr_array_add(argv, g_strdup(sshinfo->ctl_socket));
+    g_ptr_array_add(argv, g_strdup("-o"));
+    g_ptr_array_add(argv, g_strdup("NumberOfPasswordPrompts=1"));
+    /* ConnectTimeout should be less than the timeout ssh_chat
+     * passes to expect, so we get the error message from ssh
+     * before expect gives up
+     */
+    g_ptr_array_add(argv, g_strdup("-o"));
+    g_ptr_array_add(argv, g_strdup("ConnectTimeout=10"));
+    g_ptr_array_add(argv, g_strdup("-l"));
+    g_ptr_array_add(argv, g_strdup(sshinfo->username));
 
-    sshinfo->sshpid = ldm_spawn(command, NULL, NULL, ssh_tty_init);
+    /* Check for port override */
+    if (sshinfo->override_port) {
+        g_ptr_array_add(argv, g_strdup("-p"));
+        g_ptr_array_add(argv, g_strdup(sshinfo->override_port));
+    }
+
+    /*
+     * sshinfo->sshoptions comes from LDM_SSHOPTIONS, trusted admin
+     * configuration in lts.conf (not end-user input), so shell-splitting
+     * it into multiple arguments here is fine - same treatment as
+     * RDP_OPTIONS in the xfreerdp plugin.
+     */
+    if (sshinfo->sshoptions &&
+        g_shell_parse_argv(sshinfo->sshoptions, NULL, &sshoptions_argv,
+                            NULL)) {
+        for (i = 0; sshoptions_argv[i] != NULL; i++) {
+            g_ptr_array_add(argv, sshoptions_argv[i]);
+        }
+        /* Ownership of the individual strings moved into argv above. */
+        g_free(sshoptions_argv);
+    }
+
+    g_ptr_array_add(argv, g_strdup(sshinfo->server));
+    g_ptr_array_add(argv, g_strdup("echo " SENTINEL "; exec /bin/sh -"));
+    g_ptr_array_add(argv, NULL);
+
+    logcmd = g_strjoinv(" ", (gchar **) argv->pdata);
+    log_entry("ssh", 6, "ssh_session: %s", logcmd);
+    g_free(logcmd);
+
+    sshinfo->sshpid =
+        ldm_spawnv((gchar **) argv->pdata, NULL, NULL, ssh_tty_init);
 
     ssh_chat(sshinfo->sshfd);
 
     /*
      * Spawn a thread to keep sshfd clean.
      */
-    pthread_create(&pt, NULL, eater, NULL);
+    {
+        pthread_t pt;
+        pthread_create(&pt, NULL, eater, NULL);
+    }
 
-    if (port)
-        g_free(port);
+    for (i = 0; i < argv->len - 1; i++) {
+        g_free(g_ptr_array_index(argv, i));
+    }
+    g_ptr_array_free(argv, TRUE);
 }
 
 void
 ssh_endsession(void)
 {
     GPid pid;
-    gchar *command;
     struct stat stbuf;
 
     if (!stat(sshinfo->ctl_socket, &stbuf)) {
         /* socket still exists, so we need to shut down the ssh link */
+        gchar *argv[] = { "ssh", "-S", sshinfo->ctl_socket, "-O", "exit",
+            sshinfo->server, NULL
+        };
 
-        command =
-            g_strjoin(" ", "ssh", "-S", sshinfo->ctl_socket, "-O", "exit",
-                      sshinfo->server, NULL);
-        log_entry("ssh", 6, "closing ssh session: %s", command);
-        pid = ldm_spawn(command, NULL, NULL, NULL);
+        log_entry("ssh", 6, "closing ssh session: ssh -S %s -O exit %s",
+                  sshinfo->ctl_socket, sshinfo->server);
+        pid = ldm_spawnv(argv, NULL, NULL, NULL);
         ldm_wait(pid);
         close(sshinfo->sshfd);
         ldm_wait(sshinfo->sshpid);
         sshinfo->sshpid = 0;
-        g_free(command);
     }
 }
 
@@ -531,7 +586,12 @@ ssh_hashpass(void)
 {
     FILE *rand_fp;
     FILE *shad_fp;
-    gchar salt[] = "$6$...............$";
+    /* 16 placeholder chars between the $6$ and the closing $, one for
+     * each byte read from /dev/urandom below - the loop that fills them
+     * in previously wrote 16 bytes into a 15-dot template, clobbering
+     * the closing '$' (harmless only because glibc's crypt() happens to
+     * cap SHA-512 salts at 16 chars even without one). */
+    gchar salt[] = "$6$................$";
     gchar buf[16];
     const gchar seedchars[] =
         "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -557,8 +617,20 @@ ssh_hashpass(void)
         /* generate dynamic file for writing hash to.
         * Will remove anything in its way.
         * This will be removed during rc.d script run.
+        *
+        * Opened via open()+fdopen() with an explicit 0600 mode instead of
+        * plain fopen(), which would create it umask-dependent (typically
+        * world-readable, 0644): this file briefly holds a crypt() hash of
+        * the user's password before the rc.d script consumes it, so any
+        * other local process being able to read it in the meantime would
+        * let it be offline-cracked.
         */
-        shad_fp = fopen(hashloc, "w");
+        {
+            int shad_fd = open(hashloc, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+            shad_fp = (shad_fd >= 0) ? fdopen(shad_fd, "w") : NULL;
+            if (shad_fd >= 0 && shad_fp == NULL)
+                close(shad_fd);
+        }
         if (shad_fp == NULL)
         {
             log_entry("hashpass", 7, "Unable to open %s for hash entry.",

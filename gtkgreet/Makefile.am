@@ -6,6 +6,8 @@ ldmgtkgreet_SOURCES = hostwin.c greeter.c langwin.c sesswin.c prefs.c prefwin.c 
 					  ../src/ldminfo.c ../src/logging.c
 
 ldmgtkgreet_LDADD = $(GTK_LIBS)
+ldmgtkgreet_LDFLAGS = -pie
+ldmgtkgreet_CFLAGS = -fPIE
 AM_CPPFLAGS = $(GTK_CFLAGS) \
               -DLOCALE_DIR=\""$(datadir)/locale"\" \
               -DLDM_THEME_DIR=\""$(datadir)/ldm/themes/"\" \

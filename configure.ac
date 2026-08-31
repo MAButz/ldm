@@ -15,6 +15,17 @@ AM_PROG_CC_C_O()
 AC_PROG_INSTALL
 AC_STDC_HEADERS
 
+# Security hardening flags. ldm runs as root and dlopen()s plugins, so this
+# matters more than for most small projects. A real .deb build would get
+# these for free from dpkg-buildflags/debhelper, but there's no debian/
+# directory in this tree any more, so a plain ./configure && make gets none
+# of it otherwise. -fPIE/-pie are deliberately left out here: they'd have to
+# be applied per-executable-target (not blanket CFLAGS/LDFLAGS), since
+# combining them with the -fPIC shared-library plugin builds risks breaking
+# those.
+CFLAGS="$CFLAGS -D_FORTIFY_SOURCE=2 -fstack-protector-strong"
+LDFLAGS="$LDFLAGS -Wl,-z,relro -Wl,-z,now"
+
 AC_HEADER_STDC
 AC_CHECK_HEADERS([syslog.h sys/wait.h fcntl.h],,AC_MSG_ERROR(Required header missing))
 
@@ -22,7 +33,7 @@ AC_CHECK_LIB([util],[main],[],AC_MSG_ERROR(ldm requires libutil))
 
 PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.6.0)
 PKG_CHECK_MODULES(GOBJECT, gobject-2.0 >= 2.6.0)
-PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.2)
+PKG_CHECK_MODULES(GTK, gtk+-3.0 >= 3.22)
 
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)

@@ -150,11 +150,24 @@ init_position(Client * c)
     if (c->height > (ymax - spacing))
         c->height = (ymax - spacing);
 
-    if (c->size->flags & USPosition) {
-        c->x = c->size->x;
-        c->y = c->size->y;
+    /*
+     * Prefer a position the window already has - either because the app
+     * explicitly requested one via WM_NORMAL_HINTS' USPosition, or
+     * because it was already placed via a real X call before/while being
+     * mapped (c->x/c->y already hold that, copied from
+     * XGetWindowAttributes() in make_new_client()). Only synthesize a
+     * placement for windows that are still sitting at the X server's
+     * untouched default of (0,0), i.e. genuinely never positioned.
+     * (evilwm, which this was forked from, does the equivalent by
+     * preferring attr.x/attr.y whenever the window is already viewable
+     * or has USPosition set; upstream also has mouse-follow placement
+     * here, which was disabled below without ever being replaced - the
+     * "x/y = xmax/2, ymax/2" is not a mouse position, it's a hardcoded
+     * mid-screen stand-in.)
+     */
+    if ((c->size->flags & USPosition) || c->x != 0 || c->y != 0) {
+        /* keep c->x/c->y as already set */
     } else {
-//        get_mouse_position(&x, &y);
         x = xmax / 2;
         y = ymax / 2;
         c->x = (x * (xmax - c->border - c->width)) / xmax;

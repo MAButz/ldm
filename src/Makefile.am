@@ -6,7 +6,8 @@ ldmplugdir = $(libdir)/ldm/
 ldm_SOURCES = ldm.c ldmplugin.c ldminfo.c ldmgreetercomm.c ldmutils.c plugin.c logging.c
 
 ldm_LDADD = $(GLIB_LIBS) $(GOBJECT_LIBS)
-ldm_LDFLAGS = -pthread -ldl -export-dynamic @GLIB_LIBS@
+ldm_LDFLAGS = -pthread -ldl -export-dynamic -pie @GLIB_LIBS@
+ldm_CFLAGS = -fPIE
 AM_CPPFLAGS = $(GLIB_CFLAGS) \
               $(GOBJECT_CFLAGS) \
               -DRC_DIR=\""$(datadir)/ldm"\" \

@@ -3,7 +3,7 @@ src/ldm.c
 src/ldmgreetercomm.c
 src/ldmutils.c
 src/plugin.c
-src/plugins/rdesktop/rdesktop.c
+src/plugins/xfreerdp/xfreerdp.c
 src/plugins/ssh/ssh.c
 gtkgreet/greeter.c
 gtkgreet/sesswin.c

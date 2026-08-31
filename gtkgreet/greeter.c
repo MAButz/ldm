@@ -124,15 +124,25 @@ get_default_display_size(gint* width, gint* height)
     *height = my_rect.height;
 }
 
-GdkPixmap* root_bg = 0;
+/*
+ * GTK3 removed GdkPixmap/gdk_window_set_back_pixmap() entirely, so the old
+ * "snapshot the desktop wallpaper into a pixmap, then crop a piece of it
+ * into each popup window's back-pixmap" trick no longer exists as such.
+ * We get the same visual effect (windows appearing to show the wallpaper
+ * behind them, without a real compositor) by keeping the wallpaper in an
+ * off-screen Cairo image surface, and painting the relevant crop of it
+ * directly in each window's "draw" handler instead.
+ */
+cairo_surface_t* root_bg_surface = NULL;
+
 void
 load_root_background(const gchar* filename, gboolean scale,
     gboolean reload)
 {
-    if (root_bg != 0) {
+    if (root_bg_surface != NULL) {
         if (reload) {
-            g_object_unref(G_OBJECT(root_bg));
-            root_bg = 0;
+            cairo_surface_destroy(root_bg_surface);
+            root_bg_surface = NULL;
         }
         else {
             return;
@@ -145,16 +155,15 @@ load_root_background(const gchar* filename, gboolean scale,
     double img_width = (double)gdk_pixbuf_get_width(pixbuf);
     double img_height = (double)gdk_pixbuf_get_height(pixbuf);
 
-    GdkWindow* root = gdk_get_default_root_window();
     gint width, height;
     get_default_display_size(&width, &height);
 
-    // create pixmap
-    root_bg = gdk_pixmap_new(GDK_DRAWABLE(root), width, height, -1);
-    g_object_ref(G_OBJECT(root_bg));
+    // create an off-screen surface to hold the scaled wallpaper
+    root_bg_surface =
+        cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
-    // paint pixmap onto bg
-    cairo_t* ctx = gdk_cairo_create(GDK_DRAWABLE(root_bg));
+    // paint the wallpaper onto the surface
+    cairo_t* ctx = cairo_create(root_bg_surface);
     if (scale) {
         cairo_scale(ctx, width / img_width, height / img_height);
     }
@@ -162,31 +171,33 @@ load_root_background(const gchar* filename, gboolean scale,
     cairo_paint(ctx);
     cairo_destroy(ctx);
 
-    //g_object_unref(G_OBJECT (bg));
-
     g_object_unref(G_OBJECT(image));
 }
 
-void
-draw_background(GtkWidget* widget, gpointer data)
+gboolean
+draw_background(GtkWidget* widget, cairo_t* cr, gpointer data)
 {
     GdkWindow* window;
-    gint width, height, x, y;
+    gint x, y;
+
+    if (root_bg_surface == NULL) {
+        return FALSE;
+    }
 
     window = gtk_widget_get_window(widget);
     if (window == NULL) {
-        return;
+        return FALSE;
     }
-    gdk_drawable_get_size(GDK_DRAWABLE(window), &width, &height);
-    gdk_window_get_origin(GDK_WINDOW(window), &x, &y);
-    GdkPixmap* new_bg = gdk_pixmap_new(root_bg, width, height, -1);
-    g_object_ref(G_OBJECT(new_bg));
-    gdk_draw_drawable(GDK_DRAWABLE(new_bg),
-        gdk_gc_new(GDK_DRAWABLE(new_bg)),
-        GDK_DRAWABLE(root_bg), x, y, 0, 0, width, height);
-    gdk_window_set_back_pixmap(GDK_WINDOW(window), new_bg, 0);
+    gdk_window_get_origin(window, &x, &y);
 
-    gtk_widget_queue_draw(GTK_WIDGET(widget));
+    cairo_save(cr);
+    cairo_set_source_surface(cr, root_bg_surface, -x, -y);
+    cairo_paint(cr);
+    cairo_restore(cr);
+
+    // Let the default handler go on to draw this window's child widgets
+    // on top of the background we just painted.
+    return FALSE;
 }
 
 static void
@@ -304,7 +315,8 @@ handle_command(GIOChannel* io_input)
     else if (!g_ascii_strncasecmp(buf->str, "quit", 4)) {
         if (!xproperty_exists("X11VNC_TICKER")) {
             GdkCursor* cursor;
-            cursor = gdk_cursor_new(GDK_WATCH);
+            cursor = gdk_cursor_new_for_display(gdk_display_get_default(),
+                GDK_WATCH);
             gdk_window_set_cursor(gdk_get_default_root_window(), cursor);
         }
         gtk_main_quit();
@@ -462,14 +474,25 @@ handle_guestbutton(GtkButton* entry, GdkWindow* window)
 static void
 handle_choice(GtkComboBox* combo, GdkWindow* window)
 {
-    gchar* selection;
+    /*
+     * gtk_combo_box_get_active_text() only works on a GtkComboBoxText in
+     * GTK3; choiceCombo uses its own GtkListStore/renderer, so read the
+     * selected row directly from the model instead.
+     */
+    GtkTreeIter iter;
+    gchar* selection = NULL;
     gchar* entrystr;
 
-    selection = gtk_combo_box_get_active_text(GTK_COMBO_BOX(choiceCombo));
-    entrystr = g_strdup_printf("%s\n", selection);
+    if (gtk_combo_box_get_active_iter(GTK_COMBO_BOX(choiceCombo), &iter)) {
+        gtk_tree_model_get(GTK_TREE_MODEL(choiceList), &iter, 0, &selection,
+            -1);
+    }
+
+    entrystr = g_strdup_printf("%s\n", selection ? selection : "");
     g_io_channel_write_chars(g_stdout, entrystr, -1, NULL, NULL);
     g_io_channel_flush(g_stdout, NULL);
     g_free(entrystr);
+    g_free(selection);
 }
 
 static void
@@ -629,8 +652,8 @@ scopy(char* dest, char* source)
 static gboolean
 key_press_event(GtkWidget* widget, GdkEventKey* event, gpointer window)
 {
-    if ((event->keyval == GDK_Tab ||
-        event->keyval == GDK_KP_Tab) &&
+    if ((event->keyval == GDK_KEY_Tab ||
+        event->keyval == GDK_KEY_KP_Tab) &&
         (event->
             state & (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_SHIFT_MASK)) ==
         0) {
@@ -685,13 +708,42 @@ main(int argc, char* argv[])
     }
 
     allowguest = ldm_getenv_bool("LDM_GUESTLOGIN");
-    gtk_rc_add_default_file(ldm_theme_file("/greeter-gtkrc"));
+
+    /*
+     * GTK3 dropped the old .gtkrc "style"/"engine" mechanism entirely
+     * (gtk_rc_add_default_file() no longer exists), themes are CSS now.
+     */
+    {
+        gchar* css_file = ldm_theme_file("/greeter.css");
+        if (css_file && access(css_file, R_OK) == 0) {
+            GtkCssProvider* css_provider = gtk_css_provider_new();
+            GError* css_error = NULL;
+            gtk_css_provider_load_from_path(css_provider, css_file,
+                &css_error);
+            if (css_error) {
+                log_entry("gtkgreet", 3,
+                    "failed to load theme CSS '%s': %s", css_file,
+                    css_error->message);
+                g_error_free(css_error);
+            }
+            else {
+                gtk_style_context_add_provider_for_screen(
+                    gdk_screen_get_default(),
+                    GTK_STYLE_PROVIDER(css_provider),
+                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+            }
+            g_object_unref(css_provider);
+        }
+        g_free(css_file);
+    }
 
     /* Initialize information about hosts */
     ldminfo_init(&host_list, getenv("LDM_SERVER"));
 
-    normcursor = gdk_cursor_new(GDK_LEFT_PTR);
-    busycursor = gdk_cursor_new(GDK_WATCH);
+    normcursor =
+        gdk_cursor_new_for_display(gdk_display_get_default(), GDK_LEFT_PTR);
+    busycursor =
+        gdk_cursor_new_for_display(gdk_display_get_default(), GDK_WATCH);
 
 
     root = gdk_get_default_root_window();
@@ -752,7 +804,7 @@ main(int argc, char* argv[])
             G_CALLBACK(destroy), NULL);
 
         gtk_widget_set_app_paintable(loginWindow, TRUE);
-        g_signal_connect(loginWindow, "configure-event",
+        g_signal_connect(loginWindow, "draw",
             G_CALLBACK(draw_background), NULL);
         gtk_widget_set_size_request(loginWindow, width, height);
         gtk_widget_realize(loginWindow);
@@ -774,18 +826,19 @@ main(int argc, char* argv[])
         lh = gdk_pixbuf_get_height(pix);
 
 
-        vbox = gtk_vbox_new(FALSE, 5);
-        vbox2 = gtk_vbox_new(FALSE, ((height / 2) - lh));
-        vbox2spacer = gtk_vbox_new(FALSE, 5);
-        EntryBox = gtk_hbox_new(FALSE, 5);
-        hbox = gtk_hbox_new(FALSE, 0);
+        vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+        vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, ((height / 2) - lh));
+        vbox2spacer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+        EntryBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+        hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
         UserPrompt = gtk_label_new("");
 
         if (lw < 180)
             lw = 180;
 
-        gtk_misc_set_alignment((GtkMisc*)UserPrompt, 1, 0.5);
+        gtk_label_set_xalign(GTK_LABEL(UserPrompt), 1.0);
+        gtk_label_set_yalign(GTK_LABEL(UserPrompt), 0.5);
         gtk_widget_set_size_request(UserPrompt, (lw / 2), 0);
 
         StatusMessages = gtk_label_new("");
@@ -820,8 +873,7 @@ main(int argc, char* argv[])
         timeoutspacer1 = gtk_label_new("");
         timeoutspacer2 = gtk_label_new("");
         timeoutlabel = gtk_label_new("");
-        timeoutbox = gtk_hbox_new(FALSE, 0);
-        gtk_box_pack_start(GTK_BOX(vbox), timeoutbox, FALSE, FALSE, 0);
+        timeoutbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_box_pack_start(GTK_BOX(timeoutbox), timeoutspacer1, TRUE,
             FALSE, 0);
         gtk_box_pack_start(GTK_BOX(timeoutbox), timeoutlabel, FALSE, FALSE,
@@ -836,7 +888,7 @@ main(int argc, char* argv[])
         g_signal_connect(G_OBJECT(GuestButton), "clicked",
             G_CALLBACK(handle_guestbutton), root);
         gtk_button_set_focus_on_click((GtkButton*)GuestButton, FALSE);
-        guestbox = gtk_hbox_new(FALSE, 0);
+        guestbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
         gtk_box_pack_start(GTK_BOX(guestbox), guestspacer1, TRUE, FALSE,
             0);
         gtk_box_pack_start(GTK_BOX(guestbox), GuestButton, FALSE, FALSE,
@@ -874,12 +926,12 @@ main(int argc, char* argv[])
         GtkWidget* BottomBarBox;
 
         gtk_widget_set_app_paintable(GTK_WIDGET(prefBar), TRUE);
-        g_signal_connect(prefBar, "configure-event",
+        g_signal_connect(prefBar, "draw",
             G_CALLBACK(draw_background), NULL);
         gtk_window_set_decorated(GTK_WINDOW(prefBar), FALSE);
         gtk_widget_set_size_request(prefBar, width, BOTTOM_BAR_HEIGHT);
 
-        BottomBarBox = gtk_hbox_new(FALSE, 0);
+        BottomBarBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 #ifndef K12LINUX
         gtk_box_pack_start(GTK_BOX(BottomBarBox),
             GTK_WIDGET(optionbutton), FALSE, FALSE, 5);
@@ -890,7 +942,7 @@ main(int argc, char* argv[])
         gtk_box_pack_end(GTK_BOX(BottomBarBox),
             GTK_WIDGET(syslabel), FALSE, FALSE, 0);
 #else
-        optionbutton_box = gtk_vbox_new(FALSE, 0);
+        optionbutton_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
         optionbutton_spacer = gtk_label_new("");
         gtk_box_pack_start(GTK_BOX(optionbutton_box),
             GTK_WIDGET(optionbutton_spacer), TRUE, FALSE,
@@ -901,7 +953,7 @@ main(int argc, char* argv[])
             GTK_WIDGET(optionbutton_box), FALSE, FALSE, 5);
 
         if (has_bottom_right_image == TRUE) {
-            bottom_right_box = gtk_vbox_new(FALSE, 0);
+            bottom_right_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
             bottom_right_spacer = gtk_label_new("");
             gtk_box_pack_start(GTK_BOX(bottom_right_box),
                 GTK_WIDGET(bottom_right_spacer), TRUE,
@@ -925,7 +977,7 @@ main(int argc, char* argv[])
         gtk_window_set_decorated(GTK_WINDOW(topBar), FALSE);
         gtk_widget_set_size_request(topBar, width, TOP_BAR_HEIGHT);
 
-        TopBarBox = gtk_hbox_new(FALSE, 5);
+        TopBarBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
         gtk_box_pack_start(GTK_BOX(TopBarBox),
             GTK_WIDGET(syslabel), FALSE, FALSE, 5);
         gtk_box_pack_end(GTK_BOX(TopBarBox),

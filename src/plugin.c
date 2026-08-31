@@ -158,6 +158,15 @@ void __attribute__ ((visibility("default"))) set_session_env(gchar *
 /*
  * get_ltsp_cfg
  *  Check for LTSP-Cluster. If true, contact loadbalancer for an IP
+ *
+ * *server points at a g_strdup()'d string (typically just a short
+ * hostname), sized for whatever it originally held - NOT for PATH_MAX
+ * bytes. Reading the load-balancer's reply straight into *server via
+ * fgets(*server, PATH_MAX, fp), as this used to do, is a heap buffer
+ * overflow: any reply longer than the original allocation (or a
+ * compromised/misbehaving load-balancer) overwrites past the end of that
+ * buffer. Read into a local, properly-sized buffer instead, and only
+ * replace *server with a fresh allocation of that.
  */
 void __attribute__ ((visibility("default"))) get_ltsp_cfg(gchar ** server)
 {
@@ -166,11 +175,18 @@ void __attribute__ ((visibility("default"))) get_ltsp_cfg(gchar ** server)
         FILE *fp;
         fp = popen("getltscfg-cluster -l ldm", "r");
         if (fp != NULL) {
+            gchar line[PATH_MAX];
+
             log_entry("ltsp-cluster", 6, "IP before load-balancing: %s",
                       *server);
-            if (fgets(*server, PATH_MAX, fp) == NULL)
+            if (fgets(line, sizeof(line), fp) == NULL) {
                 log_entry("ltsp-cluster", 4,
                           "failed to get an IP from the load-balancer");
+            } else {
+                g_strchomp(line);
+                g_free(*server);
+                *server = g_strdup(line);
+            }
 
             log_entry("ltsp-cluster", 6, "IP after loadbalancing: %s",
                       *server);

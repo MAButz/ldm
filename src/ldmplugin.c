@@ -42,6 +42,8 @@ ldm_start_plugin()
 {
     LdmBackend *desc =
         (LdmBackend *) g_tree_lookup(plugin_list, current_plugin);
+    if (!desc)
+        die("ldm", "unknown backend: %s", current_plugin);
     if (desc->start_cb)
         desc->start_cb();
 }
@@ -55,6 +57,8 @@ ldm_close_plugin()
 {
     LdmBackend *desc =
         (LdmBackend *) g_tree_lookup(plugin_list, current_plugin);
+    if (!desc)
+        return;
     if (desc->clean_cb)
         desc->clean_cb();
 }
@@ -69,6 +73,8 @@ ldm_setup_plugin()
     log_entry("ldm", 7, "setting up plugin: %s", current_plugin);
     LdmBackend *desc =
         (LdmBackend *) g_tree_lookup(plugin_list, current_plugin);
+    if (!desc)
+        die("ldm", "unknown backend: %s", current_plugin);
     if (desc->init_cb)
         desc->init_cb();
 }
@@ -83,6 +89,8 @@ ldm_guest_auth_plugin()
     log_entry("ldm", 7, "guest auth plugin: %s", current_plugin);
     LdmBackend *desc =
         (LdmBackend *) g_tree_lookup(plugin_list, current_plugin);
+    if (!desc)
+        die("ldm", "unknown backend: %s", current_plugin);
     if (desc->guest_cb)
         desc->guest_cb();
 }
@@ -97,6 +105,9 @@ ldm_auth_plugin()
 {
     LdmBackend *desc =
         (LdmBackend *) g_tree_lookup(plugin_list, current_plugin);
+
+    if (!desc)
+        die("ldm", "unknown backend: %s", current_plugin);
 
     if (desc->guest_cb)
         ask_greeter("allowguest true\n");

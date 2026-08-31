@@ -15,7 +15,9 @@ wwm_SOURCES = wwm.h \
 wwm_LDADD = -L/usr/X11R6/lib \
 			-lX11 -lXext
 
-wwm_CFLAGS = -Wstrict-prototypes -Wpointer-arith \
+wwm_LDFLAGS = -pie
+
+wwm_CFLAGS = -fPIE -Wstrict-prototypes -Wpointer-arith \
 			 -Wcast-align -Wcast-qual -Wshadow \
 			 -Waggregate-return -Wnested-externs \
 			 -Winline -Wwrite-strings -Wundef

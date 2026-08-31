@@ -77,7 +77,6 @@ greeter_pref_destroy(const gchar * name)
     }
 
     g_free(value);
-    g_free(value);
     g_free(key);
 }
 

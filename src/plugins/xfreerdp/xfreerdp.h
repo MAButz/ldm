@@ -7,6 +7,7 @@ typedef struct rdp_info {
     gchar *server;
     gchar *lang;
     gchar *rdpoptions;
+    gchar *binary;              /* full path to the xfreerdp(3) executable to run */
     gint rdpfd;
     gint rdpslavefd;
     GPid rdppid;

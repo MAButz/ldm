@@ -31,6 +31,7 @@
 #include <getopt.h>
 #include <locale.h>
 #include <libintl.h>
+#include <unistd.h>
 #define _(text) gettext(text)
 
 #define NOTHING 0
@@ -178,33 +179,47 @@ main(int argc, char **argv)
     // Set up the basic stuff
     gtk_init(&argc, &argv);
 
-    // Theme
+    // Theme (GTK3 uses CSS, not the old .gtkrc "style"/"engine" mechanism)
     char *ldm_theme;
-    gchar *ldm_gtkrc;
+    gchar *ldm_css;
     ldm_theme = getenv("LDM_THEME");
     if (ldm_theme) {
         if (*ldm_theme == '/')
-            ldm_gtkrc = g_strconcat(ldm_theme, "/greeter-gtkrc", NULL);
+            ldm_css = g_strconcat(ldm_theme, "/greeter.css", NULL);
         else
-            ldm_gtkrc =
-                g_strconcat(LDM_THEME_DIR, ldm_theme, "/greeter-gtkrc",
+            ldm_css =
+                g_strconcat(LDM_THEME_DIR, ldm_theme, "/greeter.css",
                             NULL);
     } else
-        ldm_gtkrc =
-            g_strconcat(LDM_THEME_DIR, "default", "/greeter-gtkrc", NULL);
-    gtk_rc_add_default_file(ldm_gtkrc);
-    g_free(ldm_gtkrc);
+        ldm_css =
+            g_strconcat(LDM_THEME_DIR, "default", "/greeter.css", NULL);
+    if (access(ldm_css, R_OK) == 0) {
+        GtkCssProvider *css_provider = gtk_css_provider_new();
+        GError *css_error = NULL;
+        gtk_css_provider_load_from_path(css_provider, ldm_css, &css_error);
+        if (css_error) {
+            g_error_free(css_error);
+        } else {
+            gtk_style_context_add_provider_for_screen(
+                gdk_screen_get_default(),
+                GTK_STYLE_PROVIDER(css_provider),
+                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+        }
+        g_object_unref(css_provider);
+    }
+    g_free(ldm_css);
     // Finish setting up the basic stuff
     mywin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gdk_window_set_cursor(gdk_get_default_root_window(),
-                          gdk_cursor_new(GDK_LEFT_PTR));
+                          gdk_cursor_new_for_display(
+                              gdk_display_get_default(), GDK_LEFT_PTR));
     gtk_window_set_title(GTK_WINDOW(mywin), "");
     gtk_window_set_skip_taskbar_hint(GTK_WINDOW(mywin), TRUE);
     gtk_window_set_resizable(GTK_WINDOW(mywin), 0);
     gtk_window_set_position(GTK_WINDOW(mywin), GTK_WIN_POS_CENTER_ALWAYS);
     g_signal_connect(GTK_WINDOW(mywin), "destroy", G_CALLBACK(no_clicked),
                      mywin);
-    hbox = gtk_hbox_new(FALSE, 3);
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3);
     spacer = gtk_label_new("");
     ospacer = gtk_label_new("");
     o2spacer = gtk_label_new("");
@@ -214,14 +229,14 @@ main(int argc, char **argv)
 
     // Make the yes button
     if (has_yes_button == TRUE) {
-        yes = gtk_button_new_from_stock("gtk-ok");
+        yes = gtk_button_new_with_mnemonic(_("_OK"));
         g_signal_connect(G_OBJECT(yes), "clicked", G_CALLBACK(yes_clicked),
                          mywin);
         gtk_box_pack_start(GTK_BOX(hbox), yes, FALSE, FALSE, 0);
     }
     // Make the no button
     if (has_no_button == TRUE) {
-        no = gtk_button_new_from_stock("gtk-cancel");
+        no = gtk_button_new_with_mnemonic(_("_Cancel"));
         g_signal_connect(G_OBJECT(no), "clicked", G_CALLBACK(no_clicked),
                          mywin);
         gtk_box_pack_start(GTK_BOX(hbox), no, FALSE, FALSE, 0);
@@ -234,7 +249,7 @@ main(int argc, char **argv)
     g_signal_connect(GTK_LABEL(label), "activate-link",
                      G_CALLBACK(link_clicked), label);
 
-    vbox = gtk_vbox_new(FALSE, 0);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     GtkWidget *blah;
     blah = gtk_alignment_new(0, 0.5, 0, 0);
     gtk_container_add(GTK_CONTAINER(blah), label);
@@ -258,7 +273,7 @@ main(int argc, char **argv)
     // More basic GTK stuff
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), ospacer, FALSE, FALSE, 0);
-    big_hbox = gtk_hbox_new(FALSE, 0);
+    big_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_box_pack_start(GTK_BOX(big_hbox), vbox, TRUE, TRUE, 10);
     gtk_container_add(GTK_CONTAINER(mywin), big_hbox);
     gtk_widget_show_all(mywin);

@@ -116,8 +116,10 @@ set_message(gchar * msg)
         return 1;
 
     cmd = g_strconcat("msg ", msg, "\n", NULL);
-    if (ask_greeter(cmd))
+    if (ask_greeter(cmd)) {
+        g_free(cmd);
         return 1;
+    }
     g_free(cmd);
 
     return 0;

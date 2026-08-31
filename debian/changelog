@@ -1,0 +1,30 @@
+ldm (2.18.06-1) unstable; urgency=medium
+
+  * Fork of the last upstream ldm release (2:2.18.06, last packaged for
+    Debian Buster) by Marc-André Butz, updated to build and run on
+    current Debian releases:
+    - Ported gtkgreet from GTK2 to GTK3 (GTK2 was removed from Debian's
+      archive, so upstream ldm no longer builds at all).
+    - Added an xfreerdp backend plugin: auto-detects xfreerdp3/xfreerdp2,
+      supports an optional default RDP domain, and passes credentials to
+      xfreerdp via stdin instead of the command line (argv is readable by
+      any local user via /proc/<pid>/cmdline or ps).
+    - Fixed an argv-based process spawning issue shared by the ssh and
+      xfreerdp plugins: commands were built as strings and word-split by
+      glib, which both mis-handled usernames/passwords containing spaces
+      or quotes, and, in the ssh plugin, allowed unauthenticated argument
+      injection (e.g. a crafted username at the login prompt could smuggle
+      an ssh ProxyCommand and run arbitrary code as root).
+    - Fixed a heap buffer overflow in the LTSP-Cluster load-balancer
+      client (get_ltsp_cfg()), a path-traversal issue in the host-info
+      reader (ldminfo.c), NULL-pointer-dereference crashes in the plugin
+      dispatch and ssh guest-login code paths, and an undefined-behaviour
+      va_list misuse between log_entry()/die().
+    - Enabled standard hardening compiler/linker flags
+      (_FORTIFY_SOURCE, stack-protector, RELRO, PIE for the executables).
+    - Fixed a window-placement bug in wwm (forked from evilwm) where
+      newly mapped windows without WM_NORMAL_HINTS' USPosition set had
+      their already-placed position discarded in favour of a synthesized
+      centred placement.
+
+ -- Marc-André Beckmann-Butz <ma@butz.online>  Mon, 31 Aug 2026 22:30:00 +0200

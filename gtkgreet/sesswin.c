@@ -78,8 +78,8 @@ update_selected_sess()
 void
 populate_sess_combo_box(const char *sess, GtkWidget * sess_combo_box)
 {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sess_combo_box),
-                              g_strdup(sess));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sess_combo_box),
+                              sess);
     sess_total++;
 }
 
@@ -94,7 +94,7 @@ sesswin(GtkWidget * widget, GtkWindow * win)
     GtkWidget *cancel, *accept, *frame;
     ldminfo *curr_host = NULL;
 
-    sess_select = gtk_combo_box_new_text();
+    sess_select = gtk_combo_box_text_new();
 
     /*
      * Populate sess with default host hash
@@ -103,9 +103,9 @@ sesswin(GtkWidget * widget, GtkWindow * win)
     curr_host =
         ldminfo_lookup(g_list_nth_data(host_list, current_host_id));
 
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sess_select),
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sess_select),
                               g_strdup(_("Default")));
-    gtk_combo_box_append_text(GTK_COMBO_BOX(sess_select),
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(sess_select),
                               g_strdup(_("Failsafe xterm")));
     g_list_foreach(curr_host->session_names,
                    (GFunc) populate_sess_combo_box, sess_select);
@@ -121,11 +121,11 @@ sesswin(GtkWidget * widget, GtkWindow * win)
                             GTK_WIN_POS_CENTER_ALWAYS);
     gtk_window_set_modal((GtkWindow *) sesswin, TRUE);
 
-    vbox = gtk_vbox_new(FALSE, 0);
-    buttonbox = gtk_hbox_new(FALSE, 5);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    buttonbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 5);
 
-    cancel = gtk_button_new_from_stock("gtk-cancel");
+    cancel = gtk_button_new_with_mnemonic(_("_Cancel"));
     g_signal_connect(G_OBJECT(cancel), "clicked",
                      G_CALLBACK(destroy_popup), sesswin);
 

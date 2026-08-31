@@ -7,6 +7,7 @@ void handle_sigchld(int);
 void ldm_wait(pid_t pid);
 int ldm_getenv_bool(const char*);
 pid_t ldm_spawn (gchar *command, gint *rfd, gint *wfd, void (*setup)());
+pid_t ldm_spawnv (gchar **argv, gint *rfd, gint *wfd, void (*setup)());
 
 void rc_files(gchar *);
 #endif

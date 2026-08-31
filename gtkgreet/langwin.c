@@ -79,8 +79,8 @@ update_selected_lang()
 void
 populate_lang_combo_box(const char *lang, GtkWidget * lang_combo_box)
 {
-    gtk_combo_box_append_text(GTK_COMBO_BOX(lang_combo_box),
-                              g_strdup(lang));
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(lang_combo_box),
+                              lang);
     lang_total++;
 }
 
@@ -91,7 +91,7 @@ langwin(GtkWidget * widget, GtkWindow * win)
     GtkWidget *cancel, *accept, *frame;
     ldminfo *curr_host = NULL;
 
-    lang_select = gtk_combo_box_new_text();
+    lang_select = gtk_combo_box_text_new();
 
     /*
      * Populate lang with default host hash
@@ -100,7 +100,7 @@ langwin(GtkWidget * widget, GtkWindow * win)
     curr_host =
         ldminfo_lookup(g_list_nth_data(host_list, selected_host_id));
 
-    gtk_combo_box_append_text(GTK_COMBO_BOX(lang_select),
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(lang_select),
                               g_strdup(_("Default")));
     g_list_foreach(curr_host->language_names,
                    (GFunc) populate_lang_combo_box, lang_select);
@@ -116,11 +116,11 @@ langwin(GtkWidget * widget, GtkWindow * win)
                             GTK_WIN_POS_CENTER_ALWAYS);
     gtk_window_set_modal((GtkWindow *) langwin, TRUE);
 
-    vbox = gtk_vbox_new(FALSE, 0);
-    buttonbox = gtk_hbox_new(FALSE, 5);
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    buttonbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
     gtk_container_set_border_width(GTK_CONTAINER(vbox), 5);
 
-    cancel = gtk_button_new_from_stock("gtk-cancel");
+    cancel = gtk_button_new_with_mnemonic(_("_Cancel"));
     g_signal_connect(G_OBJECT(cancel), "clicked",
                      G_CALLBACK(destroy_popup), langwin);
 

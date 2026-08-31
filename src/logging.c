@@ -21,6 +21,7 @@
  */
 
 #include <glib.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
 #include <syslog.h>
@@ -77,16 +78,21 @@ log_close()
 
 
 /*
- * log_entry: log messages to file or syslog
+ * vlog_entry: the actual formatting/output work, taking a va_list
+ * directly. log_entry() and die() are both thin variadic wrappers around
+ * this - neither passes its va_list into another *variadic* function
+ * (like the old log_entry(component, 2, format, ap) call from die() did),
+ * since a va_list isn't itself a valid variadic argument: log_entry()'s
+ * own va_start() would then read from that va_list value's layout,
+ * not from the real arguments, which is undefined behaviour and would
+ * read garbage or crash for any format string with a conversion
+ * specifier.
  */
-void
-log_entry(char *component, int level, const char *format, ...)
+static void
+vlog_entry(char *component, int level, const char *format, va_list ap)
 {
     if (level < 0 || level > 7 || level > loglevel)
         return;
-
-    va_list ap;
-    va_start(ap, format);
 
     if (logfile) {
         // Get current time
@@ -105,7 +111,17 @@ log_entry(char *component, int level, const char *format, ...)
     } else {
         vsyslog(level, format, ap);
     }
+}
 
+/*
+ * log_entry: log messages to file or syslog
+ */
+void
+log_entry(char *component, int level, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    vlog_entry(component, level, format, ap);
     va_end(ap);
 }
 
@@ -120,9 +136,7 @@ die(char *component, const char *format, ...)
 {
     va_list ap;
     va_start(ap, format);
-
-    log_entry(component, 2, format, ap);
-
+    vlog_entry(component, 2, format, ap);
     va_end(ap);
 
     /* Stop logging */

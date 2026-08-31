@@ -172,6 +172,18 @@ _ldminfo_query_one(const char *hostname, ldminfo * ldm_host_info)
     char buf[MAXBUFSIZE];
     char hostfile[BUFSIZ];
 
+    /*
+     * hostname comes from LDM_SERVER, which can be influenced over the
+     * network (DHCP/TFTP-provided lts.conf). Without this check, a
+     * hostname like "../../etc/shadow" would make us read an arbitrary
+     * file readable by root and feed its contents into the host-info
+     * parser/UI.
+     */
+    if (strpbrk(hostname, "/\\") != NULL) {
+        ldm_host_info->state = SRV_DOWN;
+        return;
+    }
+
     snprintf(hostfile, sizeof hostfile, "/var/run/ldm/%s", hostname);
 
     filedes = open(hostfile, O_RDONLY);

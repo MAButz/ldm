@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #include <utmp.h>
 
 #include "../../ldmutils.h"
@@ -39,6 +40,50 @@ void __attribute__ ((constructor)) initialize()
 }
 
 /*
+ * detect_xfreerdp_binary
+ *  Figure out which xfreerdp executable to run.
+ *
+ * FreeRDP 2.x and 3.x are packaged side by side on some distributions, and
+ * their binaries have different names: the old "freerdp2-x11" package
+ * ships "xfreerdp", while current Debian/Ubuntu only ship "freerdp3-x11",
+ * whose binary is "xfreerdp3" - there's no "xfreerdp" at all on a stock
+ * Debian 13 install. Both versions accept the same /u:/p:/d:/v: option
+ * syntax, so no other changes are needed to support either one.
+ *
+ * RDP_XFREERDP_BIN can force a specific executable (name or full path) if
+ * an admin needs to override the auto-detection.
+ */
+static gchar *
+detect_xfreerdp_binary()
+{
+    const gchar *forced = getenv("RDP_XFREERDP_BIN");
+    gchar *path;
+
+    if (forced && *forced) {
+        log_entry("xfreerdp", 6, "using RDP_XFREERDP_BIN override '%s'",
+                  forced);
+        return g_strdup(forced);
+    }
+
+    /* Prefer FreeRDP 3 (xfreerdp3) when both are installed. */
+    path = g_find_program_in_path("xfreerdp3");
+    if (path) {
+        log_entry("xfreerdp", 6, "found FreeRDP 3 binary '%s'", path);
+        return path;
+    }
+
+    path = g_find_program_in_path("xfreerdp");
+    if (path) {
+        log_entry("xfreerdp", 6, "found FreeRDP 2 binary '%s'", path);
+        return path;
+    }
+
+    log_entry("xfreerdp", 3,
+              "neither xfreerdp3 nor xfreerdp found in PATH");
+    return NULL;
+}
+
+/*
  * init_xfreerdp
  *  Callback function for initialization
  */
@@ -51,7 +96,16 @@ init_xfreerdp()
         return;
     }
     bzero(rdpinfo, sizeof(RdpInfo));
-    
+
+    rdpinfo->binary = detect_xfreerdp_binary();
+
+    /*
+     * Safe baseline so rdpinfo->domain is never NULL even if we bail out
+     * below (e.g. DISPLAY unset) before reaching the per-screen
+     * RDP_DEFAULT_DOMAIN handling further down.
+     */
+    rdpinfo->domain = g_strdup("None");
+
     // Abrufen der Bildschirmnummer aus der Umgebungsvariable
     gchar *display_env = g_strdup(getenv("DISPLAY"));
     if (display_env != NULL) {
@@ -74,10 +128,13 @@ init_xfreerdp()
         return;
     }
     
-    // Dynamische Prüfung der RDP_OPTIONS_<screen> und RDP_SERVER_<screen>
+    // Dynamische Prüfung der RDP_OPTIONS_<screen>, RDP_SERVER_<screen> und
+    // RDP_DEFAULT_DOMAIN_<screen>
     gchar *screen_rdpoptions_var = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
     gchar *screen_rdpserver_var = g_strdup_printf("RDP_SERVER_%s", screen_formatted);
-    if (screen_rdpoptions_var == NULL || screen_rdpserver_var == NULL) {
+    gchar *screen_rdpdomain_var = g_strdup_printf("RDP_DEFAULT_DOMAIN_%s", screen_formatted);
+    if (screen_rdpoptions_var == NULL || screen_rdpserver_var == NULL ||
+        screen_rdpdomain_var == NULL) {
         log_entry("xfreerdp", 3, "Fehler: Keine Umgebungsvariablen für spezifische RDP Optionen und oder Server gefunden.");
         g_free(screen_formatted);
         return;
@@ -85,6 +142,7 @@ init_xfreerdp()
 
     const gchar *rdpoptions_value = getenv(screen_rdpoptions_var);
     const gchar *rdpserver_value = getenv(screen_rdpserver_var);
+    const gchar *rdpdomain_value = getenv(screen_rdpdomain_var);
 
     if (rdpoptions_value) {
         rdpinfo->rdpoptions = g_strdup(rdpoptions_value);
@@ -102,10 +160,29 @@ init_xfreerdp()
         log_entry("xfreerdp", 6, "Verwende Standard RDP_SERVER");
     }
 
+    /*
+     * Optional default domain, e.g. RDP_DEFAULT_DOMAIN="MYDOMAIN" in
+     * lts.conf. Used as-is unless RDP_DOMAIN (a '|'-separated list of
+     * choices, see auth_xfreerdp()) is also set, in which case the
+     * greeter's domain picker takes over instead. Falls back to "None"
+     * (meaning: no /d: option at all) if neither is configured.
+     */
+    g_free(rdpinfo->domain);
+    if (rdpdomain_value) {
+        rdpinfo->domain = g_strdup(rdpdomain_value);
+        log_entry("xfreerdp", 6, "Verwende spezifische RDP_DEFAULT_DOMAIN '%s'", rdpdomain_value);
+    } else {
+        const gchar *default_domain = getenv("RDP_DEFAULT_DOMAIN");
+        rdpinfo->domain = g_strdup(default_domain ? default_domain : "None");
+        log_entry("xfreerdp", 6, "Verwende Standard RDP_DEFAULT_DOMAIN '%s'",
+                  rdpinfo->domain);
+    }
+
     // Speicher freigeben
     g_free(display_env);
     g_free(screen_rdpoptions_var);
     g_free(screen_rdpserver_var);
+    g_free(screen_rdpdomain_var);
     g_free(screen_formatted);
 }
 
@@ -119,6 +196,13 @@ start_xfreerdp()
     gboolean error = FALSE;
 
     /* Variable validation */
+    if (!rdpinfo->binary) {
+        log_entry("xfreerdp", 3,
+                  "no xfreerdp executable found (neither xfreerdp3 nor "
+                  "xfreerdp in PATH, and RDP_XFREERDP_BIN isn't set)");
+        error = TRUE;
+    }
+
     if (!rdpinfo->username) {
         log_entry("xfreerdp", 3, "no username");
         error = TRUE;
@@ -146,21 +230,30 @@ start_xfreerdp()
     /* Greeter not needed anymore */
     close_greeter();
 
-    log_entry("xfreerdp", 6, "starting xfreerdp session to '%s' as '%s'",
-              rdpinfo->server, rdpinfo->username);
+    log_entry("xfreerdp", 6, "starting '%s' session to '%s' as '%s'",
+              rdpinfo->binary, rdpinfo->server, rdpinfo->username);
     xfreerdp_session();
     log_entry("xfreerdp", 6, "closing xfreerdp session");
 }
 
 /*
  * _get_domain
+ *
+ * Only asks the greeter's domain preference (populated in auth_xfreerdp()
+ * when RDP_DOMAIN is set) if that preference actually exists. Otherwise
+ * rdpinfo->domain already holds whatever RDP_DEFAULT_DOMAIN[_NN] set in
+ * init_xfreerdp() (or "None"), and there's nothing to ask the greeter -
+ * doing so unconditionally would always report back "None" and clobber a
+ * configured default domain.
  */
 void
 _get_domain()
 {
     gchar *cmd = "value domain\n";
 
-    rdpinfo->domain = ask_value_greeter(cmd);
+    if (getenv("RDP_DOMAIN")) {
+        rdpinfo->domain = ask_value_greeter(cmd);
+    }
 }
 
 /*
@@ -219,42 +312,109 @@ close_xfreerdp()
 /*
  * xfreerdp_session
  *  Start a xfreerdp session to server
+ *
+ * Builds the command as an argv array and spawns it directly (via
+ * ldm_spawnv(), no shell/word-splitting involved), instead of building a
+ * single command string. That's what the old string-based version got
+ * wrong: g_shell_parse_argv() (used internally by ldm_spawn()) splits on
+ * whitespace, so any password or username containing a space or a quote
+ * character would silently get cut into the wrong number of arguments.
+ * Passing each value as its own argv element sidesteps that entirely -
+ * no escaping needed, whatever's in username/password/domain just works.
+ *
+ * The password specifically is never put on the command line at all
+ * (unlike username/domain/server, which aren't secret): any local user
+ * can read another process's argv via /proc/<pid>/cmdline or `ps -ef`,
+ * so a plain /p:<password> would leak it to anyone on the same client.
+ * Instead we use xfreerdp's /from-stdin:force option and write the
+ * password to its stdin ourselves after spawning it.
  */
 void
 xfreerdp_session()
 {
-    gchar *cmd;
+    GPtrArray *argv = g_ptr_array_new();
+    gchar **rdpoptions_argv = NULL;
+    gint wfd;
+    guint i;
 
-    /* The Password should not contain space(s) character(s) */
-   cmd = g_strjoin(NULL, " ", "xfreerdp", " " , 
-                    "/u:", rdpinfo->username, 
-                    " ",
-                    "/p:", rdpinfo->password, NULL);
+    g_ptr_array_add(argv, g_strdup(rdpinfo->binary));
+    g_ptr_array_add(argv, g_strconcat("/u:", rdpinfo->username, NULL));
+    g_ptr_array_add(argv, g_strdup("/from-stdin:force"));
 
     /* Only append the domain if it's set */
     if (g_strcmp0(rdpinfo->domain, "None") != 0) {
-        cmd = g_strjoin(" ", cmd, "/d:", rdpinfo->domain, NULL);
+        g_ptr_array_add(argv, g_strconcat("/d:", rdpinfo->domain, NULL));
     }
 
-    /* If we have custom options, append them */
-    if (rdpinfo->rdpoptions) {
-        cmd = g_strjoin(" ", cmd, rdpinfo->rdpoptions, NULL);
+    /*
+     * RDP_OPTIONS comes from lts.conf (trusted admin configuration, not
+     * end-user input), so shell-splitting it into multiple arguments here
+     * is fine.
+     */
+    if (rdpinfo->rdpoptions &&
+        g_shell_parse_argv(rdpinfo->rdpoptions, NULL, &rdpoptions_argv,
+                            NULL)) {
+        for (i = 0; rdpoptions_argv[i] != NULL; i++) {
+            g_ptr_array_add(argv, rdpoptions_argv[i]);
+        }
+        /* Ownership of the individual strings moved into argv above, so
+         * just release the array of pointers itself. */
+        g_free(rdpoptions_argv);
     }
 
     /* Append Option for RDP-Server and Display Full-Screen */
-    cmd = g_strconcat(cmd, " ", "/v:", rdpinfo->server, " ", "/f", NULL);
+    g_ptr_array_add(argv, g_strconcat("/v:", rdpinfo->server, NULL));
+    g_ptr_array_add(argv, g_strdup("/f"));
+    g_ptr_array_add(argv, NULL);
 
     /* Set Environment for xfreerdp INFO logging and important xfreerdp needs to set the "HOME" to /root otherwise xfreerdp is not working! */
     setenv("WLOG_LEVEL", "INFO", 1);
     setenv("WLOG_APPENDER", "SYSLOG", 1);
     setenv("HOME", "/root", 1);
-    
+
     /* Set Enviroment??? for LIBVA_DRIVER_NAME=i965 -> older INTEL Graphics Card  OR  LIBVA_DRIVER_NAME=iHD -> newer INTEL Graphics Card */
     /* For newer verions of freerdp the hardware acceleration over ffmpeg will not use when the LIBVA_DRIVER_NAME=XXXX not set...???? */
 
-    /* Spawning xfreerdp session */
-    rdpinfo->rdppid = ldm_spawn(cmd, NULL, NULL, NULL);
+    /* Spawning xfreerdp session; wfd is our end of a pipe to its stdin,
+     * used below to hand over the password out-of-band from argv. */
+    rdpinfo->rdppid = ldm_spawnv((gchar **) argv->pdata, NULL, &wfd, NULL);
+
+    {
+        gchar *line = g_strdup_printf("%s\n", rdpinfo->password);
+        gsize len = strlen(line);
+        gsize written = 0;
+
+        while (written < len) {
+            gssize n = write(wfd, line + written, len - written);
+            if (n <= 0) {
+                log_entry("xfreerdp", 3,
+                          "failed to write password to xfreerdp's stdin");
+                break;
+            }
+            written += n;
+        }
+        /* Wipe the password from memory as soon as we're done with it. */
+        memset(line, 0, len);
+        g_free(line);
+        close(wfd);
+    }
+
+    /*
+     * Same "free the password as promised" cleanup the ssh plugin does
+     * once it's no longer needed: rdpinfo->password has now been handed
+     * to xfreerdp, so there's no reason to keep it (or its heap bytes)
+     * around for the rest of the session.
+     */
+    if (rdpinfo->password) {
+        memset(rdpinfo->password, 0, strlen(rdpinfo->password));
+        g_free(rdpinfo->password);
+        rdpinfo->password = NULL;
+    }
+
     ldm_wait(rdpinfo->rdppid);
 
-    g_free(cmd);
+    for (i = 0; i < argv->len - 1; i++) {
+        g_free(g_ptr_array_index(argv, i));
+    }
+    g_ptr_array_free(argv, TRUE);
 }

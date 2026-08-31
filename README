@@ -51,3 +51,95 @@ Have Fun!
 --
 The LTSP Team
 http://www.ltsp.org
+
+
+===============================================================================
+Building and packaging this fork (Debian 13 "Trixie")
+===============================================================================
+
+This is a fork of the last upstream ldm release (2:2.18.06, last packaged for
+Debian Buster) updated to build and run on current Debian: gtkgreet has been
+ported from GTK2 (removed from Debian's archive) to GTK3, an xfreerdp backend
+plugin was added alongside the original ssh one, and a number of security and
+correctness fixes were made (see debian/changelog for the full list).
+
+-------------------------------------------------------------------------
+1) Building from source, without packaging
+-------------------------------------------------------------------------
+
+Install the build dependencies:
+
+    sudo apt install build-essential autoconf automake libtool intltool \
+        pkg-config libglib2.0-dev libgtk-3-dev libx11-dev libxext-dev \
+        gettext iso-codes
+
+Then, from the top of the source tree:
+
+    ./autogen.sh
+    ./configure --prefix=/usr
+    make -j$(nproc)
+    sudo make install
+
+`./autogen.sh` regenerates the autotools files (configure, Makefile.in, ...)
+from configure.ac/Makefile.am; skip it if you're building from a tarball
+that already has a `configure` script.
+
+If your checkout came from a Windows git client, the shell scripts may have
+CRLF line endings, which breaks their shebang line ("/bin/sh -v\r" isn't a
+valid interpreter). Fix that first with:
+
+    find . -name .git -prune -o -type f \
+        \( -iname '*.png' -o -iname '*.jpg' \) -prune -o -type f -print \
+        | xargs dos2unix
+
+-------------------------------------------------------------------------
+2) Building an installable .deb package (recommended)
+-------------------------------------------------------------------------
+
+This is the normal Debian packaging workflow, using the debian/ directory
+in this tree - no separate packaging repo needed.
+
+Install the packaging + build dependencies (or let step 3 below do it for
+you):
+
+    sudo apt install build-essential debhelper debhelper-compat dpkg-dev \
+        autoconf automake libtool intltool pkg-config dctrl-tools \
+        libglib2.0-dev libgtk-3-dev libx11-dev libxext-dev \
+        gettext iso-codes locales python3
+
+Then, from the top of the source tree:
+
+    dpkg-buildpackage -us -uc -b
+
+`-us -uc` skips GPG-signing the resulting .changes/.dsc files, which you
+don't need for a purely local build. `-b` builds binary packages only (no
+source package). This produces, one directory *above* the source tree:
+
+    ldm_2.18.06-1_amd64.deb        - the client (ldm core, gtkgreet, wwm,
+                                      ssh + xfreerdp plugins, ldm-dialog)
+    ldm-server_2.18.06-1_all.deb   - server-side ldminfod
+    ldm-dbgsym_2.18.06-1_amd64.deb - debug symbols (safe to ignore/skip)
+
+-------------------------------------------------------------------------
+3) Installing the .deb
+-------------------------------------------------------------------------
+
+Use `apt install ./<file>.deb` (not `dpkg -i`) so apt resolves and pulls in
+the runtime dependencies (openssh-client, xserver-xorg, etc.) automatically:
+
+    sudo apt install ./ldm_2.18.06-1_amd64.deb \
+                      ./ldm-server_2.18.06-1_all.deb
+
+For the xfreerdp backend specifically, also install (it's a Recommends,
+not a hard dependency, since the ssh backend works without it):
+
+    sudo apt install freerdp3-x11
+
+(Debian 13 only ships freerdp3-x11, whose binary is `xfreerdp3`; the
+xfreerdp plugin auto-detects this - see `RDP_XFREERDP_BIN` in lts.conf to
+override the auto-detection if needed.)
+
+To rebuild after making further source changes, just repeat step 2 - there's
+no need to clean the tree first; dpkg-buildpackage reruns autoreconf/configure
+each time.
+
