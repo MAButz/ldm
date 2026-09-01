@@ -61,7 +61,9 @@ This is a fork of the last upstream ldm release (2:2.18.06, last packaged for
 Debian Buster) updated to build and run on current Debian: gtkgreet has been
 ported from GTK2 (removed from Debian's archive) to GTK3, an xfreerdp backend
 plugin was added alongside the original ssh one, and a number of security and
-correctness fixes were made (see debian/changelog for the full list).
+correctness fixes were made (see debian/changelog for the full list). The
+version was bumped to 3.0.0 to reflect the GTK2->GTK3 switch, which is a
+breaking change for anyone still trying to build the old 2.18.06 tree.
 
 -------------------------------------------------------------------------
 1) Building from source, without packaging
@@ -115,10 +117,10 @@ Then, from the top of the source tree:
 don't need for a purely local build. `-b` builds binary packages only (no
 source package). This produces, one directory *above* the source tree:
 
-    ldm_2.18.06-1_amd64.deb        - the client (ldm core, gtkgreet, wwm,
-                                      ssh + xfreerdp plugins, ldm-dialog)
-    ldm-server_2.18.06-1_all.deb   - server-side ldminfod
-    ldm-dbgsym_2.18.06-1_amd64.deb - debug symbols (safe to ignore/skip)
+    ldm_3.0.0-1_amd64.deb        - the client (ldm core, gtkgreet, wwm,
+                                    ssh + xfreerdp plugins, ldm-dialog)
+    ldm-server_3.0.0-1_all.deb   - server-side ldminfod
+    ldm-dbgsym_3.0.0-1_amd64.deb - debug symbols (safe to ignore/skip)
 
 -------------------------------------------------------------------------
 3) Installing the .deb
@@ -127,8 +129,8 @@ source package). This produces, one directory *above* the source tree:
 Use `apt install ./<file>.deb` (not `dpkg -i`) so apt resolves and pulls in
 the runtime dependencies (openssh-client, xserver-xorg, etc.) automatically:
 
-    sudo apt install ./ldm_2.18.06-1_amd64.deb \
-                      ./ldm-server_2.18.06-1_all.deb
+    sudo apt install ./ldm_3.0.0-1_amd64.deb \
+                      ./ldm-server_3.0.0-1_all.deb
 
 For the xfreerdp backend specifically, also install (it's a Recommends,
 not a hard dependency, since the ssh backend works without it):

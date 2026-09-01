@@ -3,7 +3,11 @@ AC_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([m4])
 
 PACKAGE=ldm
-VERSION=2.18.06
+# Bumped from the upstream 2.18.06 baseline to 3.0.0: this fork requires
+# GTK3 to build at all (GTK2 was removed from Debian's archive), which is
+# a breaking change for anyone still building the old GTK2 tree, on top
+# of the new xfreerdp backend and the security/correctness fixes.
+VERSION=3.0.0
 AUTHOR=sbalneav@ltsp.org
 
 AM_INIT_AUTOMAKE([$PACKAGE],[$VERSION],[$AUTHOR])

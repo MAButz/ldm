@@ -1,8 +1,14 @@
-ldm (2.18.06-1) unstable; urgency=medium
+ldm (3.0.0-1) unstable; urgency=medium
 
+  * Version bumped from the upstream 2.18.06 baseline to 3.0.0: porting
+    gtkgreet from GTK2 to GTK3 is a breaking change for anyone still
+    building the old tree (GTK2 is gone from Debian's archive, so 2.18.06
+    no longer builds at all), on top of the new xfreerdp backend and the
+    security/correctness fixes below - substantial enough to warrant a
+    major version bump rather than a patch-level one.
   * Fork of the last upstream ldm release (2:2.18.06, last packaged for
-    Debian Buster) by Marc-André Butz, updated to build and run on
-    current Debian releases:
+    Debian Buster) by Marc-André Beckmann-Butz, updated to build and run
+    on current Debian releases:
     - Ported gtkgreet from GTK2 to GTK3 (GTK2 was removed from Debian's
       archive, so upstream ldm no longer builds at all).
     - Added an xfreerdp backend plugin: auto-detects xfreerdp3/xfreerdp2,
