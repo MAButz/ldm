@@ -1,0 +1,22 @@
+[Unit]
+Description=LTSP Display Manager
+Conflicts=getty@tty1.service
+After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service systemd-logind.service
+Wants=systemd-user-sessions.service
+
+[Service]
+ExecStart=/usr/sbin/ldm
+Restart=on-failure
+IgnoreSIGPIPE=no
+KillMode=mixed
+UtmpIdentifier=tty1
+UtmpMode=user
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+StandardInput=tty
+StandardOutput=journal
+
+[Install]
+Alias=display-manager.service

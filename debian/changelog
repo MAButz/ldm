@@ -1,3 +1,21 @@
+ldm (3.0.1-1) unstable; urgency=medium
+
+  * Fixed: ldm never actually started at boot on a real PXE-booted LTSP
+    client. The package installed the ldm binary and its themes but never
+    registered it as THE display manager: no systemd service unit, no
+    /etc/X11/default-display-manager entry, so systemd's graphical.target
+    had nothing to launch and boot fell through to a plain text getty
+    login instead. Added debian/ldm.service (with the standard
+    "Alias=display-manager.service" that dh_installsystemd turns into the
+    /etc/systemd/system/display-manager.service symlink real display
+    managers rely on) and had ldm.postinst/.prerm set/clear
+    /etc/X11/default-display-manager, which ltsp6's own
+    init-ltsp.d/50-default-display-manager hook already expects to exist.
+    Found via a real end-to-end PXE boot test (DHCP -> TFTP -> NBD root ->
+    switch_root), not just direct/manual ldm invocation.
+
+ -- Marc-André Beckmann-Butz <ma@butz.online>  Wed, 02 Sep 2026 09:20:00 +0200
+
 ldm (3.0.0-1) unstable; urgency=medium
 
   * Version bumped from the upstream 2.18.06 baseline to 3.0.0: porting

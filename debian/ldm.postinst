@@ -16,6 +16,16 @@ case "$1" in
 	update-alternatives \
 		--install /usr/share/ldm/themes/default \
 		ldm-theme /usr/share/ldm/themes/ltsp 50
+
+	# Register ldm as the display manager, both the legacy way (some
+	# scripts, including ltsp6's own init-ltsp.d/50-default-display-manager
+	# hook, still read this file) and via the systemd alias symlink
+	# (dh_installsystemd sets this up from ldm.service's "Alias=
+	# display-manager.service", but only if no OTHER display manager is
+	# already registered - don't clobber an existing choice).
+	if [ ! -e /etc/X11/default-display-manager ]; then
+		echo /usr/sbin/ldm > /etc/X11/default-display-manager
+	fi
        ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

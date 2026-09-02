@@ -7,5 +7,9 @@ case "$1" in
   remove|deconfigure|failed-upgrade)
     update-alternatives --remove ldm-theme \
 	/usr/share/ldm/themes/ltsp
+    if [ -e /etc/X11/default-display-manager ] && \
+       [ "$(cat /etc/X11/default-display-manager 2>/dev/null)" = "/usr/sbin/ldm" ]; then
+	rm -f /etc/X11/default-display-manager
+    fi
   ;;
 esac
