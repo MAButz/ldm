@@ -615,11 +615,29 @@ popup_menu(GtkWidget* widget, GtkWindow* window)
         G_CALLBACK(spawn_command), "/sbin/poweroff");
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), quit_item);
 
+    /*
+     * Show the menu before popping it up: until it has been realized GTK does
+     * not know how tall it is, so it cannot tell that the menu will not fit
+     * below the pointer and happily opens it off the bottom of the screen -
+     * which is where the Preferences button lives, so the entries end up
+     * unreachable.
+     */
+    gtk_widget_show_all(menu);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+    /*
+     * Anchor the menu's bottom-left corner to the button's top-left one, so it
+     * opens upwards away from the screen edge. GTK flips the anchor by itself
+     * when there is no room above but there is below, so this stays correct
+     * wherever the button happens to sit.
+     */
+    gtk_menu_popup_at_widget(GTK_MENU(menu), widget,
+        GDK_GRAVITY_NORTH_WEST, GDK_GRAVITY_SOUTH_WEST, NULL);
+#else
     gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
         0, gtk_get_current_event_time());
-
-    gtk_widget_show_all(menu);
     gtk_menu_reposition(GTK_MENU(menu));
+#endif
 
     return;
 }
