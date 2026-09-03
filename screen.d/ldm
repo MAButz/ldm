@@ -148,4 +148,4 @@ if [ -z "$*" ]; then
     set --
 fi
 
-exec xinit /usr/share/ltsp/xinitrc /usr/sbin/ldm -- ${DISPLAY} vt${TTY} -auth ${XAUTHORITY} ${X_ARGS} "$@" -br >/dev/null 2>&1
+exec xinit /usr/share/ltsp/xinitrc /usr/sbin/ldm -- ${DISPLAY} vt${TTY} -auth ${XAUTHORITY} ${X_ARGS} "$@" -br >>/var/log/ldm-xinit.log 2>&1

@@ -1,3 +1,9 @@
+# Off by default: this runs on every login-screen (re)start, not just after
+# a real server-side image update, and forces a countdown-then-reboot on
+# whoever is sitting at the login screen with no way to know why. Set
+# LDM_NBD_CHECKUPDATE=True in lts.conf to opt back in.
+boolean_is_true "$LDM_NBD_CHECKUPDATE" || return 0
+
 # Get the NBD information (ltsp-cluster doesn't have that in the environment)
 if [ -f /run/ltsp/ltsp_config ]; then
     . /run/ltsp/ltsp_config
