@@ -14,8 +14,11 @@
 #include <unistd.h>
 #include <utmp.h>
 
+#include <krb5.h>
+
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
+#include "../../ldmplugin.h"
 #include "../../logging.h"
 #include "../../plugin.h"
 #include "xfreerdp.h"
@@ -43,6 +46,162 @@ RdpInfo *rdpinfo;
 #define XF_EXIT_USER_PRIVILEGES            9
 #define XF_EXIT_FRESH_CREDENTIALS_REQUIRED 10
 #define XF_EXIT_DISCONNECT_BY_USER         11
+
+/*
+ * rdp_preauth_kerberos
+ *
+ * Check the credentials against the Kerberos KDC before starting the RDP
+ * client, and return a message to show the user on failure (NULL when the
+ * credentials are good, or when the check could not be performed at all).
+ *
+ * Why this is needed at all: xrdp has no server-side NLA, so it validates
+ * credentials only *inside* the session. A wrong password therefore does not
+ * end the connection - xrdp opens its own login dialog inside the session and
+ * waits there. The RDP client stays connected, learns nothing, and ldm never
+ * regains control, so the user is left in a dialog that ldm cannot annotate
+ * and cannot escape from except by disconnecting. Verified against xrdp
+ * 0.10.1: after "AUTHFAIL" in its log the connection stayed up until the
+ * client was killed a minute later.
+ *
+ * Asking the KDC first turns that dead end into a precise message in the
+ * greeter, and a wrong password never reaches the session server.
+ *
+ * Notes on what this deliberately does *not* do:
+ *  - It does not make the client a domain member: there is no machine
+ *    account and no keytab involved, only the user's own credentials. The
+ *    client gains nothing the user does not already have.
+ *  - The ticket is discarded immediately. We want a yes/no answer, not
+ *    credentials to keep, so nothing is written to a credential cache.
+ *  - It fails *open* on configuration problems (no realm known, Kerberos not
+ *    usable): a lab that has not set this up should not lose the ability to
+ *    log in. Credential and reachability problems, by contrast, are
+ *    reported - those would break the login anyway, and saying so early is
+ *    the whole point.
+ */
+static gchar *
+rdp_preauth_kerberos(const gchar *username, const gchar *password)
+{
+    krb5_context ctx = NULL;
+    krb5_principal princ = NULL;
+    krb5_creds creds;
+    krb5_get_init_creds_opt *opt = NULL;
+    krb5_error_code rc;
+    const gchar *realm = getenv("RDP_PREAUTH_REALM");
+    gchar *principal_name = NULL;
+    gchar *msg = NULL;
+
+    if (!username || !*username || !password)
+        return NULL;
+
+    memset(&creds, 0, sizeof(creds));
+
+    if (krb5_init_context(&ctx) != 0) {
+        log_entry("xfreerdp", 4,
+                  "pre-auth skipped: no Kerberos context available");
+        return NULL;
+    }
+
+    /*
+     * An explicit realm from lts.conf wins; otherwise fall back to whatever
+     * /etc/krb5.conf declares. If neither exists there is nothing to ask, so
+     * skip rather than block the login.
+     */
+    if (realm && *realm) {
+        principal_name = g_strdup_printf("%s@%s", username, realm);
+    } else {
+        char *default_realm = NULL;
+
+        if (krb5_get_default_realm(ctx, &default_realm) != 0) {
+            log_entry("xfreerdp", 4,
+                      "pre-auth skipped: no Kerberos realm configured "
+                      "(set RDP_PREAUTH_REALM in lts.conf)");
+            krb5_free_context(ctx);
+            return NULL;
+        }
+        principal_name = g_strdup_printf("%s@%s", username, default_realm);
+        krb5_free_default_realm(ctx, default_realm);
+    }
+
+    log_entry("xfreerdp", 7, "pre-authenticating %s", principal_name);
+
+    if (krb5_parse_name(ctx, principal_name, &princ) != 0) {
+        log_entry("xfreerdp", 4, "pre-auth skipped: cannot parse %s",
+                  principal_name);
+        goto out;
+    }
+
+    if (krb5_get_init_creds_opt_alloc(ctx, &opt) != 0)
+        goto out;
+    /* Nothing is stored, so no cache needs to be addressed. */
+    krb5_get_init_creds_opt_set_forwardable(opt, 0);
+    krb5_get_init_creds_opt_set_proxiable(opt, 0);
+
+    rc = krb5_get_init_creds_password(ctx, &creds, princ,
+                                      (char *) password, NULL, NULL, 0,
+                                      NULL, opt);
+
+    switch (rc) {
+    case 0:
+        log_entry("xfreerdp", 6, "pre-auth succeeded for %s", username);
+        break;
+
+    case KRB5KDC_ERR_PREAUTH_FAILED:
+    case KRB5KRB_AP_ERR_BAD_INTEGRITY:
+        msg = g_strdup(gettext("Wrong user name or password."));
+        break;
+
+    case KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN:
+        msg = g_strdup(gettext("This user does not exist in the domain."));
+        break;
+
+    case KRB5KDC_ERR_CLIENT_REVOKED:
+        msg = g_strdup(gettext("This account is locked or disabled."));
+        break;
+
+    case KRB5KDC_ERR_KEY_EXP:
+        msg = g_strdup(gettext("The password for this account has expired."));
+        break;
+
+    case KRB5KRB_AP_ERR_SKEW:
+        /*
+         * Worth naming precisely: it looks exactly like a wrong password from
+         * the outside, and no amount of retyping fixes it.
+         */
+        msg = g_strdup(gettext("This computer's clock differs too much from "
+                               "the server's; ask an administrator."));
+        break;
+
+    case KRB5_KDC_UNREACH:
+    case KRB5_REALM_CANT_RESOLVE:
+        msg = g_strdup(gettext("The authentication server cannot be reached."));
+        break;
+
+    default:
+        {
+            const char *detail = krb5_get_error_message(ctx, rc);
+
+            log_entry("xfreerdp", 3, "pre-auth failed for %s: %s",
+                      username, detail ? detail : "unknown error");
+            msg = g_strdup(gettext("Sign-in failed."));
+            if (detail)
+                krb5_free_error_message(ctx, detail);
+        }
+        break;
+    }
+
+    if (rc == 0)
+        krb5_free_cred_contents(ctx, &creds);
+
+  out:
+    g_free(principal_name);
+    if (opt)
+        krb5_get_init_creds_opt_free(ctx, opt);
+    if (princ)
+        krb5_free_principal(ctx, princ);
+    krb5_free_context(ctx);
+
+    return msg;
+}
 
 /*
  * rdp_exit_message
@@ -363,6 +522,36 @@ auth_xfreerdp()
 
     /* If user clicks on guest button above, this has changed  */
     get_passwd(&(rdpinfo->password));
+
+    /*
+     * Optionally verify the credentials with the KDC before handing them to
+     * the RDP client. Off unless RDP_PREAUTH is set in lts.conf, because it
+     * needs a reachable KDC and a known realm - see rdp_preauth_kerberos()
+     * for why it is worth switching on.
+     */
+    if (ldm_getenv_bool("RDP_PREAUTH")) {
+        gchar *why = rdp_preauth_kerberos(rdpinfo->username,
+                                          rdpinfo->password);
+
+        if (why) {
+            set_message(why);
+            g_free(why);
+
+            /* Wipe the rejected password rather than carry it around. */
+            if (rdpinfo->password) {
+                memset(rdpinfo->password, 0, strlen(rdpinfo->password));
+                g_free(rdpinfo->password);
+                rdpinfo->password = NULL;
+            }
+
+            /*
+             * Unwind back to ldm's auth loop, which redisplays the greeter -
+             * with the message above still shown - instead of starting a
+             * session that we already know will not authenticate.
+             */
+            ldm_raise_auth_except(AUTH_EXC_RELOAD_BACKEND);
+        }
+    }
 
     /* Get hostname */
     if (!rdpinfo->server)
