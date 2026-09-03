@@ -142,7 +142,15 @@ listen_greeter(gchar ** buffer, gsize * buflen, gsize * end)
         GError *ge = NULL;
         if (g_io_channel_read_line(greeterr, buffer, buflen, end, &ge) !=
             G_IO_STATUS_NORMAL) {
-            log_entry("ldm", 3, "%s", ge->message);
+            /* G_IO_STATUS_EOF (greeter exited/closed the pipe) does not
+             * set ge, so it can be NULL here, unlike G_IO_STATUS_ERROR. */
+            if (ge) {
+                log_entry("ldm", 3, "%s", ge->message);
+                g_error_free(ge);
+            } else {
+                log_entry("ldm", 3,
+                          "greeter communication channel closed unexpectedly");
+            }
             return 1;
         }
 
