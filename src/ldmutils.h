@@ -4,7 +4,8 @@
 void close_wm(void);
 void get_ipaddr(void);
 void handle_sigchld(int);
-void ldm_wait(pid_t pid);
+/* Returns the child's exit status, or -1 if it was killed or not reaped. */
+int ldm_wait(pid_t pid);
 int ldm_getenv_bool(const char*);
 pid_t ldm_spawn (gchar *command, gint *rfd, gint *wfd, void (*setup)());
 pid_t ldm_spawnv (gchar **argv, gint *rfd, gint *wfd, void (*setup)());

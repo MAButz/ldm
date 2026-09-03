@@ -220,9 +220,13 @@ handle_sigchld(int signo)
 /*
  * ldm_wait
  *
- * wait for child process
+ * Wait for a child process and return how it ended: the exit status for a
+ * normal exit, or -1 if it was killed or could not be reaped. Callers that
+ * do not care may ignore the value, which is what most of them do - but a
+ * backend that spawns a session client needs it, since the client's exit
+ * status is the only thing that says *why* the session ended.
  */
-void
+int
 ldm_wait(GPid pid)
 {
     siginfo_t info;
@@ -257,10 +261,13 @@ ldm_wait(GPid pid)
     if (info.si_code == CLD_EXITED) {
         log_entry("ldm", 7, "process %d exited with status %d",
                   info.si_pid, WEXITSTATUS(info.si_status));
+        return WEXITSTATUS(info.si_status);
     } else if (info.si_code == CLD_KILLED) {
         log_entry("ldm", 7, "process %d killed by signal %d", info.si_pid,
                   info.si_status);
     }
+
+    return -1;
 }
 
 /*

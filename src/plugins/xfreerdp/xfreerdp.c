@@ -25,6 +25,85 @@ int screen;
 LdmBackend *descriptor;
 RdpInfo *rdpinfo;
 
+/*
+ * xfreerdp's exit codes, from FreeRDP's xf_exit_code_t. Only the low range is
+ * stable across releases and documented; the 128+ range varies between
+ * versions, which is why unknown values are reported numerically below rather
+ * than guessed at.
+ */
+#define XF_EXIT_SUCCESS                    0
+#define XF_EXIT_DISCONNECT                 1
+#define XF_EXIT_LOGOFF                     2
+#define XF_EXIT_IDLE_TIMEOUT               3
+#define XF_EXIT_LOGON_TIMEOUT              4
+#define XF_EXIT_CONN_REPLACED              5
+#define XF_EXIT_OUT_OF_MEMORY              6
+#define XF_EXIT_CONN_DENIED                7
+#define XF_EXIT_CONN_DENIED_FIPS           8
+#define XF_EXIT_USER_PRIVILEGES            9
+#define XF_EXIT_FRESH_CREDENTIALS_REQUIRED 10
+#define XF_EXIT_DISCONNECT_BY_USER         11
+
+/*
+ * rdp_exit_message
+ *
+ * Turn xfreerdp's exit status into something the person at the screen can act
+ * on, and NULL when the session simply ended.
+ *
+ * Without this the greeter reports every outcome identically, while the part
+ * that says what went wrong stays in the RDP server's logs - where a user
+ * cannot see it and an admin only looks after being told there is a problem.
+ * Three separate faults in this lab (a keyboard layout that mistyped the
+ * password, an sssd access rule that denied the service, and a load balancer
+ * pair that both claimed the same address) all presented as the same blank
+ * failure, which is what made them slow to tell apart.
+ *
+ * Note the deliberate asymmetry: a wrong password is worth naming precisely,
+ * whereas "denied" is reported as denied without speculating about why - the
+ * RDP protocol carries a status code, not the server's reasoning.
+ */
+static const gchar *
+rdp_exit_message(int status)
+{
+    switch (status) {
+    case XF_EXIT_SUCCESS:
+    case XF_EXIT_DISCONNECT:
+    case XF_EXIT_LOGOFF:
+    case XF_EXIT_DISCONNECT_BY_USER:
+        /* A session that ended normally is not something to report. */
+        return NULL;
+
+    case XF_EXIT_IDLE_TIMEOUT:
+        return gettext("Session closed: idle for too long.");
+
+    case XF_EXIT_LOGON_TIMEOUT:
+        return gettext("The server did not complete the logon in time.");
+
+    case XF_EXIT_CONN_REPLACED:
+        return gettext("This session was taken over by another connection.");
+
+    case XF_EXIT_OUT_OF_MEMORY:
+        return gettext("The session server ran out of memory.");
+
+    case XF_EXIT_CONN_DENIED:
+    case XF_EXIT_CONN_DENIED_FIPS:
+        return gettext("The session server refused the connection.");
+
+    case XF_EXIT_USER_PRIVILEGES:
+        return gettext("This account is not allowed to log on remotely.");
+
+    case XF_EXIT_FRESH_CREDENTIALS_REQUIRED:
+        return gettext("Wrong user name or password.");
+
+    case -1:
+        /* ldm_wait() reports -1 when the client was killed by a signal. */
+        return gettext("The remote desktop client was terminated.");
+
+    default:
+        return NULL;
+    }
+}
+
 void __attribute__ ((constructor)) initialize()
 {
     descriptor = (LdmBackend *) malloc(sizeof(LdmBackend));
@@ -411,7 +490,32 @@ xfreerdp_session()
         rdpinfo->password = NULL;
     }
 
-    ldm_wait(rdpinfo->rdppid);
+    {
+        int status = ldm_wait(rdpinfo->rdppid);
+        const gchar *msg = rdp_exit_message(status);
+
+        if (msg) {
+            /* Shown in the greeter, which is the only place the user looks. */
+            log_entry("xfreerdp", 3, "xfreerdp exited with status %d: %s",
+                      status, msg);
+            set_message((gchar *) msg);
+        } else if (status > XF_EXIT_DISCONNECT_BY_USER) {
+            /*
+             * Codes above the documented range differ between FreeRDP
+             * releases, so report the number instead of inventing a meaning
+             * for it - a wrong explanation costs more time than none.
+             */
+            gchar *unknown = g_strdup_printf(
+                gettext("Connection failed (remote desktop client code %d)."),
+                status);
+
+            log_entry("xfreerdp", 3, "xfreerdp exited with status %d", status);
+            set_message(unknown);
+            g_free(unknown);
+        } else {
+            log_entry("xfreerdp", 6, "xfreerdp exited with status %d", status);
+        }
+    }
 
     for (i = 0; i < argv->len - 1; i++) {
         g_free(g_ptr_array_index(argv, i));
