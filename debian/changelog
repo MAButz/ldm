@@ -1,3 +1,22 @@
+ldm (3.0.1-2) unstable; urgency=medium
+
+  * Fixed: the ldm.service added in 3.0.1-1 could never work. It ran
+    /usr/sbin/ldm directly, but ldm is not an X server and never starts
+    one - src/ldm.c reads DISPLAY from the environment. Called bare, the
+    greeter reports "cannot open display" and ldm then dies with SIGSEGV,
+    which systemd retries until it gives up ("Start request repeated too
+    quickly"). ExecStart now goes through xinit, which starts the server
+    and exports DISPLAY for the client it launches; xinit joins Depends
+    accordingly.
+  * Fixed: ldm.service and LTSP's own screen_session both drive vt1, and
+    both would be active on an LTSP client. Added ConditionPathExists on
+    /usr/share/ltsp/screen_session so the unit stands down wherever LTSP
+    is installed and the lts.conf-driven path stays in charge - that path
+    also sets the xauth cookie and the X arguments (X_COLOR_DEPTH among
+    them), which this unit does not.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Thu, 10 Sep 2026 17:05:00 +0200
+
 ldm (3.0.1-1) unstable; urgency=medium
 
   * Fixed: ldm never actually started at boot on a real PXE-booted LTSP

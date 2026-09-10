@@ -3,9 +3,19 @@ Description=LTSP Display Manager
 Conflicts=getty@tty1.service
 After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service systemd-logind.service
 Wants=systemd-user-sessions.service
+# On an LTSP client the greeter is started by LTSP itself: screen_session
+# reads SCREEN_nn from lts.conf and runs screen.d/ldm, which sets up the
+# xauth cookie and the X arguments from lts.conf before calling xinit.
+# Both paths would fight over vt1, so stand down where LTSP is present.
+ConditionPathExists=!/usr/share/ltsp/screen_session
 
 [Service]
-ExecStart=/usr/sbin/ldm
+# ldm is not an X server and never starts one: it reads DISPLAY from the
+# environment (src/ldm.c) and talks to a server that already exists. Called
+# bare it dies with "cannot open display" and then segfaults, which systemd
+# retries five times before giving up. xinit provides the server and exports
+# DISPLAY for the client it launches.
+ExecStart=/usr/bin/xinit /usr/sbin/ldm -- :0 vt1 -nolisten tcp -br
 Restart=on-failure
 IgnoreSIGPIPE=no
 KillMode=mixed

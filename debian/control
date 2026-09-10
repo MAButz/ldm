@@ -20,7 +20,8 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
  openssh-client,
  xserver-xorg | xserver,
  gettext-base,
- procps
+ procps,
+ xinit
 Recommends:
  freerdp3-x11 | freerdp2-x11,
  netcat-traditional | netcat,
