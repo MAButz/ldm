@@ -1,27 +1,28 @@
 [Unit]
 Description=LTSP Display Manager
-Conflicts=getty@tty1.service
-After=systemd-user-sessions.service getty@tty1.service plymouth-quit.service systemd-logind.service
+Conflicts=getty@tty7.service
+After=systemd-user-sessions.service getty@tty7.service plymouth-quit.service systemd-logind.service
 Wants=systemd-user-sessions.service
-# On an LTSP client the greeter is started by LTSP itself: screen_session
-# reads SCREEN_nn from lts.conf and runs screen.d/ldm, which sets up the
-# xauth cookie and the X arguments from lts.conf before calling xinit.
-# Both paths would fight over vt1, so stand down where LTSP is present.
-ConditionPathExists=!/usr/share/ltsp/screen_session
+# ExecStart below is in ltsp-client-core, which this package does not depend
+# on. Without this the unit fails on any host that has ldm but not LTSP,
+# once per restart, for as long as systemd keeps trying.
+ConditionPathExists=/usr/share/ltsp/screen_session
 
 [Service]
-# ldm is not an X server and never starts one: it reads DISPLAY from the
-# environment (src/ldm.c) and talks to a server that already exists. Called
-# bare it dies with "cannot open display" and then segfaults, which systemd
-# retries five times before giving up. xinit provides the server and exports
-# DISPLAY for the client it launches.
-ExecStart=/usr/bin/xinit /usr/sbin/ldm -- :0 vt1 -nolisten tcp -br
+# screen_session sets up XAUTHORITY/DISPLAY and execs `xinit ... /usr/sbin/ldm -- Xorg ...`
+# (see /usr/share/ltsp/screen.d/ldm); running /usr/sbin/ldm directly here would skip
+# starting Xorg entirely - ldm reads DISPLAY from the environment (src/ldm.c) and never
+# starts a server itself, so it dies with "cannot open display" and then SIGSEGVs.
+# "07" is the default SCREEN_07=ldm mapping (VT7, the classic graphical-VT convention),
+# see ltsp_config.d/15default-screen, which also sets SCREEN_07_WAIT_FGCONSOLE=False so
+# screen_session does not sit waiting for VT7 to become the foreground console.
+ExecStart=/usr/share/ltsp/screen_session 07
 Restart=on-failure
 IgnoreSIGPIPE=no
 KillMode=mixed
-UtmpIdentifier=tty1
+UtmpIdentifier=tty7
 UtmpMode=user
-TTYPath=/dev/tty1
+TTYPath=/dev/tty7
 TTYReset=yes
 TTYVHangup=yes
 TTYVTDisallocate=yes

@@ -14,8 +14,11 @@
 #include <unistd.h>
 #include <utmp.h>
 
+#include <krb5.h>
+
 #include "../../ldmutils.h"
 #include "../../ldmgreetercomm.h"
+#include "../../ldmplugin.h"
 #include "../../logging.h"
 #include "../../plugin.h"
 #include "xfreerdp.h"
@@ -24,6 +27,241 @@ int screen;
 
 LdmBackend *descriptor;
 RdpInfo *rdpinfo;
+
+/*
+ * xfreerdp's exit codes, from FreeRDP's xf_exit_code_t. Only the low range is
+ * stable across releases and documented; the 128+ range varies between
+ * versions, which is why unknown values are reported numerically below rather
+ * than guessed at.
+ */
+#define XF_EXIT_SUCCESS                    0
+#define XF_EXIT_DISCONNECT                 1
+#define XF_EXIT_LOGOFF                     2
+#define XF_EXIT_IDLE_TIMEOUT               3
+#define XF_EXIT_LOGON_TIMEOUT              4
+#define XF_EXIT_CONN_REPLACED              5
+#define XF_EXIT_OUT_OF_MEMORY              6
+#define XF_EXIT_CONN_DENIED                7
+#define XF_EXIT_CONN_DENIED_FIPS           8
+#define XF_EXIT_USER_PRIVILEGES            9
+#define XF_EXIT_FRESH_CREDENTIALS_REQUIRED 10
+#define XF_EXIT_DISCONNECT_BY_USER         11
+
+/*
+ * rdp_preauth_kerberos
+ *
+ * Check the credentials against the Kerberos KDC before starting the RDP
+ * client, and return a message to show the user on failure (NULL when the
+ * credentials are good, or when the check could not be performed at all).
+ *
+ * Why this is needed at all: xrdp has no server-side NLA, so it validates
+ * credentials only *inside* the session. A wrong password therefore does not
+ * end the connection - xrdp opens its own login dialog inside the session and
+ * waits there. The RDP client stays connected, learns nothing, and ldm never
+ * regains control, so the user is left in a dialog that ldm cannot annotate
+ * and cannot escape from except by disconnecting. Verified against xrdp
+ * 0.10.1: after "AUTHFAIL" in its log the connection stayed up until the
+ * client was killed a minute later.
+ *
+ * Asking the KDC first turns that dead end into a precise message in the
+ * greeter, and a wrong password never reaches the session server.
+ *
+ * Notes on what this deliberately does *not* do:
+ *  - It does not make the client a domain member: there is no machine
+ *    account and no keytab involved, only the user's own credentials. The
+ *    client gains nothing the user does not already have.
+ *  - The ticket is discarded immediately. We want a yes/no answer, not
+ *    credentials to keep, so nothing is written to a credential cache.
+ *  - It fails *open* on configuration problems (no realm known, Kerberos not
+ *    usable): a lab that has not set this up should not lose the ability to
+ *    log in. Credential and reachability problems, by contrast, are
+ *    reported - those would break the login anyway, and saying so early is
+ *    the whole point.
+ */
+static gchar *
+rdp_preauth_kerberos(const gchar *username, const gchar *password)
+{
+    krb5_context ctx = NULL;
+    krb5_principal princ = NULL;
+    krb5_creds creds;
+    krb5_get_init_creds_opt *opt = NULL;
+    krb5_error_code rc;
+    const gchar *realm = getenv("RDP_PREAUTH_REALM");
+    gchar *principal_name = NULL;
+    gchar *msg = NULL;
+
+    if (!username || !*username || !password)
+        return NULL;
+
+    memset(&creds, 0, sizeof(creds));
+
+    if (krb5_init_context(&ctx) != 0) {
+        log_entry("xfreerdp", 4,
+                  "pre-auth skipped: no Kerberos context available");
+        return NULL;
+    }
+
+    /*
+     * An explicit realm from lts.conf wins; otherwise fall back to whatever
+     * /etc/krb5.conf declares. If neither exists there is nothing to ask, so
+     * skip rather than block the login.
+     */
+    if (realm && *realm) {
+        principal_name = g_strdup_printf("%s@%s", username, realm);
+    } else {
+        char *default_realm = NULL;
+
+        if (krb5_get_default_realm(ctx, &default_realm) != 0) {
+            log_entry("xfreerdp", 4,
+                      "pre-auth skipped: no Kerberos realm configured "
+                      "(set RDP_PREAUTH_REALM in lts.conf)");
+            krb5_free_context(ctx);
+            return NULL;
+        }
+        principal_name = g_strdup_printf("%s@%s", username, default_realm);
+        krb5_free_default_realm(ctx, default_realm);
+    }
+
+    log_entry("xfreerdp", 7, "pre-authenticating %s", principal_name);
+
+    if (krb5_parse_name(ctx, principal_name, &princ) != 0) {
+        log_entry("xfreerdp", 4, "pre-auth skipped: cannot parse %s",
+                  principal_name);
+        goto out;
+    }
+
+    if (krb5_get_init_creds_opt_alloc(ctx, &opt) != 0)
+        goto out;
+    /* Nothing is stored, so no cache needs to be addressed. */
+    krb5_get_init_creds_opt_set_forwardable(opt, 0);
+    krb5_get_init_creds_opt_set_proxiable(opt, 0);
+
+    rc = krb5_get_init_creds_password(ctx, &creds, princ,
+                                      (char *) password, NULL, NULL, 0,
+                                      NULL, opt);
+
+    switch (rc) {
+    case 0:
+        log_entry("xfreerdp", 6, "pre-auth succeeded for %s", username);
+        break;
+
+    case KRB5KDC_ERR_PREAUTH_FAILED:
+    case KRB5KRB_AP_ERR_BAD_INTEGRITY:
+        msg = g_strdup(gettext("Wrong user name or password."));
+        break;
+
+    case KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN:
+        msg = g_strdup(gettext("This user does not exist in the domain."));
+        break;
+
+    case KRB5KDC_ERR_CLIENT_REVOKED:
+        msg = g_strdup(gettext("This account is locked or disabled."));
+        break;
+
+    case KRB5KDC_ERR_KEY_EXP:
+        msg = g_strdup(gettext("The password for this account has expired."));
+        break;
+
+    case KRB5KRB_AP_ERR_SKEW:
+        /*
+         * Worth naming precisely: it looks exactly like a wrong password from
+         * the outside, and no amount of retyping fixes it.
+         */
+        msg = g_strdup(gettext("This computer's clock differs too much from "
+                               "the server's; ask an administrator."));
+        break;
+
+    case KRB5_KDC_UNREACH:
+    case KRB5_REALM_CANT_RESOLVE:
+        msg = g_strdup(gettext("The authentication server cannot be reached."));
+        break;
+
+    default:
+        {
+            const char *detail = krb5_get_error_message(ctx, rc);
+
+            log_entry("xfreerdp", 3, "pre-auth failed for %s: %s",
+                      username, detail ? detail : "unknown error");
+            msg = g_strdup(gettext("Sign-in failed."));
+            if (detail)
+                krb5_free_error_message(ctx, detail);
+        }
+        break;
+    }
+
+    if (rc == 0)
+        krb5_free_cred_contents(ctx, &creds);
+
+  out:
+    g_free(principal_name);
+    if (opt)
+        krb5_get_init_creds_opt_free(ctx, opt);
+    if (princ)
+        krb5_free_principal(ctx, princ);
+    krb5_free_context(ctx);
+
+    return msg;
+}
+
+/*
+ * rdp_exit_message
+ *
+ * Turn xfreerdp's exit status into something the person at the screen can act
+ * on, and NULL when the session simply ended.
+ *
+ * Without this the greeter reports every outcome identically, while the part
+ * that says what went wrong stays in the RDP server's logs - where a user
+ * cannot see it and an admin only looks after being told there is a problem.
+ * Three separate faults in this lab (a keyboard layout that mistyped the
+ * password, an sssd access rule that denied the service, and a load balancer
+ * pair that both claimed the same address) all presented as the same blank
+ * failure, which is what made them slow to tell apart.
+ *
+ * Note the deliberate asymmetry: a wrong password is worth naming precisely,
+ * whereas "denied" is reported as denied without speculating about why - the
+ * RDP protocol carries a status code, not the server's reasoning.
+ */
+static const gchar *
+rdp_exit_message(int status)
+{
+    switch (status) {
+    case XF_EXIT_SUCCESS:
+    case XF_EXIT_DISCONNECT:
+    case XF_EXIT_LOGOFF:
+    case XF_EXIT_DISCONNECT_BY_USER:
+        /* A session that ended normally is not something to report. */
+        return NULL;
+
+    case XF_EXIT_IDLE_TIMEOUT:
+        return gettext("Session closed: idle for too long.");
+
+    case XF_EXIT_LOGON_TIMEOUT:
+        return gettext("The server did not complete the logon in time.");
+
+    case XF_EXIT_CONN_REPLACED:
+        return gettext("This session was taken over by another connection.");
+
+    case XF_EXIT_OUT_OF_MEMORY:
+        return gettext("The session server ran out of memory.");
+
+    case XF_EXIT_CONN_DENIED:
+    case XF_EXIT_CONN_DENIED_FIPS:
+        return gettext("The session server refused the connection.");
+
+    case XF_EXIT_USER_PRIVILEGES:
+        return gettext("This account is not allowed to log on remotely.");
+
+    case XF_EXIT_FRESH_CREDENTIALS_REQUIRED:
+        return gettext("Wrong user name or password.");
+
+    case -1:
+        /* ldm_wait() reports -1 when the client was killed by a signal. */
+        return gettext("The remote desktop client was terminated.");
+
+    default:
+        return NULL;
+    }
+}
 
 void __attribute__ ((constructor)) initialize()
 {
@@ -285,6 +523,36 @@ auth_xfreerdp()
     /* If user clicks on guest button above, this has changed  */
     get_passwd(&(rdpinfo->password));
 
+    /*
+     * Optionally verify the credentials with the KDC before handing them to
+     * the RDP client. Off unless RDP_PREAUTH is set in lts.conf, because it
+     * needs a reachable KDC and a known realm - see rdp_preauth_kerberos()
+     * for why it is worth switching on.
+     */
+    if (ldm_getenv_bool("RDP_PREAUTH")) {
+        gchar *why = rdp_preauth_kerberos(rdpinfo->username,
+                                          rdpinfo->password);
+
+        if (why) {
+            set_message(why);
+            g_free(why);
+
+            /* Wipe the rejected password rather than carry it around. */
+            if (rdpinfo->password) {
+                memset(rdpinfo->password, 0, strlen(rdpinfo->password));
+                g_free(rdpinfo->password);
+                rdpinfo->password = NULL;
+            }
+
+            /*
+             * Unwind back to ldm's auth loop, which redisplays the greeter -
+             * with the message above still shown - instead of starting a
+             * session that we already know will not authenticate.
+             */
+            ldm_raise_auth_except(AUTH_EXC_RELOAD_BACKEND);
+        }
+    }
+
     /* Get hostname */
     if (!rdpinfo->server)
         get_host(&(rdpinfo->server));
@@ -411,7 +679,32 @@ xfreerdp_session()
         rdpinfo->password = NULL;
     }
 
-    ldm_wait(rdpinfo->rdppid);
+    {
+        int status = ldm_wait(rdpinfo->rdppid);
+        const gchar *msg = rdp_exit_message(status);
+
+        if (msg) {
+            /* Shown in the greeter, which is the only place the user looks. */
+            log_entry("xfreerdp", 3, "xfreerdp exited with status %d: %s",
+                      status, msg);
+            set_message((gchar *) msg);
+        } else if (status > XF_EXIT_DISCONNECT_BY_USER) {
+            /*
+             * Codes above the documented range differ between FreeRDP
+             * releases, so report the number instead of inventing a meaning
+             * for it - a wrong explanation costs more time than none.
+             */
+            gchar *unknown = g_strdup_printf(
+                gettext("Connection failed (remote desktop client code %d)."),
+                status);
+
+            log_entry("xfreerdp", 3, "xfreerdp exited with status %d", status);
+            set_message(unknown);
+            g_free(unknown);
+        } else {
+            log_entry("xfreerdp", 6, "xfreerdp exited with status %d", status);
+        }
+    }
 
     for (i = 0; i < argv->len - 1; i++) {
         g_free(g_ptr_array_index(argv, i));

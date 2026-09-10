@@ -1,0 +1,6 @@
+# Force LF line endings for all text files regardless of core.autocrlf on
+# Windows checkouts - this repo is almost entirely POSIX shell scripts and C
+# source deployed to Linux, and CRLF line endings silently break shebangs
+# (e.g. "#!/bin/sh\r" gets parsed as interpreter "/bin/sh\r", which doesn't
+# exist, failing with a confusing "not found" error at exec time).
+* text=auto eol=lf

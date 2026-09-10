@@ -6,6 +6,10 @@ Build-Depends: debhelper-compat (= 13),
  libgtk-3-dev,
  libx11-dev,
  libxext-dev,
+# For the RDP backend's optional pre-authentication against the KDC. Build
+# time only: the runtime libraries (libkrb5-3, libgssapi-krb5-2) are already
+# part of a Debian client image, so enabling this costs the image nothing.
+ libkrb5-dev,
  intltool,
  iso-codes,
  locales,

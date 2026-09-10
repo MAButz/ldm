@@ -2,7 +2,7 @@
 #include <dlfcn.h>
 #include <errno.h>
 #include <glib.h>
-#include <glib.h>
+#include <glob.h>
 #include <malloc.h>
 #include <setjmp.h>
 #include <stdio.h>
@@ -174,8 +174,53 @@ _load_plugin(const char *path)
 }
 
 /*
+ * _scan_plugin_dir
+ *  dlopen every *.so in one directory. Returns the number of shared objects
+ *  it tried to load, or -1 if the directory could not be opened at all.
+ */
+static int
+_scan_plugin_dir(const char *dir)
+{
+    DIR *plugin_dir = opendir(dir);
+
+    if (!plugin_dir)
+        return -1;
+
+    int found = 0;
+    struct dirent *entry;
+    while ((entry = readdir(plugin_dir))) {
+        if ((entry->d_type == DT_REG || entry->d_type == DT_UNKNOWN)
+            && (strstr(entry->d_name, ".so") != NULL)) {
+            char *plug_name = g_strdup_printf("%s/%s", dir, entry->d_name);
+            log_entry("ldm", 7, "loading: %s", plug_name);
+
+            _load_plugin(plug_name);
+            g_free(plug_name);
+            found++;
+        }
+    }
+
+    if (errno)
+        perror(strerror(errno));
+    closedir(plugin_dir);
+    return found;
+}
+
+/*
  * ldm_load_plugins
- *  Load all plugins at LDM_PLUG_DIR
+ *  Load all plugins at LDM_PLUG_DIR, or from an equivalent directory if that
+ *  one is not where they actually ended up.
+ *
+ *  LDM_PLUG_DIR is baked in at compile time from $(libdir)/ldm, so it only
+ *  matches reality when ldm and its plugins were configured with the same
+ *  libdir. On multiarch Debian the packaged plugins land in
+ *  /usr/lib/<triplet>/ldm, while a plain "./configure --prefix=/usr" build
+ *  compiles in /usr/lib/ldm - mix the two and ldm finds no plugins at all.
+ *  It then does not even know its own default "ssh" backend, dies with
+ *  "unknown backend", and whatever supervises it (LTSP's screen_session)
+ *  respawns it forever: a login greeter that flickers past a few times per
+ *  second and never appears. Searching the handful of plausible directories
+ *  makes that failure impossible instead of merely unlikely.
  */
 int
 ldm_load_plugins()
@@ -184,32 +229,44 @@ ldm_load_plugins()
     g_tree_ref(plugin_list);
     plugin_names = g_malloc0(sizeof(gchar *));
 
-    DIR *plugin_dir = opendir(LDM_PLUG_DIR);
+    if (_scan_plugin_dir(LDM_PLUG_DIR) > 0)
+        return 0;
 
-    if (!plugin_dir) {
-        log_entry("ldm", 3, "unable to open plugin dir: %s", LDM_PLUG_DIR);
-        return 1;
-    }
-    struct dirent *entry;
-    while ((entry = readdir(plugin_dir))) {
-        if ((entry->d_type == DT_REG || entry->d_type == DT_UNKNOWN)
-            && (strstr(entry->d_name, ".so") != NULL)) {
-            int name_len =
-                strlen(entry->d_name) + strlen(LDM_PLUG_DIR) + 2;
-            char *plug_name = (char *) malloc(name_len);
-            snprintf(plug_name, name_len, "%s/%s", LDM_PLUG_DIR,
-                     entry->d_name);
-            log_entry("ldm", 7, "loading: %s", plug_name);
+    /* Fixed alternatives first, then any multiarch libdir. */
+    static const char *const candidates[] = {
+        "/usr/lib/ldm",
+        "/usr/local/lib/ldm",
+        NULL
+    };
 
-            _load_plugin(plug_name);
-            free(plug_name);
+    for (int i = 0; candidates[i]; i++) {
+        if (g_strcmp0(candidates[i], LDM_PLUG_DIR) == 0)
+            continue;
+        if (_scan_plugin_dir(candidates[i]) > 0) {
+            log_entry("ldm", 4, "no plugins in %s, used %s instead",
+                      LDM_PLUG_DIR, candidates[i]);
+            return 0;
         }
     }
 
-    if (errno)
-        perror(strerror(errno));
-    closedir(plugin_dir);
-    return 0;
+    glob_t multiarch = { 0 };
+    if (glob("/usr/lib/*/ldm", GLOB_ONLYDIR, NULL, &multiarch) == 0) {
+        for (size_t i = 0; i < multiarch.gl_pathc; i++) {
+            if (g_strcmp0(multiarch.gl_pathv[i], LDM_PLUG_DIR) == 0)
+                continue;
+            if (_scan_plugin_dir(multiarch.gl_pathv[i]) > 0) {
+                log_entry("ldm", 4, "no plugins in %s, used %s instead",
+                          LDM_PLUG_DIR, multiarch.gl_pathv[i]);
+                globfree(&multiarch);
+                return 0;
+            }
+        }
+    }
+    globfree(&multiarch);
+
+    log_entry("ldm", 3, "no authentication plugins found (looked in %s)",
+              LDM_PLUG_DIR);
+    return 1;
 }
 
 /*

@@ -1,3 +1,24 @@
+ldm (3.0.2-1) unstable; urgency=medium
+
+  * Merge ldm-graphical-session-fixes: KDC pre-authentication for the RDP
+    backend, a reason shown to the user when an RDP session ends, the
+    Preferences menu anchored so it opens away from the screen edge, a
+    plugin directory that no longer has to sit where LDM_PLUG_DIR points,
+    and LF line endings enforced via .gitattributes.
+  * ldm.service now runs screen_session 07 rather than the xinit line that
+    3.0.1-2 introduced. Both fixed the same fault - the unit started no X
+    server - but screen_session is the better of the two: it sets up the
+    xauth cookie and takes the X arguments from lts.conf (X_COLOR_DEPTH
+    among them), which a bare xinit call does not, and it matches the
+    SCREEN_07 default that ltsp_config.d/15default-screen already sets,
+    including SCREEN_07_WAIT_FGCONSOLE=False.
+  * The unit is guarded with ConditionPathExists on
+    /usr/share/ltsp/screen_session. That path belongs to ltsp-client-core,
+    which this package does not depend on, so without the guard the unit
+    fails on every host that has ldm without LTSP.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Thu, 10 Sep 2026 17:45:00 +0200
+
 ldm (3.0.1-2) unstable; urgency=medium
 
   * Fixed: the ldm.service added in 3.0.1-1 could never work. It ran
