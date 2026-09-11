@@ -1,3 +1,14 @@
+ldm (3.1.0-2) unstable; urgency=medium
+
+  * Rebuilt so that screen.d/ldm keeps the executable bit git records for
+    it. Same cause as ltsp 6.1.0-2: a Windows checkout has core.filemode
+    false, so the build tree carries no executable bits, and the packaging
+    copies that tree as it finds it. The screen script is what
+    screen_session executes for SCREEN_nn=ldm, so without the bit the
+    greeter cannot start even once everything else is right.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Fri, 11 Sep 2026 23:15:00 +0200
+
 ldm (3.1.0-1) unstable; urgency=medium
 
   * New: RDP_PREAUTH=ssh, for sites with local accounts and no domain. The
