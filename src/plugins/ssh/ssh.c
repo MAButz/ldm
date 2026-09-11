@@ -22,14 +22,12 @@
 #include "../../ldm.h"
 #include "../../ldminfo.h"
 #include "../../ldmutils.h"
+#include "../../ldmpty.h"
 #include "../../ldmgreetercomm.h"
 #include "../../logging.h"
 #include "../../plugin.h"
 #include "ssh.h"
 
-#define ERROR -1
-#define TIMED_OUT -2
-#define MAXEXP 4096
 #define SENTINEL "LTSPROCKS"
 
 LdmBackend *descriptor;
@@ -288,117 +286,12 @@ close_ssh()
     free(sshinfo);
 }
 
-int
-expect(int fd, char *p, int seconds, ...)
-{
-    fd_set set;
-    struct timeval timeout;
-    int i = 0, st;
-    ssize_t size = 0;
-    size_t total = 0;
-    va_list ap;
-    char buffer[BUFSIZ];
-    gchar *arg;
-    GPtrArray *expects;
-    int loopcount = seconds;
-    int loopend = 0;
-
-    bzero(p, MAXEXP);
-
-    expects = g_ptr_array_new();
-
-    va_start(ap, seconds);
-
-    while ((arg = va_arg(ap, char *)) != NULL) {
-        g_ptr_array_add(expects, (gpointer) arg);
-    }
-
-    va_end(ap);
-
-    /*
-     * Set our file descriptor to be watched.
-     */
-
-
-    /*
-     * Main loop.
-     */
-
-    while (1) {
-        timeout.tv_sec = (long) 1;               /* one second timeout */
-        timeout.tv_usec = 0;
-
-        FD_ZERO(&set);
-        FD_SET(fd, &set);
-        st = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
-
-        if (st == -1 && errno == EINTR)
-        {
-            continue;                            /* interrupted by signal -> retry */
-        }
-
-        if (st < 0) {                            /* bad thing */
-            break;
-        }
-
-        if (loopcount == 0) {
-            break;
-        }
-
-        if (!st) {                               /* timeout */
-            loopcount--;                         /* We've not seen the data we want */
-            continue;
-        }
-
-        size = read(fd, buffer, sizeof buffer);
-        if (size <= 0) {
-            break;
-        }
-
-        if ((total + size) < MAXEXP) {
-            strncpy(p + total, buffer, size);
-            total += size;
-        }
-
-        if (child_exited) {
-            break;                               /* someone died on us */
-        }
-
-        for (i = 0; i < expects->len; i++) {
-            if (strstr(p, g_ptr_array_index(expects, i))) {
-                loopend = TRUE;
-                break;
-            }
-        }
-
-        if (loopend) {
-            break;
-        }
-    }
-
-    log_entry("ldm", 7, "expect saw: %s", p);
-
-    if (size < 0 || st < 0) {
-        return ERROR;                            /* error occured */
-    }
-    if (loopcount == 0) {
-        return TIMED_OUT;                        /* timed out */
-    }
-    /* Sleep a bit to make sure we notice if ssh died in the meantime */
-    usleep(100000);
-    if (child_exited)
-    {
-        return ERROR;
-    }
-
-    return i;                                    /* which expect did we see? */
-}
 
 void
 ssh_chat(gint fd)
 {
     int seen;
-    gchar lastseen[MAXEXP];
+    gchar lastseen[LDM_PTY_MAXBUF];
     int first_time = 1;
 
     /* We've already got the password here from the mainline,  so there's
@@ -411,7 +304,7 @@ ssh_chat(gint fd)
 
     while (TRUE) {
         /* ASSUMPTION: ssh will send out a string that ends in ": " for an expiry */
-        seen = expect(fd, lastseen, 30, SENTINEL, ": ", NULL);
+        seen = ldm_pty_expect(fd, lastseen, 30, SENTINEL, ": ", NULL);
 
         /* We might have a : in the data, we're looking for :'s at the
            end of the line */

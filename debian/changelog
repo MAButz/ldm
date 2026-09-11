@@ -1,3 +1,41 @@
+ldm (3.0.3-1) unstable; urgency=medium
+
+  * New: RDP_PREAUTH=ssh, for sites with local accounts and no domain. The
+    Kerberos pre-authentication added in 3.0.2 answers the same question -
+    are these credentials good, asked before handing them to a client that
+    cannot report a rejection - but it needs a KDC. RDP_PREAUTH=ssh asks an
+    sshd instead, which also means it tests the PAM stack of the machine
+    that will run the session rather than just the password: an expired
+    account, a pam_access rule or an sssd access rule all deny here too.
+    RDP_PREAUTH=True still means Kerberos, because that is what existing
+    lts.conf files say.
+  * RDP_PREAUTH_HOST, optional. The check normally goes to RDP_SERVER; set
+    this only when RDP_SERVER is a load balancer, since HAProxy forwards
+    3389 and an ssh connection to that address would reach the balancer
+    rather than a session server.
+  * The pty machinery moved from the ssh backend into src/ldmpty.c, shared
+    by both plugins through the ldm binary's dynamic exports, the same way
+    they already share ldm_wait() and child_exited(). expect() was moved
+    verbatim rather than reimplemented; the ssh backend keeps opening its
+    own pty, because its session outlives the one-shot exchange the new
+    check needs.
+  * Security, and the reason this is not simply the better option: unlike
+    Kerberos, which never puts the password on the wire, the ssh probe
+    sends it to whatever answers on that address. A thin client booting a
+    read-only image has no persistent known_hosts, so trust-on-first-use
+    never gets past "first use". StrictHostKeyChecking stays on and the
+    host keys belong in the image - which is what ltsp-update-sshkeys(8)
+    has always done for the X11-over-ssh backend, and it copies public
+    keys only. Verified against OpenSSH: with an unknown host key ssh
+    refuses before it asks for a password, so nothing is disclosed.
+  * The probe fails open where the question could not be asked - no host
+    configured, ssh missing, or a server refusing password authentication
+    outright ("Permission denied (publickey)") - and deliberately does not
+    fail open on host key verification, which is the case it exists to
+    catch.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Fri, 11 Sep 2026 22:30:00 +0200
+
 ldm (3.0.2-1) unstable; urgency=medium
 
   * Merge ldm-graphical-session-fixes: KDC pre-authentication for the RDP
