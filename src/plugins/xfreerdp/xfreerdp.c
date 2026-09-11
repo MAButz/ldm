@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <utmp.h>
 
@@ -82,6 +83,65 @@ RdpInfo *rdpinfo;
  *    reported - those would break the login anyway, and saying so early is
  *    the whole point.
  */
+/*
+ * rdp_preauth_have_realm
+ *
+ * Is there a Kerberos realm to ask at all? RDP_PREAUTH_REALM names one
+ * outright; failing that, krb5.conf may declare a default. Asked without
+ * touching the network, because this only decides *which* check to run.
+ */
+static gboolean
+rdp_preauth_have_realm(void)
+{
+    const gchar *realm = getenv("RDP_PREAUTH_REALM");
+    krb5_context ctx = NULL;
+    char *default_realm = NULL;
+    gboolean have;
+
+    if (realm && *realm)
+        return TRUE;
+
+    if (krb5_init_context(&ctx) != 0)
+        return FALSE;
+
+    have = (krb5_get_default_realm(ctx, &default_realm) == 0);
+    if (have)
+        krb5_free_default_realm(ctx, default_realm);
+    krb5_free_context(ctx);
+
+    return have;
+}
+
+/*
+ * rdp_preauth_ssh_usable
+ *
+ * Whether the ssh probe can be trusted on this client - which comes down
+ * to whether the host keys are known in advance.
+ *
+ * This gate exists only for the automatic choice, and the reason is worth
+ * stating. The ssh probe refuses to proceed on an unverified host key, and
+ * that refusal deliberately does not fail open: it is the case the check
+ * exists to catch. So a client with an empty ssh_known_hosts would reject
+ * every login. Reaching that state by *upgrading* - RDP_PREAUTH=True
+ * quietly acquiring a second meaning - would be a lockout nobody asked
+ * for, so the automatic path declines instead and says why in the log.
+ *
+ * An explicit RDP_PREAUTH=ssh is not gated. Asking for something and
+ * being told plainly that it is not set up is different from having it
+ * chosen on your behalf.
+ */
+static gboolean
+rdp_preauth_ssh_usable(void)
+{
+    const gchar *known = getenv("RDP_PREAUTH_SSH_KNOWN_HOSTS");
+    struct stat st;
+
+    if (!known || !*known)
+        known = "/etc/ssh/ssh_known_hosts";
+
+    return (stat(known, &st) == 0 && S_ISREG(st.st_mode) && st.st_size > 0);
+}
+
 static gchar *
 rdp_preauth_kerberos(const gchar *username, const gchar *password)
 {
@@ -730,18 +790,41 @@ auth_xfreerdp()
         gchar *why = NULL;
 
         /*
-         * "ssh" picks the sshd probe, anything true-ish (the original
-         * spelling was RDP_PREAUTH=True) picks Kerberos. Keeping True
-         * meaning Kerberos matters: it is what existing lts.conf files
-         * say, and silently changing what they do would be worse than
-         * having no second method at all.
+         * RDP_PREAUTH=False, or unset, means what it always did: no check,
+         * hand the credentials straight to the RDP client.
+         *
+         * An explicit method is honoured as given - "ssh" or "krb5" - so a
+         * site that knows what it wants gets it, including the right to be
+         * told that it is not set up.
+         *
+         * RDP_PREAUTH=True means "check", and leaves the method to the
+         * machine: a Kerberos realm implies a domain worth asking, and
+         * without one the ssh probe is the only thing that can answer. That
+         * keeps one spelling working in both kinds of deployment, and it is
+         * why the ssh probe is gated on the host keys being present here
+         * but not above - an upgrade must not turn True into a lockout.
          */
-        if (preauth && g_ascii_strcasecmp(preauth, "ssh") == 0)
+        if (preauth && g_ascii_strcasecmp(preauth, "ssh") == 0) {
             why = rdp_preauth_ssh(rdpinfo->username, rdpinfo->password);
-        else if (ldm_getenv_bool("RDP_PREAUTH")
-                 || (preauth && g_ascii_strncasecmp(preauth, "krb", 3) == 0)
-                 || (preauth && g_ascii_strcasecmp(preauth, "kerberos") == 0))
+        } else if (preauth
+                   && (g_ascii_strncasecmp(preauth, "krb", 3) == 0
+                       || g_ascii_strcasecmp(preauth, "kerberos") == 0)) {
             why = rdp_preauth_kerberos(rdpinfo->username, rdpinfo->password);
+        } else if (ldm_getenv_bool("RDP_PREAUTH")) {
+            if (rdp_preauth_have_realm()) {
+                why = rdp_preauth_kerberos(rdpinfo->username,
+                                           rdpinfo->password);
+            } else if (rdp_preauth_ssh_usable()) {
+                log_entry("xfreerdp", 6, "pre-auth: no Kerberos realm, "
+                          "asking sshd instead");
+                why = rdp_preauth_ssh(rdpinfo->username, rdpinfo->password);
+            } else {
+                log_entry("xfreerdp", 4, "pre-auth skipped: no Kerberos realm "
+                          "and no ssh host keys to verify against (see "
+                          "ltsp-update-sshkeys, or set RDP_PREAUTH=ssh to "
+                          "insist)");
+            }
+        }
 
         if (why) {
             set_message(why);

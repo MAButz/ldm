@@ -7,8 +7,20 @@ ldm (3.0.3-1) unstable; urgency=medium
     sshd instead, which also means it tests the PAM stack of the machine
     that will run the session rather than just the password: an expired
     account, a pam_access rule or an sssd access rule all deny here too.
-    RDP_PREAUTH=True still means Kerberos, because that is what existing
-    lts.conf files say.
+  * RDP_PREAUTH=True now means "check", not "check with Kerberos", and
+    picks the method: a configured realm (RDP_PREAUTH_REALM, or
+    default_realm in krb5.conf) means a domain worth asking, and without
+    one the ssh probe is the only thing that can answer. RDP_PREAUTH=krb5
+    and RDP_PREAUTH=ssh still force one outright, and False still means no
+    check at all, exactly as before.
+  * The automatic fallback to ssh is gated on the host keys actually being
+    present, and only the automatic one. The ssh probe refuses on an
+    unverified host key and that refusal deliberately does not fail open -
+    so on a client with an empty ssh_known_hosts it would reject every
+    login. Reaching that by upgrading, with RDP_PREAUTH=True quietly
+    acquiring a second meaning, would be a lockout nobody asked for. An
+    explicit RDP_PREAUTH=ssh is not gated: being told plainly that it is
+    not set up is different from having it chosen on your behalf.
   * RDP_PREAUTH_HOST, optional. The check normally goes to RDP_SERVER; set
     this only when RDP_SERVER is a load balancer, since HAProxy forwards
     3389 and an ssh connection to that address would reach the balancer
