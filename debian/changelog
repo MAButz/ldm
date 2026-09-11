@@ -1,4 +1,4 @@
-ldm (3.0.3-1) unstable; urgency=medium
+ldm (3.1.0-1) unstable; urgency=medium
 
   * New: RDP_PREAUTH=ssh, for sites with local accounts and no domain. The
     Kerberos pre-authentication added in 3.0.2 answers the same question -
@@ -45,6 +45,11 @@ ldm (3.0.3-1) unstable; urgency=medium
     outright ("Permission denied (publickey)") - and deliberately does not
     fail open on host key verification, which is the case it exists to
     catch.
+
+  * Numbered 3.1.0 rather than 3.0.3: a second authentication method and a
+    changed meaning for an existing lts.conf directive are not a patch-level
+    matter, and the version is what an administrator reads before deciding
+    whether an upgrade needs thinking about.
 
  -- Marc-Andre Beckmann-Butz <ma@butz.online>  Fri, 11 Sep 2026 22:30:00 +0200
 
