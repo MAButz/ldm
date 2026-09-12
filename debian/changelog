@@ -1,3 +1,59 @@
+ldm (3.2.0-1) unstable; urgency=medium
+
+  * New: the greeter can warn about a lockout before it happens, and say
+    how long it lasts once it has. Sites protect RDP with fail2ban, so a
+    few wrong passwords block the client at the network level for some
+    minutes; from the seat that is baffling, because the screen that
+    worked a moment ago now fails in some entirely different way, and
+    nothing can be learned by asking the server - being unable to reach
+    the server is the state in question.
+
+    What ldm can honestly observe was measured rather than assumed.
+    Against xrdp a rejected password makes the RDP client neither exit nor
+    report anything: the session stays open showing xrdp's own login
+    window, and the retries happen in there, invisible to ldm. Failed RDP
+    logins are therefore not countable from the client at all. The
+    optional pre-authentication is the one place a rejection is visible,
+    and it is exactly where the counting now happens.
+
+    Those rejections are worth counting even though a rejected pre-auth
+    never reaches the RDP server, because they reach something else that
+    counts them: RDP_PREAUTH=ssh leaves a failed password in the sshd log,
+    where an sshd jail bans the client (on every port, with
+    banaction_allports); RDP_PREAUTH=krb5 raises badPwdCount on the domain
+    controller, where the account lockout policy is counting.
+
+    New lts.conf settings, all optional:
+      - RDP_PREAUTH_MAXFAIL    rejections before the client is considered
+                               blocked. Off by default, because the right
+                               number is whatever the site configured on
+                               the server and a warning about a lockout
+                               that does not exist is worse than silence.
+      - RDP_PREAUTH_FAILWINDOW seconds over which they are counted (600).
+      - RDP_PREAUTH_LOCKTIME   how long the block lasts, for the countdown
+                               the greeter shows (600).
+
+    The tally is a file under /run/ldm/lockout and is therefore shared by
+    every screen on the client. That is the point rather than an
+    implementation detail: SCREEN_05 through SCREEN_08 are four greeters
+    behind one address, and the thing doing the banning counts per
+    address, so a per-process counter would see a quarter of what the
+    server sees. It lives in tmpfs, so a reboot forgets it - the greeter
+    then says nothing rather than guessing, which is the honest failure
+    mode for a warning.
+
+  * The pre-authentication backends now report what they established, not
+    just a message to display. "Wrong user name or password." and "Cannot
+    reach the authentication server." were both simply a non-NULL return,
+    and only the first is an attempt anyone counted; telling them apart by
+    inspecting a translated string would not be a protocol. An account
+    that is already locked or whose password expired is reported as barred
+    rather than rejected, because neither is a failed attempt.
+
+  * New file ldmlockout.c, built into the ldm binary alongside ldmpty.c.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Sat, 12 Sep 2026 10:05:00 +0200
+
 ldm (3.1.0-2) unstable; urgency=medium
 
   * Rebuilt so that screen.d/ldm keeps the executable bit git records for

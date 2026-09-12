@@ -18,6 +18,7 @@
 #include <krb5.h>
 
 #include "../../ldmutils.h"
+#include "../../ldmlockout.h"
 #include "../../ldmpty.h"
 #include "../../ldmgreetercomm.h"
 #include "../../ldmplugin.h"
@@ -51,6 +52,23 @@ RdpInfo *rdpinfo;
 #define XF_EXIT_USER_PRIVILEGES            9
 #define XF_EXIT_FRESH_CREDENTIALS_REQUIRED 10
 #define XF_EXIT_DISCONNECT_BY_USER         11
+
+/*
+ * What a pre-auth attempt actually established. The message alone cannot
+ * say: "Wrong user name or password." and "Cannot reach the authentication
+ * server." are both a non-NULL return, but only the first one is an attempt
+ * that some server counted against this client.
+ *
+ * The distinction is the whole basis of the lockout warning below, so it is
+ * carried explicitly rather than inferred from the text - a translated
+ * string is not a protocol.
+ */
+typedef enum {
+    RDP_PREAUTH_ACCEPTED = 0,   /* the credentials are good */
+    RDP_PREAUTH_REJECTED,       /* a server refused these credentials */
+    RDP_PREAUTH_BARRED,         /* the account itself is locked or expired */
+    RDP_PREAUTH_UNAVAILABLE     /* the question could not be asked */
+} RdpPreauthVerdict;
 
 /*
  * rdp_preauth_kerberos
@@ -143,7 +161,8 @@ rdp_preauth_ssh_usable(void)
 }
 
 static gchar *
-rdp_preauth_kerberos(const gchar *username, const gchar *password)
+rdp_preauth_kerberos(const gchar *username, const gchar *password,
+                     RdpPreauthVerdict *verdict)
 {
     krb5_context ctx = NULL;
     krb5_principal princ = NULL;
@@ -153,6 +172,15 @@ rdp_preauth_kerberos(const gchar *username, const gchar *password)
     const gchar *realm = getenv("RDP_PREAUTH_REALM");
     gchar *principal_name = NULL;
     gchar *msg = NULL;
+    RdpPreauthVerdict v = RDP_PREAUTH_UNAVAILABLE;
+
+    /*
+     * Pre-set, because every early return below means the same thing: the
+     * question could not be put to anyone, so nothing was counted against
+     * this client and nothing should be warned about.
+     */
+    if (verdict)
+        *verdict = RDP_PREAUTH_UNAVAILABLE;
 
     if (!username || !*username || !password)
         return NULL;
@@ -207,23 +235,34 @@ rdp_preauth_kerberos(const gchar *username, const gchar *password)
     switch (rc) {
     case 0:
         log_entry("xfreerdp", 6, "pre-auth succeeded for %s", username);
+        v = RDP_PREAUTH_ACCEPTED;
         break;
 
     case KRB5KDC_ERR_PREAUTH_FAILED:
     case KRB5KRB_AP_ERR_BAD_INTEGRITY:
         msg = g_strdup(gettext("Wrong user name or password."));
+        v = RDP_PREAUTH_REJECTED;
         break;
 
     case KRB5KDC_ERR_C_PRINCIPAL_UNKNOWN:
         msg = g_strdup(gettext("This user does not exist in the domain."));
+        /*
+         * Counted like a rejection: the KDC was asked and said no, and a
+         * jail watching its log counts the attempt whether or not the name
+         * existed. Typing a colleague's name wrongly three times gets the
+         * client banned just the same.
+         */
+        v = RDP_PREAUTH_REJECTED;
         break;
 
     case KRB5KDC_ERR_CLIENT_REVOKED:
         msg = g_strdup(gettext("This account is locked or disabled."));
+        v = RDP_PREAUTH_BARRED;
         break;
 
     case KRB5KDC_ERR_KEY_EXP:
         msg = g_strdup(gettext("The password for this account has expired."));
+        v = RDP_PREAUTH_BARRED;
         break;
 
     case KRB5KRB_AP_ERR_SKEW:
@@ -257,6 +296,9 @@ rdp_preauth_kerberos(const gchar *username, const gchar *password)
         krb5_free_cred_contents(ctx, &creds);
 
   out:
+    if (verdict)
+        *verdict = v;
+
     g_free(principal_name);
     if (opt)
         krb5_get_init_creds_opt_free(ctx, opt);
@@ -302,7 +344,8 @@ rdp_preauth_kerberos(const gchar *username, const gchar *password)
  * Returns NULL to proceed, or a message to show in the greeter.
  */
 static gchar *
-rdp_preauth_ssh(const gchar *username, const gchar *password)
+rdp_preauth_ssh(const gchar *username, const gchar *password,
+                RdpPreauthVerdict *verdict)
 {
     const gchar *host = getenv("RDP_PREAUTH_HOST");
     const gchar *known = getenv("RDP_PREAUTH_SSH_KNOWN_HOSTS");
@@ -312,6 +355,12 @@ rdp_preauth_ssh(const gchar *username, const gchar *password)
     GPid pid;
     int fd = -1, seen;
     guint i;
+    RdpPreauthVerdict v = RDP_PREAUTH_UNAVAILABLE;
+
+    /* Same reasoning as the Kerberos version: every bail-out below is a
+     * question that was never asked, so it counts against nobody. */
+    if (verdict)
+        *verdict = RDP_PREAUTH_UNAVAILABLE;
 
     if (!username || !*username || !password)
         return NULL;
@@ -414,6 +463,7 @@ rdp_preauth_ssh(const gchar *username, const gchar *password)
 
     if (seen == 1) {
         msg = NULL;                              /* the sentinel: accepted */
+        v = RDP_PREAUTH_ACCEPTED;
     } else if (seen == 2) {
         /*
          * "Permission denied (publickey)" means the server never offered
@@ -427,6 +477,13 @@ rdp_preauth_ssh(const gchar *username, const gchar *password)
             msg = NULL;
         } else {
             msg = g_strdup(gettext("Wrong user name or password."));
+            /*
+             * The one branch that counts. sshd has just logged a failed
+             * password for this address, which is exactly what an sshd
+             * jail is watching - so this attempt is on somebody else's
+             * tally too, and the greeter is entitled to say so.
+             */
+            v = RDP_PREAUTH_REJECTED;
         }
     } else if (seen == 3) {
         /*
@@ -454,8 +511,83 @@ rdp_preauth_ssh(const gchar *username, const gchar *password)
     kill(pid, SIGTERM);
     ldm_wait(pid);
 
+    if (verdict)
+        *verdict = v;
+
     memset(buf, 0, sizeof buf);
     return msg;
+}
+
+/*
+ * rdp_env_int
+ *
+ * A number from lts.conf, or the fallback. Anything unparseable is
+ * reported and ignored rather than silently read as zero, which for
+ * RDP_PREAUTH_MAXFAIL would quietly turn the feature off.
+ */
+static gint
+rdp_env_int(const gchar *name, gint fallback)
+{
+    const gchar *value = getenv(name);
+    gchar *end = NULL;
+    gint64 n;
+
+    if (!value || !*value)
+        return fallback;
+
+    n = g_ascii_strtoll(value, &end, 10);
+    if (end == value || (end && *end) || n < 0 || n > G_MAXINT) {
+        log_entry("xfreerdp", 4, "%s: not a number (%s), using %d instead",
+                  name, value, fallback);
+        return fallback;
+    }
+    return (gint) n;
+}
+
+/*
+ * rdp_duration_text
+ *
+ * "3 minutes", or seconds while that is still the more useful unit. Rounds
+ * up, because a lockout that is nearly over should not be announced as
+ * over.
+ */
+static gchar *
+rdp_duration_text(gint seconds)
+{
+    if (seconds < 120)
+        return g_strdup_printf(ngettext("%d second", "%d seconds", seconds),
+                               seconds);
+    seconds = (seconds + 59) / 60;
+    return g_strdup_printf(ngettext("%d minute", "%d minutes", seconds),
+                           seconds);
+}
+
+/*
+ * rdp_lockout_target
+ *
+ * Which tally a rejection belongs to - meaning whichever machine is
+ * counting it. The ssh probe makes sshd log a failed password, so the tally
+ * belongs to that host; Kerberos makes the KDC raise badPwdCount, so it
+ * belongs to the realm. They are kept apart because a site can change
+ * RDP_PREAUTH between them, and inheriting the other method tally would
+ * lock somebody out on evidence that never existed.
+ */
+static gchar *
+rdp_lockout_target(gboolean via_ssh)
+{
+    const gchar *value;
+
+    if (via_ssh) {
+        if ((value = getenv("RDP_PREAUTH_HOST")) && *value)
+            return g_strconcat("ssh-", value, NULL);
+        if ((value = getenv("RDP_SERVER")) && *value)
+            return g_strconcat("ssh-", value, NULL);
+        return g_strdup("ssh-default");
+    }
+
+    if ((value = getenv("RDP_PREAUTH_REALM")) && *value)
+        return g_strconcat("krb-", value, NULL);
+    return g_strdup("krb-default");
 }
 
 /*
@@ -804,26 +936,121 @@ auth_xfreerdp()
          * why the ssh probe is gated on the host keys being present here
          * but not above - an upgrade must not turn True into a lockout.
          */
+        enum { PREAUTH_NONE, PREAUTH_SSH, PREAUTH_KRB } method = PREAUTH_NONE;
+        RdpPreauthVerdict verdict = RDP_PREAUTH_UNAVAILABLE;
+
         if (preauth && g_ascii_strcasecmp(preauth, "ssh") == 0) {
-            why = rdp_preauth_ssh(rdpinfo->username, rdpinfo->password);
+            method = PREAUTH_SSH;
         } else if (preauth
                    && (g_ascii_strncasecmp(preauth, "krb", 3) == 0
                        || g_ascii_strcasecmp(preauth, "kerberos") == 0)) {
-            why = rdp_preauth_kerberos(rdpinfo->username, rdpinfo->password);
+            method = PREAUTH_KRB;
         } else if (ldm_getenv_bool("RDP_PREAUTH")) {
             if (rdp_preauth_have_realm()) {
-                why = rdp_preauth_kerberos(rdpinfo->username,
-                                           rdpinfo->password);
+                method = PREAUTH_KRB;
             } else if (rdp_preauth_ssh_usable()) {
                 log_entry("xfreerdp", 6, "pre-auth: no Kerberos realm, "
                           "asking sshd instead");
-                why = rdp_preauth_ssh(rdpinfo->username, rdpinfo->password);
+                method = PREAUTH_SSH;
             } else {
                 log_entry("xfreerdp", 4, "pre-auth skipped: no Kerberos realm "
                           "and no ssh host keys to verify against (see "
                           "ltsp-update-sshkeys, or set RDP_PREAUTH=ssh to "
                           "insist)");
             }
+        }
+
+        /*
+         * Keeping count, and saying something before the count runs out.
+         *
+         * A rejected pre-auth never reaches the RDP server, so it cannot
+         * trip an RDP jail - but it does reach whatever answered. The ssh
+         * probe leaves a failed password in the sshd log, where an sshd
+         * jail will ban this client at the network level; the Kerberos
+         * probe raises badPwdCount on the domain controller, where the
+         * account lockout policy is counting. Both of those punish the
+         * *next* attempt, and neither can be asked about once it has
+         * happened - a banned client cannot reach the machine that banned
+         * it - which is why the tally is kept here instead.
+         *
+         * RDP_PREAUTH_MAXFAIL is off by default, because the right number
+         * is whatever the site configured on the server, and guessing it
+         * would produce warnings about a lockout that does not exist. A
+         * warning has to be true to be worth anything.
+         */
+        if (method != PREAUTH_NONE) {
+            gchar *target = rdp_lockout_target(method == PREAUTH_SSH);
+            gint maxfail = rdp_env_int("RDP_PREAUTH_MAXFAIL", 0);
+            gint window = rdp_env_int("RDP_PREAUTH_FAILWINDOW", 600);
+            gint locktime = rdp_env_int("RDP_PREAUTH_LOCKTIME", 600);
+            time_t newest = 0;
+            gint failed = 0;
+            gint waited = 0;
+
+            if (maxfail > 0) {
+                failed = ldm_lockout_count(target, window, &newest);
+                if (newest > 0)
+                    waited = (gint) (time(NULL) - newest);
+            }
+
+            if (maxfail > 0 && failed >= maxfail && waited < locktime) {
+                /*
+                 * Over the line already. Sending another attempt would
+                 * restart the server clock as well as ours, so the one
+                 * useful thing left is to not send it, and to say how long
+                 * the wait is - which is the part the person at the screen
+                 * cannot find out any other way.
+                 */
+                gchar *left = rdp_duration_text(locktime - waited);
+
+                why = g_strdup_printf(
+                    gettext("Too many failed sign-in attempts from this "
+                            "computer. It stays blocked for another %s. "
+                            "Every screen on this computer shares that "
+                            "block."), left);
+                log_entry("xfreerdp", 4, "pre-auth refused: %d failures "
+                          "against %s within %ds, %ds of lockout left",
+                          failed, target, window, locktime - waited);
+                g_free(left);
+            } else {
+                if (method == PREAUTH_SSH) {
+                    why = rdp_preauth_ssh(rdpinfo->username,
+                                          rdpinfo->password, &verdict);
+                } else {
+                    why = rdp_preauth_kerberos(rdpinfo->username,
+                                               rdpinfo->password, &verdict);
+                }
+
+                if (verdict == RDP_PREAUTH_ACCEPTED) {
+                    /*
+                     * Credentials that work end the tally, exactly as a
+                     * successful login resets the counter on the server.
+                     */
+                    ldm_lockout_clear(target);
+                } else if (verdict == RDP_PREAUTH_REJECTED) {
+                    gint left;
+
+                    ldm_lockout_record(target, rdpinfo->username);
+                    left = maxfail - (failed + 1);
+
+                    if (maxfail > 0 && (left == 1 || left <= 0)) {
+                        gchar *how_long = rdp_duration_text(locktime);
+                        gchar *warned = g_strdup_printf(
+                            left == 1
+                            ? gettext("%s One more failed attempt will block "
+                                      "this computer for %s.")
+                            : gettext("%s This computer is now blocked for "
+                                      "about %s."),
+                            why ? why : "", how_long);
+
+                        g_free(why);
+                        why = warned;
+                        g_free(how_long);
+                    }
+                }
+            }
+
+            g_free(target);
         }
 
         if (why) {
