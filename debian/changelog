@@ -1,3 +1,37 @@
+ldm (3.3.3-1) unstable; urgency=medium
+
+  * RDP_PREAUTH=ssh now reaches a verdict. 3.3.2 fixed half of it: the
+    password was finally sent and sshd logged the failure, but the answer
+    was still thrown away and the login still went through.
+
+    ldm_pty_expect() asked "has the child died?" before comparing what it
+    had just read. For a session that is the right order - the ssh backend
+    wants to hear about a client that dies mid-session. For a one-shot
+    question it is exactly wrong, because the answer and the death arrive
+    together: ssh prints
+
+        Permission denied (publickey,password).
+
+    and exits in the same breath. The string was sitting in the buffer, and
+    the function reported LDM_PTY_ERROR anyway - which the pre-auth reads as
+    "could not ask", and a question that could not be asked counts against
+    nobody.
+
+    The pattern comparison now happens first, and a match is returned
+    whatever the child does afterwards. A child that dies without answering
+    is still an error, and silence is still a timeout.
+
+    Verified against a real sshd rather than a stand-in, which is why this
+    took three releases to find: a scripted stand-in stays alive after
+    speaking, and ssh does not. The harness drives the real
+    ldm_pty_expect() through the same sequence the plugin uses, with the
+    same ssh-keygen call in front of it, and distinguishes all three states
+    - 3.3.1 never sends the password, 3.3.2 sends it and discards the
+    reply, and this one rejects a wrong password, accepts a right one, and
+    still reports an unreachable server as unreachable.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 16:15:34 +0200
+
 ldm (3.3.2-1) unstable; urgency=medium
 
   * RDP_PREAUTH=ssh actually decides again. Since 3.3.0 it declined to, on

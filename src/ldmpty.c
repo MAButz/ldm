@@ -191,11 +191,15 @@ ldm_pty_expect(int fd, char *p, int seconds, ...)
             total += size;
         }
 
-        if (child_exited) {
-            break;                               /* someone died on us */
-        }
-
-        for (i = 0; i < expects->len; i++) {
+        /*
+         * Compare before looking at child_exited, because for a one-shot
+         * exchange the answer and the death arrive together: ssh prints
+         * "Permission denied (publickey,password)." and exits in the same
+         * breath. Checking the flag first threw that answer away and
+         * reported an error instead - which the RDP pre-authentication read
+         * as "could not ask", so it let the login through.
+         */
+        for (i = 0; i < (int) expects->len; i++) {
             if (strstr(p, g_ptr_array_index(expects, i))) {
                 loopend = TRUE;
                 break;
@@ -205,9 +209,21 @@ ldm_pty_expect(int fd, char *p, int seconds, ...)
         if (loopend) {
             break;
         }
+
+        if (child_exited) {
+            break;                               /* died without answering */
+        }
     }
 
     log_entry("ldm", 7, "pty expect saw: %s", p);
+
+    /*
+     * A match is an answer, whatever happened afterwards. Everything below
+     * is about conversations that produced none.
+     */
+    if (loopend) {
+        return i;
+    }
 
     if (size < 0 || st < 0) {
         return LDM_PTY_ERROR;                            /* error occured */
