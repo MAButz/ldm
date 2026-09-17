@@ -224,9 +224,25 @@ update_time(GtkWidget* label)
     timet = time(NULL);
     timePtr = localtime(&timet);
 
-    // Allow the users to customize the clock format including the GTK markup,
-    // for example in case they want the date non-bold and the time in bold.
-    clock_format = ldm_getenv_str_default("LDM_CLOCK_FORMAT", "%x, <b>%H:%M</b>");
+    /*
+     * Allow the users to customize the clock format including the GTK markup,
+     * for example in case they want the date non-bold and the time in bold.
+     *
+     * The default is ISO 8601 rather than %x, which is the locale's own date
+     * format and therefore only as good as the locale. A thin client image
+     * carries whatever locale it was built with - en_US in a stock build -
+     * and %x then renders 09/17/2026 on a greeter standing in Germany. That
+     * is not merely foreign, it is ambiguous: 09/10 is either the 9th of
+     * October or the 10th of September depending on who reads it, and the
+     * greeter gives no clue which. 2026-09-17 has one reading everywhere.
+     *
+     * A site that wants its own convention says so, and gets it whatever the
+     * image's locale happens to be:
+     *
+     *     LDM_CLOCK_FORMAT="%d.%m.%Y, <b>%H:%M</b>"
+     */
+    clock_format = ldm_getenv_str_default("LDM_CLOCK_FORMAT",
+                                          "%Y-%m-%d, <b>%H:%M</b>");
     if (strftime(label_markup, sizeof(label_markup), clock_format, timePtr))
         gtk_label_set_markup((GtkLabel*)label, label_markup);
 

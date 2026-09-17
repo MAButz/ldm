@@ -1,3 +1,21 @@
+ldm (3.3.4-1) unstable; urgency=medium
+
+  * The greeter's date is no longer ambiguous. The clock used %x, the
+    locale's own date format, which is only as good as the locale the image
+    happens to carry - a stock thin client image is en_US, so a greeter
+    standing in Germany showed 09/17/2026. The problem is not that it is
+    foreign but that it cannot be read with certainty: 09/10 is the 9th of
+    October or the 10th of September depending on who is looking, and
+    nothing on the screen says which.
+
+    The default is now ISO 8601, "%Y-%m-%d, <b>%H:%M</b>", which has one
+    reading everywhere. A site that wants its own convention sets
+    LDM_CLOCK_FORMAT in lts.conf and gets it whatever the image's locale
+    is - "%d.%m.%Y, <b>%H:%M</b>" for the German form. Documented in
+    lts.conf(5).
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 16:50:35 +0200
+
 ldm (3.3.3-1) unstable; urgency=medium
 
   * RDP_PREAUTH=ssh now reaches a verdict. 3.3.2 fixed half of it: the
