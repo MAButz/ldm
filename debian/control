@@ -44,15 +44,3 @@ Description: LTSP display manager (GTK3 / xfreerdp fork)
  NULL-pointer-dereference fixes, and standard hardening compiler
  flags).
 
-Package: ldm-server
-Architecture: all
-Depends: ${misc:Depends},
- python3,
- x11-common,
- openssh-server,
- update-inetd, openbsd-inetd | inet-superserver
-Recommends:
- xauth
-Description: server components for LTSP display manager
- This package includes the server-side components used by ldm to
- discover available sessions and locales on the server (ldminfod).

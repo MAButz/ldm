@@ -1,3 +1,46 @@
+ldm (3.4.0-1) unstable; urgency=medium
+
+  * ldminfod is gone, and with it the binary package ldm-server, which
+    contained nothing else.
+
+    It was LTSP5's load balancing: a daemon on port 9571, started from
+    inetd, that reported a server's sessions, locales and a rating computed
+    from RAM, swap and load. The greeter asked every server named in
+    LDM_SERVER before showing itself.
+
+    Three things made it worth removing rather than fixing. It could not
+    run: the script still began with #!/usr/bin/python, an interpreter
+    Debian dropped in bullseye, while the package correctly depended on
+    python3 - so every query had been returning nothing for years, silently.
+    Nothing acted on the rating even when it worked: ldminfo_init collects
+    it and never sorts by it, and no other code reads the field. And load
+    balancing belongs in front of the session servers - HAProxy, in this
+    fork's design - not in a greeter that has to reach a second daemon
+    before it can decide which server to reach.
+
+    What goes with it: the inetd registration on port 9571, the query in
+    screen.d/ldm - including the five-second timeout it spent per server on
+    every login - and the parser, the locale display-name table and the
+    rating and state fields that existed only to hold its answers. The state
+    field was written and never read; every host had been marked SRV_DOWN
+    since the daemon stopped working, with no effect whatsoever.
+
+    What stays: the ldminfo struct and the host list. The greeter's session,
+    language and server choosers are built on them, and they are filled from
+    lts.conf and the defaults - which is what has actually been happening
+    all along.
+
+    Anyone who installed ldm-server can purge it; nothing depends on it.
+
+    One packaging consequence, since it is not obvious: with a single
+    binary package debhelper installs straight into debian/ldm rather than
+    debian/tmp, so debian/ldm.install - which said nothing but
+    "debian/tmp/*" - pointed at a directory that no longer exists and the
+    build stopped with "missing files". It is gone; dh_auto_install now
+    does the whole job by itself.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 18:34:34 +0200
+
 ldm (3.3.4-1) unstable; urgency=medium
 
   * The greeter's date is no longer ambiguous. The clock used %x, the

@@ -83,22 +83,18 @@ fi
 export LDM_SERVER
 
 #
-# Loop though each of the hosts, and get their ldminfo
+# Name each server in /etc/hosts, so nothing has to wait for a reverse lookup.
 #
-
+# This loop used to do more: it asked each server's ldminfod on port 9571 for
+# its sessions, locales and a load rating. That daemon is gone - load
+# balancing belongs in front of the session servers, not in the greeter - and
+# with it the five-second timeout this loop spent on every server at every
+# login.
+#
 if [ -n "${LDM_SERVER}" ]; then
-    test ! -d /var/run/ldm && mkdir -p /var/run/ldm
     for SRV in $LDM_SERVER ; do
-        # Write server to /etc/hosts so reverse DNS lookup is not necessary
         if ! grep -Fqw "$SRV" /etc/hosts ; then
             echo "$SRV	server-$SRV" >> /etc/hosts
-        fi
-        # For this to work, ldm-server needs to be installed in the chroot
-        if boolean_is_true "$LTSP_FATCLIENT" && [ -x /usr/share/ldm/ldminfod ]; then
-            /usr/share/ldm/ldminfod > /var/run/ldm/$SRV
-            break
-        else
-            nc $nc_q_param -w 5 $SRV 9571 > /var/run/ldm/$SRV 2> /dev/null < /dev/null
         fi
     done
 fi

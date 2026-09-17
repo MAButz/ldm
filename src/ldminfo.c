@@ -22,62 +22,19 @@
 
 #define _GNU_SOURCE
 
-#include <fcntl.h>
 #include <glib.h>
 #include <net/if.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
 #include "ldminfo.h"
 #include "ldmutils.h"
 
-static GHashTable *display_names;
 static GHashTable *ldminfo_hash = NULL;
-
-static void
-generate_hash_table(void)
-{
-    char buffer[1024];
-    FILE *file;
-    char **ret;
-    display_names =
-        g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-    file = fopen(RC_DIR "/locales", "r");
-    if (file == NULL) {
-        return;
-    }
-    while (fgets(buffer, sizeof(buffer), file) != NULL) {
-        ret = g_strsplit(buffer, " ", 2);
-        g_hash_table_insert(display_names, g_strdup(ret[0]),
-                            g_strdup(g_strchomp(ret[1])));
-        g_strfreev(ret);
-    }
-    fclose(file);
-}
-
-static gchar *
-get_display_name(gchar * locale)
-{
-    gchar *compare_to;
-    char **ret;
-    gchar *result;
-    ret = g_strsplit(locale, ".", 2);
-    compare_to = g_strdup(ret[0]);
-    g_strfreev(ret);
-    if (compare_to == NULL) {
-        return g_strdup(locale);
-    }
-    result = g_hash_table_lookup(display_names, compare_to);
-    if (result == NULL) {
-        result = g_strdup(locale);
-    }
-    return result;
-}
 
 /*
  * ldminfo_free
@@ -117,29 +74,25 @@ ldminfo_init(GList ** host_list, const char *ldm_server)
     ldminfo *ldm_host_info = NULL;
     int i;
 
-    generate_hash_table();
-
     /* Static hash table */
     ldminfo_hash = g_hash_table_new_full(g_str_hash, g_str_equal,
                                          g_free, g_free);
     hosts_char = g_strsplit(ldm_server, " ", -1);
 
     for (i = 0; hosts_char != NULL && hosts_char[i] != NULL; i++) {
-        /* Initialize to default values */
+        /*
+         * Empty, and it stays that way unless something fills it. There is
+         * no query here any more: what filled these lists was ldminfod on
+         * port 9571, which this fork no longer ships. Whether a server is
+         * reachable is answered by connecting to it, not by a second
+         * daemon that had to be reachable first.
+         */
         ldm_host_info = g_new0(ldminfo, 1);
         ldm_host_info->languages = NULL;
+        ldm_host_info->language_names = NULL;
         ldm_host_info->session_names = NULL;
         ldm_host_info->sessions = NULL;
-        ldm_host_info->rating = 0;
-        ldm_host_info->state = SRV_DOWN;
         ldm_host_info->xsession = NULL;
-
-        /*
-         * Populate the ldminfo structure, and determine if the host
-         * is up or down.
-         */
-
-        _ldminfo_query_one(hosts_char[i], ldm_host_info);
 
         /*
          * Insert into the hash table.
@@ -156,119 +109,6 @@ ldminfo_init(GList ** host_list, const char *ldm_server)
     }
     g_strfreev(hosts_char);
 }
-
-/*
- * Do the query for one host and fill ldminfo struct
- * Note: for right now, we're reading files in /var/run/ldm.  Francis would like
- * the host detection closer to the login and checking network availability
- * etc.  What should happen here, for gutsy+1, is to call out to an
- * external script.  This script will query ldminfo, perform ssh port testing,
- * etc. Things like nc -z hostname ssh, etc.
- */
-void
-_ldminfo_query_one(const char *hostname, ldminfo * ldm_host_info)
-{
-    int filedes, numbytes;
-    char buf[MAXBUFSIZE];
-    char hostfile[BUFSIZ];
-
-    /*
-     * hostname comes from LDM_SERVER, which can be influenced over the
-     * network (DHCP/TFTP-provided lts.conf). Without this check, a
-     * hostname like "../../etc/shadow" would make us read an arbitrary
-     * file readable by root and feed its contents into the host-info
-     * parser/UI.
-     */
-    if (strpbrk(hostname, "/\\") != NULL) {
-        ldm_host_info->state = SRV_DOWN;
-        return;
-    }
-
-    snprintf(hostfile, sizeof hostfile, "/var/run/ldm/%s", hostname);
-
-    filedes = open(hostfile, O_RDONLY);
-
-    if ((numbytes = read(filedes, buf, MAXBUFSIZE - 1)) == -1) {
-        perror("read");
-        goto error;
-    }
-
-    buf[numbytes] = '\0';
-
-    close(filedes);
-    ldm_host_info->state = SRV_UP;
-    _ldminfo_parse_string(buf, ldm_host_info);
-    return;
-
-  error:
-    close(filedes);
-    ldm_host_info->state = SRV_DOWN;
-}
-
-/*
- * split string by line and then construct the ldm_host_info
- */
-void
-_ldminfo_parse_string(const char *s, ldminfo * ldm_host_info)
-{
-    char **lines = NULL;
-    int i;
-
-    lines = g_strsplit(s, "\n", -1);
-
-    for (i = 0; lines != NULL && lines[i] != NULL; i++) {
-        if (!g_ascii_strncasecmp(lines[i], "language:", 9)) {
-            gchar **val;
-            val = g_strsplit(lines[i], ":", 2);
-            ldm_host_info->languages =
-                g_list_append(ldm_host_info->languages, g_strdup(val[1]));
-            ldm_host_info->language_names =
-                g_list_append(ldm_host_info->language_names,
-                              get_display_name(val[1]));
-            g_strfreev(val);
-        } else if (!g_ascii_strncasecmp(lines[i], "session:", 8)
-                   && !g_strstr_len(s, -1, "session-with-name")) {
-            gchar **val;
-            gchar *name;
-            val = g_strsplit(lines[i], ":", 2);
-            name = g_strrstr(val[1], "/");
-            if (name) {
-                name++;
-            } else {
-                name = val[1];
-            }
-            ldm_host_info->sessions =
-                g_list_append(ldm_host_info->sessions, g_strdup(val[1]));
-            ldm_host_info->session_names =
-                g_list_append(ldm_host_info->session_names,
-                              g_strdup(name));
-            g_strfreev(val);
-        } else if (!g_ascii_strncasecmp(lines[i], "session-with-name:", 8)) {
-            gchar **val;
-            val = g_strsplit(lines[i], ":", 3);
-            ldm_host_info->sessions =
-                g_list_append(ldm_host_info->sessions, g_strdup(val[2]));
-            ldm_host_info->session_names =
-                g_list_append(ldm_host_info->session_names,
-                              g_strdup(val[1]));
-            g_strfreev(val);
-        } else if (!g_ascii_strncasecmp(lines[i], "rating:", 7)) {
-            gchar **val;
-            val = g_strsplit(lines[i], ":", 2);
-            ldm_host_info->rating = atoi(val[1]);
-            g_strfreev(val);
-        } else if (!g_ascii_strncasecmp(lines[i], "xsession:", 9)) {
-            gchar **val;
-            val = g_strsplit(lines[i], ":", 2);
-            ldm_host_info->xsession = g_strdup(val[1]);
-            g_strfreev(val);
-        } else {
-            /* Variable not supported */
-        }
-    }
-    g_strfreev(lines);
-}
-
 
 /*
  * ldm_getenv_bool

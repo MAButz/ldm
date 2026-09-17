@@ -1,21 +1,18 @@
 #ifndef LDMINFO_H
 #define LDMINFO_H
 
-#define MAXBUFSIZE 16384
-
 #include <glib.h>
 
 /*
- * state enum
- */
-
-enum {
-    SRV_UP,
-    SRV_DOWN
-};
-
-/*
- * Info about servers
+ * What ldm knows about each server named in LDM_SERVER.
+ *
+ * The lists were once filled by querying ldminfod on port 9571, which
+ * reported the server's sessions, locales and a load rating. That daemon is
+ * gone: load balancing belongs in front of the session servers - HAProxy in
+ * this fork's design - and not in a greeter that collected a rating and then
+ * never sorted by it. The struct stays because the greeter's session and
+ * language choosers are built on it; the lists are filled from lts.conf and
+ * the defaults instead.
  */
 
 typedef struct {
@@ -23,8 +20,6 @@ typedef struct {
     GList *language_names;
     GList *session_names;
     GList *sessions;
-    gint rating;
-    gint state;
     gchar *xsession;
 } ldminfo;
 
@@ -37,12 +32,6 @@ typedef struct {
  * ldm_server is the LDM_SERVER variable, a list of hostnames separated by space
  */
 void ldminfo_init(GList ** host_list, const char *ldm_server);
-
-/* Do the query for one host and fill ldminfo struct */
-void _ldminfo_query_one(const char *hostname, ldminfo * ldm_host_info);
-
-/* split string by line and then construct the ldm_host_info */
-void _ldminfo_parse_string(const char *s, ldminfo * ldm_host_info);
 
 int ldm_getenv_bool(const char *name);
 int ldm_getenv_bool_default(const char *name, const int default_value);

@@ -119,7 +119,6 @@ source package). This produces, one directory *above* the source tree:
 
     ldm_3.0.0-1_amd64.deb        - the client (ldm core, gtkgreet, wwm,
                                     ssh + xfreerdp plugins, ldm-dialog)
-    ldm-server_3.0.0-1_all.deb   - server-side ldminfod
     ldm-dbgsym_3.0.0-1_amd64.deb - debug symbols (safe to ignore/skip)
 
 -------------------------------------------------------------------------
@@ -130,7 +129,6 @@ Use `apt install ./<file>.deb` (not `dpkg -i`) so apt resolves and pulls in
 the runtime dependencies (openssh-client, xserver-xorg, etc.) automatically:
 
     sudo apt install ./ldm_3.0.0-1_amd64.deb \
-                      ./ldm-server_3.0.0-1_all.deb
 
 For the xfreerdp backend specifically, also install (it's a Recommends,
 not a hard dependency, since the ssh backend works without it):
