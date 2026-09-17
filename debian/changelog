@@ -1,3 +1,35 @@
+ldm (3.3.0-1) unstable; urgency=medium
+
+  * RDP_PREAUTH=ssh no longer refuses every login when no host key is
+    configured for the server it would ask. It now looks for an entry for
+    *that host* rather than merely checking that ssh_known_hosts exists and
+    is non-empty, and skips the check - loudly, naming the host and the file
+    - when there is none.
+
+    The old test made a set of foreign keys worse than no keys at all. An
+    image ships with whatever ssh_known_hosts was baked into it, and those
+    keys belong to the lab it was built in. Deploy that image anywhere else
+    and the file is present, non-empty and completely irrelevant: the check
+    called itself usable, probed a server whose key it did not have, and the
+    unknown-key branch refused the login. Every login, with the message "The
+    session server could not be verified", which points at the wrong problem
+    entirely - nobody had misconfigured anything except the absence of a
+    configuration line.
+
+    The security property is unchanged where it matters. A host key that is
+    present and does not match still refuses, because that is the case the
+    check exists to catch. What changed is only the case of no entry at all,
+    which is a gap rather than an attack, and where the honest answer is to
+    say so and leave the login exactly as it would be with RDP_PREAUTH unset.
+
+    ssh-keygen -F does the lookup, so hashed known_hosts entries work too.
+
+  * The automatic path (RDP_PREAUTH=True without a Kerberos realm) uses the
+    same per-host test, so it no longer selects the ssh probe on the strength
+    of an unrelated file.
+
+ -- Marc-Andre Beckmann-Butz <ma@butz.online>  Thu, 17 Sep 2026 12:50:00 +0200
+
 ldm (3.2.0-1) unstable; urgency=medium
 
   * New: the greeter can warn about a lockout before it happens, and say

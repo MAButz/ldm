@@ -131,6 +131,91 @@ rdp_preauth_have_realm(void)
 }
 
 /*
+ * rdp_preauth_which_host
+ *
+ * The host the ssh probe would ask. RDP_PREAUTH_HOST when set, otherwise
+ * RDP_SERVER - which is right for a single session server and wrong for a
+ * load balancer, because HAProxy forwards 3389 and an ssh connection to
+ * that address reaches the balancer instead.
+ */
+static const gchar *
+rdp_preauth_which_host(void)
+{
+    const gchar *host = getenv("RDP_PREAUTH_HOST");
+
+    if (!host || !*host)
+        host = getenv("RDP_SERVER");
+    return (host && *host) ? host : NULL;
+}
+
+/*
+ * rdp_preauth_known_hosts_file
+ */
+static const gchar *
+rdp_preauth_known_hosts_file(void)
+{
+    const gchar *known = getenv("RDP_PREAUTH_SSH_KNOWN_HOSTS");
+
+    return (known && *known) ? known : "/etc/ssh/ssh_known_hosts";
+}
+
+/*
+ * rdp_preauth_host_key_known
+ *
+ * Whether known_hosts has an entry for *this* host - not merely whether the
+ * file exists and is non-empty.
+ *
+ * The difference matters more than it looks. An image ships with whatever
+ * ssh_known_hosts was baked into it, and those keys belong to the lab it was
+ * built in. Deploy that image somewhere else and the file is present and
+ * non-empty and completely irrelevant: the old test said "usable", the probe
+ * then asked a server whose key is not in there, and the unknown-key branch
+ * refused the login. Every login. A set of foreign keys was worse than none
+ * at all, and the message named the wrong problem.
+ *
+ * So the question to ask is per host. No entry for this host means nobody
+ * configured one - a gap, not an attack - and the honest response is to skip
+ * the check and say so, leaving the login exactly as it would be with
+ * RDP_PREAUTH unset. An entry that exists and does not match is the case the
+ * check exists for, and that still refuses.
+ *
+ * ssh-keygen -F does the lookup, hashed entries included; it ships with the
+ * ssh client the probe needs anyway.
+ */
+static gboolean
+rdp_preauth_host_key_known(const gchar *host)
+{
+    const gchar *known = rdp_preauth_known_hosts_file();
+    gchar *argv[6];
+    gint status = -1;
+    gboolean found;
+
+    if (!host || !*host)
+        return FALSE;
+
+    argv[0] = "ssh-keygen";
+    argv[1] = "-F";
+    argv[2] = (gchar *) host;
+    argv[3] = "-f";
+    argv[4] = (gchar *) known;
+    argv[5] = NULL;
+
+    if (!g_spawn_sync(NULL, argv, NULL,
+                      G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL |
+                      G_SPAWN_STDERR_TO_DEV_NULL,
+                      NULL, NULL, NULL, NULL, &status, NULL)) {
+        log_entry("ldm", 4, "rdp_preauth_ssh: cannot run ssh-keygen, "
+                  "treating %s as unknown", host);
+        return FALSE;
+    }
+
+    found = g_spawn_check_wait_status(status, NULL);
+    log_entry("ldm", 7, "rdp_preauth_ssh: host key for %s in %s: %s",
+              host, known, found ? "found" : "not found");
+    return found;
+}
+
+/*
  * rdp_preauth_ssh_usable
  *
  * Whether the ssh probe can be trusted on this client - which comes down
@@ -151,13 +236,7 @@ rdp_preauth_have_realm(void)
 static gboolean
 rdp_preauth_ssh_usable(void)
 {
-    const gchar *known = getenv("RDP_PREAUTH_SSH_KNOWN_HOSTS");
-    struct stat st;
-
-    if (!known || !*known)
-        known = "/etc/ssh/ssh_known_hosts";
-
-    return (stat(known, &st) == 0 && S_ISREG(st.st_mode) && st.st_size > 0);
+    return rdp_preauth_host_key_known(rdp_preauth_which_host());
 }
 
 static gchar *
@@ -374,6 +453,24 @@ rdp_preauth_ssh(const gchar *username, const gchar *password,
     }
     if (!known || !*known)
         known = "/etc/ssh/ssh_known_hosts";
+
+    /*
+     * No host key for this server means the check was never set up. Refusing
+     * every login over a missing configuration line is a lockout, not
+     * security - and it would be a lockout that says "the session server
+     * could not be verified", which points at the wrong thing entirely. Skip
+     * instead, loudly, and leave the login as it would be without
+     * RDP_PREAUTH. A key that is present and wrong still refuses; that is the
+     * case this check exists for.
+     */
+    if (!rdp_preauth_host_key_known(host)) {
+        log_entry("ldm", 4, "rdp_preauth_ssh: no host key for %s in %s - "
+                  "pre-authentication disabled for this login. Add it with "
+                  "SSH_KNOWN_HOSTS_0 in lts.conf (see lts.conf(5)) or with "
+                  "ltsp-update-sshkeys(8) at image build time.",
+                  host, known);
+        return NULL;
+    }
 
     argv = g_ptr_array_new();
     g_ptr_array_add(argv, g_strdup("ssh"));
