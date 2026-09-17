@@ -91,6 +91,21 @@ ldm_pty_spawn(gchar **argv, int *masterfd)
     }
 
     ldm_pty_slavefd = slave;
+    /*
+     * Start from a clean slate. child_exited is one global, set by the
+     * SIGCHLD handler for *any* child of ldm and cleared by nobody, while
+     * the loop below reads it as "our child died". One earlier child was
+     * therefore enough to poison every later conversation: the pre-auth
+     * host key check runs ssh-keygen -F immediately before this, so by the
+     * time ssh had a pty the flag was already set, and ldm_pty_expect()
+     * returned LDM_PTY_ERROR on the first read - whatever ssh had actually
+     * said. The visible result was a pre-authentication that quietly
+     * declined to decide and let every login through to the RDP client.
+     *
+     * Cleared before the fork, not after, so a child that dies immediately
+     * still sets it.
+     */
+    child_exited = 0;
     pid = ldm_spawnv(argv, NULL, NULL, ldm_pty_child_init);
     close(slave);
     ldm_pty_slavefd = -1;

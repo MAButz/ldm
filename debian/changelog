@@ -1,3 +1,38 @@
+ldm (3.3.2-1) unstable; urgency=medium
+
+  * RDP_PREAUTH=ssh actually decides again. Since 3.3.0 it declined to, on
+    every login, and a declined check lets the login through - so a wrong
+    password reached the RDP client exactly as if no check were configured.
+    The log said
+
+        rdp_preauth_ssh: inconclusive (-1), skipping:
+
+    with an empty buffer, while the sshd on the other end recorded a
+    connection that closed before any password arrived.
+
+    The cause is a sticky flag. child_exited is one global, set by ldm's
+    SIGCHLD handler for *any* child and cleared by nobody, and
+    ldm_pty_expect() reads it as "the child we are talking to has died" -
+    returning LDM_PTY_ERROR whatever it had just read. 3.3.0 added a host
+    key lookup that runs ssh-keygen -F immediately before the probe, so by
+    the time ssh had its pty the flag was already up, and the answer was
+    discarded before the patterns were even compared.
+
+    ldm_pty_spawn() now clears it before forking. A test harness drives the
+    real ldm_pty_expect() over a pty and covers both directions: with the
+    flag pre-set, a password prompt and a "Permission denied" line are now
+    recognised where the old code returned -1 on both; a child that dies
+    without saying anything is still an error, and silence is still a
+    timeout.
+
+    This is the last of three faults between a wrong password and the
+    message saying so, and the only one that could not be seen from the
+    outside: 3.3.0 refused every login when no host key was configured,
+    3.3.1 read "publickey" in a method list as "no password was offered",
+    and this one threw the answer away after reading it correctly.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 15:55:08 +0200
+
 ldm (3.3.1-1) unstable; urgency=medium
 
   * A wrong user name or password under RDP_PREAUTH=ssh now says so. It
