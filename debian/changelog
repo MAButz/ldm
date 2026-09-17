@@ -1,3 +1,32 @@
+ldm (3.3.1-1) unstable; urgency=medium
+
+  * A wrong user name or password under RDP_PREAUTH=ssh now says so. It
+    said nothing at all: the greeter simply came back, with no hint that
+    anything had been rejected, which reads as a hang rather than a refusal.
+
+    The pre-auth check runs ssh against the session server and reads its
+    refusal. ssh reports one as
+
+        Permission denied (publickey,password).
+
+    and the parenthesised list is the methods the server was willing to try.
+    Two very different outcomes land on that line and only the list tells
+    them apart: "(publickey)" means no password was ever offered, so nothing
+    was tested and there is nothing to report, while "(publickey,password)"
+    means a password was sent and refused. The check looked for the word
+    "publickey" anywhere in the output - and it appears in both. So every
+    wrong password was read as "this server does not do passwords", the
+    check skipped itself, and the user was told nothing.
+
+    It now reads the method list rather than the line, and treats an
+    unparseable refusal as a real one, on the grounds that a refusal without
+    a method list is more likely a rejected password than a server policy.
+    Covered by a ten-case harness over real ssh refusal strings, including
+    keyboard-interactive, reversed method order, and the word "password"
+    appearing in the text outside the list.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 14:56:21 +0200
+
 ldm (3.3.0-1) unstable; urgency=medium
 
   * RDP_PREAUTH=ssh no longer refuses every login when no host key is

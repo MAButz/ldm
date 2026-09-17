@@ -389,6 +389,60 @@ rdp_preauth_kerberos(const gchar *username, const gchar *password,
 }
 
 /*
+ * rdp_preauth_offered_password
+ *
+ * Did the server offer password authentication at all?
+ *
+ * ssh reports a refusal as "Permission denied (publickey,password)." - the
+ * parenthesised list is the methods the server was willing to try. Two very
+ * different things end up on this branch and the list is what tells them
+ * apart:
+ *
+ *   (publickey)                 the server never offered a password, so
+ *                               nothing was tested and there is nothing to
+ *                               report; saying "wrong password" would be a
+ *                               lie, and a confusing one, because the same
+ *                               credentials work in the session a moment
+ *                               later.
+ *
+ *   (publickey,password)        a password was offered, sent and refused.
+ *                               That is a genuine rejection.
+ *
+ * Looking for the word "publickey" anywhere in the output conflated the two:
+ * it appears in both, so every wrong password was read as "this server does
+ * not do passwords", the check silently skipped itself, and the user got no
+ * message at all - just the greeter again, with no idea why.
+ *
+ * Reads the list rather than the line, and falls back to "a password was
+ * offered" when there is no list to read, because an unparseable refusal is
+ * more likely a real one than a server-side policy.
+ */
+static gboolean
+rdp_preauth_offered_password(const char *buf)
+{
+    const char *p, *end;
+
+    if (!buf)
+        return TRUE;
+
+    p = strstr(buf, "Permission denied (");
+    if (!p)
+        return TRUE;
+    p += strlen("Permission denied (");
+    end = strchr(p, ')');
+    if (!end)
+        return TRUE;
+
+    while (p < end) {
+        if (!strncmp(p, "password", 8) ||
+            !strncmp(p, "keyboard-interactive", 20))
+            return TRUE;
+        p++;
+    }
+    return FALSE;
+}
+
+/*
  * rdp_preauth_ssh
  *
  * The same idea as rdp_preauth_kerberos() for sites that have no domain:
@@ -563,12 +617,11 @@ rdp_preauth_ssh(const gchar *username, const gchar *password,
         v = RDP_PREAUTH_ACCEPTED;
     } else if (seen == 2) {
         /*
-         * "Permission denied (publickey)" means the server never offered
-         * password authentication, so nothing was tested. Saying "wrong
-         * password" there would be a lie, and a confusing one, because the
-         * same credentials work in the session a moment later.
+         * The method list decides, not the word "publickey" - see
+         * rdp_preauth_offered_password() for why that distinction was worth
+         * a function of its own.
          */
-        if (strstr(buf, "publickey")) {
+        if (!rdp_preauth_offered_password(buf)) {
             log_entry("ldm", 4, "rdp_preauth_ssh: %s refuses password "
                       "authentication, skipping the check", host);
             msg = NULL;
