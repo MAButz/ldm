@@ -18,11 +18,24 @@ void
 get_userid(gchar ** username)
 {
     gchar *cmd;
+    gchar *fallback;
+    const gchar *prompt;
 
-    cmd = g_strconcat("prompt <b>", _("Username"), "</b>\nuserid\n", NULL);
+    /*
+     * The prompt is Pango markup and reaches the greeter unchanged, the same
+     * way LDM_CLOCK_FORMAT does: a site that wants different wording, or a
+     * colour that stands off its own background image, writes the whole
+     * span. The default is the bold label the greeter has always drawn, and
+     * it still goes through gettext, so nothing has to be set to keep a
+     * translated greeter translated.
+     */
+    fallback = g_strconcat("<b>", _("Username"), "</b>", NULL);
+    prompt = ldm_getenv_str_default("LDM_USERNAME_PROMPT", fallback);
+    cmd = g_strconcat("prompt ", prompt, "\nuserid\n", NULL);
     *username = ask_value_greeter(cmd);
 
     g_free(cmd);
+    g_free(fallback);
 }
 
 /*
@@ -32,14 +45,27 @@ void
 get_passwd(gchar ** password)
 {
     gchar *cmd;
+    gchar *fallback;
+    gchar *message;
+    const gchar *prompt;
 
-    cmd =
-        g_strconcat("prompts <b>", _("Password"), "</b>\npasswd\n", NULL);
+    fallback = g_strconcat("<b>", _("Password"), "</b>", NULL);
+    prompt = ldm_getenv_str_default("LDM_PASSWORD_PROMPT", fallback);
+    cmd = g_strconcat("prompts ", prompt, "\npasswd\n", NULL);
     *password = (gchar *) ask_value_greeter(cmd);
+    g_free(fallback);
 
-    set_message(g_strconcat
-                ("<b>", _("Verifying password.  Please wait."), "</b>",
-                 NULL));
+    /*
+     * set_message() copies what it is given, so the string built here has to
+     * be freed by us. It was not, until now.
+     */
+    fallback = g_strconcat("<b>", _("Verifying password.  Please wait."),
+                           "</b>", NULL);
+    message = g_strdup(ldm_getenv_str_default("LDM_VERIFY_MESSAGE",
+                                              fallback));
+    set_message(message);
+    g_free(message);
+    g_free(fallback);
     g_free(cmd);
 }
 

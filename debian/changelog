@@ -1,3 +1,40 @@
+ldm (3.4.2-1) unstable; urgency=medium
+
+  * The greeter names four of its labels, so a theme's greeter.css can
+    address them one at a time:
+
+        #ldm-prompt    the Username / Password line beside the entry
+        #ldm-status    the status line under it
+        #ldm-host      host name and address
+        #ldm-clock     the clock
+
+    Until now the only handle a theme had was "label", which also catches
+    the text inside every button and menu item - so making the status line
+    legible on a dark background image meant making the buttons illegible
+    on their light one. The CSS is loaded at
+    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION and therefore already outranks
+    the GTK theme; what was missing was something to aim it at.
+
+  * The three strings the login screen shows can be set from lts.conf:
+    LDM_USERNAME_PROMPT, LDM_PASSWORD_PROMPT and LDM_VERIFY_MESSAGE. Each
+    is Pango markup and reaches the greeter unchanged, exactly as
+    LDM_CLOCK_FORMAT does, so a value can carry its own emphasis or colour.
+    The defaults are the previous strings, still translated through gettext
+    - an image with a German locale keeps saying Benutzername without
+    anything being set.
+
+  * get_passwd() freed neither the string it handed to set_message() nor
+    anything it built for it. set_message() copies what it is given, so
+    that was a leak on every login attempt. Small, but it was on the path
+    that runs again after every failed password.
+
+  * ldm(1) grew a CONFIGURATION section covering all of the above; it had
+    said nothing about configuration since 2007. The label names and a
+    worked example for a dark background are also in the default theme's
+    greeter.css, where whoever copies that file will meet them.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Fri, 18 Sep 2026 15:35:53 +0200
+
 ldm (3.4.1-1) unstable; urgency=medium
 
   * A theme no longer has to carry a greeter.css to keep its styling.

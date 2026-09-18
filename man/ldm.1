@@ -9,7 +9,7 @@
 .\" .nh
 .\" disable justification (adjust text to left margin only)
 .\" .ad l
-.TH "LDM2" "1" "06/14/2007" "" ""
+.TH "LDM2" "1" "09/18/2026" "" ""
 .SH "NAME"
 ldm \- a display manager for LTSP
 .SH "SYNOPSIS"
@@ -24,8 +24,70 @@ It was designed for the LTSP project, but could be used in a non\-ltsp environme
 
 <:[0\-N]>
     X display that ldm uses.
+.SH "CONFIGURATION"
+ldm reads its settings from the environment. On an LTSP client that environment
+comes from \fBlts.conf\fP(5), which is where every \fBLDM_\fR variable is
+described; the ones that decide what the login screen says and how it looks are
+summarised here.
+.SS "What it says"
+.IP "\fBLDM_USERNAME_PROMPT\fR, \fBLDM_PASSWORD_PROMPT\fR" 4
+The two prompts beside the entry field. Each is Pango markup and reaches the
+screen unchanged, so the value carries its own emphasis \(em the defaults are
+\fB<b>Username</b>\fR and \fB<b>Password</b>\fR, translated through gettext.
+.IP "\fBLDM_VERIFY_MESSAGE\fR" 4
+The line shown while the password is being checked. Also Pango markup; the
+default is a bold, translated "Verifying password.  Please wait.".
+.IP "" 4
+Setting any of these replaces the translation for that string. Leave them unset
+and a localised image keeps its own wording.
+.SS "How it looks"
+.IP "\fBLDM_THEME\fR" 4
+A directory under \fI/usr/share/ldm/themes\fR, or an absolute path. Files are
+looked up in it one at a time and each one that is missing is taken from the
+\fBltsp\fR theme instead \(em so a theme can consist of nothing but a
+background image. The other side of that rule: a theme that does carry a
+\fIgreeter.css\fR replaces the default one outright rather than adding to it.
+.IP "\fBLDM_CLOCK_FORMAT\fR" 4
+An \fBstrftime\fP(3) format, Pango markup allowed. Default
+\fB"%Y\-%m\-%d, <b>%H:%M</b>"\fR.
+.PP
+Colours, fonts and spacing come from \fIgreeter.css\fR in the theme directory,
+loaded as GTK3 CSS at \fBGTK_STYLE_PROVIDER_PRIORITY_APPLICATION\fR, which puts
+it above the GTK theme. Four labels carry a name so they can be addressed
+separately:
+.PP
+.RS 4
+.nf
+#ldm\-prompt    the Username / Password line beside the entry
+#ldm\-status    the status line under it
+#ldm\-host      host name and address
+#ldm\-clock     the clock
+.fi
+.RE
+.PP
+A theme whose background is a dark photograph usually needs no more than the
+following, and the shadow does more work than the colour \(em a photograph is
+light in some places and dark in others:
+.PP
+.RS 4
+.nf
+#ldm\-prompt, #ldm\-status, #ldm\-host, #ldm\-clock {
+    color: #f2f2f2;
+    text\-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+}
+.fi
+.RE
+.SH "FILES"
+.IP "\fI/usr/share/ldm/themes/\fR" 4
+The themes. \fBltsp\fR is the default and the fallback for every file another
+theme does not carry.
+.IP "\fI/var/log/ldm.log\fR" 4
+Unless \fBLDM_SYSLOG\fR sends it elsewhere. On a thin client this lives in RAM
+and dies with the session.
+.SH "SEE ALSO"
+\fBlts.conf\fP(5), \fBstrftime\fP(3), \fBssh\fP(1)
 .SH "RESOURCES"
-http://ltsp.org
+https://github.com/MAButz/ltsp6
 .SH "COPYING"
 Copyright \(co 2007 Canonical Ltd.
 Copyright \(co 2007 LTSP.org.

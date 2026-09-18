@@ -813,6 +813,15 @@ main(int argc, char* argv[])
         const char* hoststring = 0;
         syslabel = gtk_label_new("");
         timelabel = gtk_label_new("");
+        /*
+         * Names, so a theme's greeter.css can address these one at a time.
+         * Without them the only handle a theme has is "label", which also
+         * catches the text inside every button and menu item - so making the
+         * status line readable on a dark background used to mean making the
+         * buttons unreadable on their light one.
+         */
+        gtk_widget_set_name(syslabel, "ldm-host");
+        gtk_widget_set_name(timelabel, "ldm-clock");
 #ifdef K12LINUX
         hoststring =
             g_strdup_printf("<b>%s</b> (%s)", get_sysname(),
@@ -885,6 +894,7 @@ main(int argc, char* argv[])
         hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
         UserPrompt = gtk_label_new("");
+        gtk_widget_set_name(UserPrompt, "ldm-prompt");
 
         if (lw < 180)
             lw = 180;
@@ -894,6 +904,7 @@ main(int argc, char* argv[])
         gtk_widget_set_size_request(UserPrompt, (lw / 2), 0);
 
         StatusMessages = gtk_label_new("");
+        gtk_widget_set_name(StatusMessages, "ldm-status");
         entry = gtk_entry_new();
         gtk_entry_set_width_chars(GTK_ENTRY(entry), 20);
         g_signal_connect(G_OBJECT(entry), "activate",
