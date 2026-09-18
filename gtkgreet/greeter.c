@@ -93,11 +93,29 @@ ldm_theme_file(char* file)
     filename = g_strconcat("/", ldm_theme_dir, "/", file, NULL);
     filename_default =
         g_strconcat("/", LDM_THEME_DIR, "ltsp", "/", file, NULL);
-    if (access(g_strconcat(filename, ".png", NULL), F_OK) != -1) {
+
+    /*
+     * Six candidates, the caller's theme before the stock one, and within
+     * each the name as given before the two image extensions.
+     *
+     * The exact name matters for greeter.css, which callers ask for with
+     * its extension already attached. Without it only "greeter.css.png" and
+     * "greeter.css.jpg" were ever tried, so a theme that did not carry its
+     * own CSS got no CSS at all - not the stock one, none - and lost every
+     * bit of styling. Which defeats the point of the per-file fallback: a
+     * theme should be able to change the picture and inherit the rest.
+     */
+    if (access(filename, F_OK) != -1) {
+        /* as given */
+    }
+    else if (access(g_strconcat(filename, ".png", NULL), F_OK) != -1) {
         filename = g_strconcat(filename, ".png", NULL);
     }
     else if (access(g_strconcat(filename, ".jpg", NULL), F_OK) != -1) {
         filename = g_strconcat(filename, ".jpg", NULL);
+    }
+    else if (access(filename_default, F_OK) != -1) {
+        filename = filename_default;
     }
     else if (access(g_strconcat(filename_default, ".png", NULL), F_OK) !=
         -1) {

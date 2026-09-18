@@ -1,3 +1,32 @@
+ldm (3.4.1-1) unstable; urgency=medium
+
+  * A theme no longer has to carry a greeter.css to keep its styling.
+    ldm_theme_file() tried the name it was given with ".png" and ".jpg"
+    appended and never as given, so for greeter.css - the one caller that
+    passes an extension of its own - it looked for "greeter.css.png" and
+    "greeter.css.jpg", found neither, and returned a path inside the theme
+    that did not exist. The greeter then loaded no CSS at all: not the
+    stock one, none. A theme that wanted to change the background lost
+    every bit of styling with it.
+
+    The lookup now tries the name as given before the two extensions, in
+    the theme and then in the stock one - six candidates instead of four.
+    Images are unaffected: nobody ships "bg" without an extension.
+
+    Verified by tracing the real greeter against a theme containing only
+    bg.png:
+
+        access(".../lhk//greeter.css")  = -1 ENOENT
+        access(".../ltsp//greeter.css") = 0
+        openat(".../ltsp/greeter.css")  = 16
+        access(".../lhk/bg.png")        = 0
+        access(".../ltsp/logo.png")     = 0
+
+    which is what the per-file fallback was always meant to do: a theme
+    changes the picture and inherits the rest.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Fri, 18 Sep 2026 09:11:26 +0200
+
 ldm (3.4.0-1) unstable; urgency=medium
 
   * ldminfod is gone, and with it the binary package ldm-server, which
