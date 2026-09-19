@@ -1,3 +1,27 @@
+ldm (3.4.3-1) unstable; urgency=medium
+
+  * The greeter shows the icons on its buttons and menu entries again.
+
+    It had never stopped asking for them - gtk_button_set_image() on the
+    preferences button, gtk_image_menu_item_set_image() on every entry of
+    the menu - and under GTK2 they appeared. GTK 3.10 flipped the
+    gtk-button-images and gtk-menu-images settings to FALSE, and from then
+    on both calls were ignored without a word: the icons were still read
+    out of the theme directory, still attached to the widgets, and never
+    drawn. What was left was a login screen carrying text and nothing else,
+    beside a theme directory full of icons that look perfectly fine in an
+    image viewer. Both settings are now turned on explicitly. A desktop is
+    right to ignore an application that overrides the user's preference
+    here; a greeter has no user yet and no settings daemon behind it, and
+    what it shows is what its theme says it shows.
+
+  * The preferences icon in the ltsp theme is a cog wheel. It was a hammer
+    crossed with a wrench, which reads as repair work rather than settings
+    - and nobody had seen it since GTK 3.10 anyway. Drawn for this package,
+    24x24 like the rest of the set.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Sat, 19 Sep 2026 19:46:45 +0200
+
 ldm (3.4.2-1) unstable; urgency=medium
 
   * The greeter names four of its labels, so a theme's greeter.css can

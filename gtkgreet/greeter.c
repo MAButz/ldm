@@ -747,6 +747,29 @@ main(int argc, char* argv[])
         ldm_getenv_int("LDM_LOGLEVEL", -1));
 
     gtk_init(&argc, &argv);
+
+    /*
+     * Show the images on buttons and menu items at all.
+     *
+     * The greeter has always asked for them - gtk_button_set_image() on the
+     * preferences button, gtk_image_menu_item_set_image() on every entry in
+     * the menu - and under GTK2 they appeared. GTK 3.10 flipped
+     * gtk-button-images and gtk-menu-images to FALSE, and from then on both
+     * calls were silently ignored: the icons were still loaded from the theme
+     * directory, still attached to the widgets, and never drawn. The symptom
+     * is a login screen whose buttons carry text and nothing else, next to a
+     * theme directory full of icons that look fine in an image viewer.
+     *
+     * Both properties are deprecated, and a desktop is right to ignore an
+     * application that overrides the user's preference. A greeter has no user
+     * yet, and no settings daemon behind it either; what it shows is what the
+     * theme says it shows.
+     */
+    g_object_set(gtk_settings_get_default(),
+        "gtk-button-images", TRUE,
+        "gtk-menu-images", TRUE,
+        NULL);
+
     ldm_theme = getenv("LDM_THEME");
 
     if (ldm_theme) {
