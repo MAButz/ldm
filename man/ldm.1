@@ -53,17 +53,23 @@ An \fBstrftime\fP(3) format, Pango markup allowed. Default
 .PP
 Colours, fonts and spacing come from \fIgreeter.css\fR in the theme directory,
 loaded as GTK3 CSS at \fBGTK_STYLE_PROVIDER_PRIORITY_APPLICATION\fR, which puts
-it above the GTK theme. Four labels carry a name so they can be addressed
+it above the GTK theme. Five widgets carry a name so they can be addressed
 separately:
 .PP
 .RS 4
 .nf
-#ldm\-prompt    the Username / Password line beside the entry
-#ldm\-status    the status line under it
-#ldm\-host      host name and address
-#ldm\-clock     the clock
+#ldm\-prompt        the Username / Password line beside the entry
+#ldm\-status        the status line under it
+#ldm\-host          host name and address
+#ldm\-clock         the clock
+#ldm\-preferences   the Preferences button
 .fi
 .RE
+.PP
+The Preferences button is in that list because it is drawn with relief
+\fBNONE\fR: it has no ground of its own and sits straight on the background
+image, exactly as the four labels do. A theme that lightens the labels and
+forgets it leaves one word in the default near\-black.
 .PP
 A theme whose background is a dark photograph usually needs no more than the
 following, and the shadow does more work than the colour \(em a photograph is
@@ -71,7 +77,7 @@ light in some places and dark in others:
 .PP
 .RS 4
 .nf
-#ldm\-prompt, #ldm\-status, #ldm\-host, #ldm\-clock {
+#ldm\-prompt, #ldm\-status, #ldm\-host, #ldm\-clock, #ldm\-preferences {
     color: #f2f2f2;
     text\-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
 }

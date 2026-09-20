@@ -7,95 +7,219 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: ldm 2.1.1\n"
-"Report-Msgid-Bugs-To: sbalneav@ltsp.org\n"
-"POT-Creation-Date: 2013-11-25 04:32+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-20 13:42+0200\n"
 "PO-Revision-Date: 2013-01-13 21:30+0000\n"
 "Last-Translator: Wolfgang Schweer <schweer@cityweb.de>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"Language: de\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2013-11-26 04:30+0000\n"
 "X-Generator: Launchpad (build 16840)\n"
 "X-Poedit-Country: GERMANY\n"
-"Language: de\n"
 "X-Poedit-Language: German\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: ../src/plugin.c:20
+#: src/plugin.c:32
 msgid "Username"
 msgstr "Benutzername"
 
-#: ../src/plugin.c:32
+#: src/plugin.c:52
 msgid "Password"
 msgstr "Passwort"
 
-#: ../src/plugin.c:35
+#: src/plugin.c:62
 msgid "Verifying password.  Please wait."
 msgstr "Passwort wird überprüft. Bitte warten ..."
 
-#: ../src/plugins/ssh/ssh.c:388
+#: src/plugins/xfreerdp/xfreerdp.c:322 src/plugins/xfreerdp/xfreerdp.c:629
+#: src/plugins/xfreerdp/xfreerdp.c:792
+msgid "Wrong user name or password."
+msgstr "Benutzername oder Passwort ist falsch."
+
+#: src/plugins/xfreerdp/xfreerdp.c:327
+msgid "This user does not exist in the domain."
+msgstr "Diesen Benutzer gibt es in der Domäne nicht."
+
+#: src/plugins/xfreerdp/xfreerdp.c:338
+msgid "This account is locked or disabled."
+msgstr "Dieses Konto ist gesperrt oder deaktiviert."
+
+#: src/plugins/xfreerdp/xfreerdp.c:343
+msgid "The password for this account has expired."
+msgstr "Das Passwort dieses Kontos ist abgelaufen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:352
+msgid ""
+"This computer's clock differs too much from the server's; ask an "
+"administrator."
+msgstr ""
+"Die Uhr dieses Rechners weicht zu stark von der des Servers ab; wenden Sie "
+"sich an die Administration."
+
+#: src/plugins/xfreerdp/xfreerdp.c:358
+msgid "The authentication server cannot be reached."
+msgstr "Der Anmeldeserver ist nicht erreichbar."
+
+#: src/plugins/xfreerdp/xfreerdp.c:367
+msgid "Sign-in failed."
+msgstr "Die Anmeldung ist fehlgeschlagen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:644
+msgid ""
+"The session server could not be verified. Tell your administrator before "
+"trying again."
+msgstr ""
+"Der Sitzungsserver konnte nicht überprüft werden. Sagen Sie der "
+"Administration Bescheid, bevor Sie es erneut versuchen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:650
+msgid "Cannot reach the authentication server."
+msgstr "Der Anmeldeserver antwortet nicht."
+
+#: src/plugins/xfreerdp/xfreerdp.c:708
+#, c-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d Sekunde"
+msgstr[1] "%d Sekunden"
+
+#: src/plugins/xfreerdp/xfreerdp.c:711
+#, c-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d Minute"
+msgstr[1] "%d Minuten"
+
+#: src/plugins/xfreerdp/xfreerdp.c:773
+msgid "Session closed: idle for too long."
+msgstr "Sitzung beendet: zu lange ohne Eingabe."
+
+#: src/plugins/xfreerdp/xfreerdp.c:776
+msgid "The server did not complete the logon in time."
+msgstr "Der Server hat die Anmeldung nicht rechtzeitig abgeschlossen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:779
+msgid "This session was taken over by another connection."
+msgstr "Diese Sitzung wurde von einer anderen Verbindung übernommen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:782
+msgid "The session server ran out of memory."
+msgstr "Dem Sitzungsserver ist der Speicher ausgegangen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:786
+msgid "The session server refused the connection."
+msgstr "Der Sitzungsserver hat die Verbindung abgewiesen."
+
+#: src/plugins/xfreerdp/xfreerdp.c:789
+msgid "This account is not allowed to log on remotely."
+msgstr "Dieses Konto darf sich nicht über das Netz anmelden."
+
+#: src/plugins/xfreerdp/xfreerdp.c:796
+msgid "The remote desktop client was terminated."
+msgstr "Der Remotedesktop-Client wurde beendet."
+
+#: src/plugins/xfreerdp/xfreerdp.c:1157
+#, c-format
+msgid ""
+"Too many failed sign-in attempts from this computer. It stays blocked for "
+"another %s. Every screen on this computer shares that block."
+msgstr ""
+"Zu viele fehlgeschlagene Anmeldeversuche von diesem Rechner. Er bleibt noch "
+"%s gesperrt. Die Sperre gilt für alle Bildschirme dieses Rechners."
+
+#: src/plugins/xfreerdp/xfreerdp.c:1190
+#, c-format
+msgid "%s One more failed attempt will block this computer for %s."
+msgstr "%s Ein weiterer Fehlversuch sperrt diesen Rechner für %s."
+
+#: src/plugins/xfreerdp/xfreerdp.c:1192
+#, c-format
+msgid "%s This computer is now blocked for about %s."
+msgstr "%s Dieser Rechner ist jetzt für etwa %s gesperrt."
+
+#: src/plugins/xfreerdp/xfreerdp.c:1368
+#, c-format
+msgid "Connection failed (remote desktop client code %d)."
+msgstr "Verbindung fehlgeschlagen (Remotedesktop-Client, Code %d)."
+
+#: src/plugins/ssh/ssh.c:339
 msgid "No response from server, restarting..."
 msgstr "Keine Antwort des Servers, Neustart ..."
 
-#: ../gtkgreet/greeter.c:250
+#: gtkgreet/greeter.c:291
 #, c-format
 msgid "Automatic login in %d seconds"
 msgstr "Automatische Anmeldung in %d Sekunden"
 
-#: ../gtkgreet/greeter.c:513
+#: gtkgreet/greeter.c:579
 msgid "Select _Language ..."
 msgstr "_Sprache wählen ..."
 
-#: ../gtkgreet/greeter.c:523
+#: gtkgreet/greeter.c:591
 msgid "Select _Session ..."
 msgstr "_Sitzungsart wählen ..."
 
-#: ../gtkgreet/greeter.c:533
+#: gtkgreet/greeter.c:602
 msgid "Select _Host ..."
 msgstr "_Rechner wählen ..."
 
-#: ../gtkgreet/greeter.c:566
+#: gtkgreet/greeter.c:637
 msgid "_Reboot"
 msgstr "_Neustart"
 
-#: ../gtkgreet/greeter.c:574
+#: gtkgreet/greeter.c:645
 msgid "Shut_down"
 msgstr "_Ausschalten"
 
-#: ../gtkgreet/greeter.c:718
+#: gtkgreet/greeter.c:905
 msgid "_Preferences"
 msgstr "_Einstellungen"
 
-#: ../gtkgreet/greeter.c:812
+#: gtkgreet/greeter.c:1008
 msgid "Login as Guest"
 msgstr "Anmeldung als Gast"
 
-#: ../gtkgreet/sesswin.c:105 ../gtkgreet/langwin.c:104
-#: ../gtkgreet/prefwin.c:89
+#: gtkgreet/sesswin.c:107 gtkgreet/langwin.c:104 gtkgreet/prefwin.c:90
 msgid "Default"
 msgstr "Voreinstellung"
 
-#: ../gtkgreet/sesswin.c:107
+#: gtkgreet/sesswin.c:109
 msgid "Failsafe xterm"
 msgstr "Xterm als Notlösung"
 
-#: ../gtkgreet/sesswin.c:130
+#: gtkgreet/sesswin.c:128 gtkgreet/hostwin.c:108 gtkgreet/langwin.c:123
+#: gtkgreet/prefwin.c:110 misc/ldm-dialog.c:239
+msgid "_Cancel"
+msgstr "_Abbrechen"
+
+#: gtkgreet/sesswin.c:132
 msgid "Change _Session"
 msgstr "_Sitzungsart ändern"
 
-#: ../gtkgreet/sesswin.c:141
+#: gtkgreet/sesswin.c:143
 msgid "Select your session manager:"
 msgstr "Sitzungsmanager auswählen:"
 
-#: ../gtkgreet/hostwin.c:123
+#: gtkgreet/hostwin.c:112
+msgid "_Apply"
+msgstr "An_wenden"
+
+#: gtkgreet/hostwin.c:123
 msgid "Select the host for your session to use:"
 msgstr "Rechner für diese Sitzung auswählen:"
 
-#: ../gtkgreet/langwin.c:127
+#: gtkgreet/langwin.c:127
 msgid "Change _Language"
 msgstr "_Sprache wechseln"
 
-#: ../gtkgreet/langwin.c:138
+#: gtkgreet/langwin.c:139
 msgid "Select the language for your session to use:"
 msgstr "Sprache für diese Sitzung auswählen:"
+
+#: gtkgreet/prefwin.c:114 misc/ldm-dialog.c:232
+msgid "_OK"
+msgstr "_OK"

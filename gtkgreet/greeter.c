@@ -907,6 +907,14 @@ main(int argc, char* argv[])
         gtk_button_set_image((GtkButton*)optionbutton, optionico);
 
         gtk_button_set_relief((GtkButton*)optionbutton, GTK_RELIEF_NONE);
+        /*
+         * Relief NONE means this button has no ground of its own: it sits
+         * straight on the theme's background image, exactly like the four
+         * labels around it. So it needs a name for the same reason they do,
+         * or a theme that lightens its text for a dark photograph leaves
+         * this one word in the default near-black.
+         */
+        gtk_widget_set_name(optionbutton, "ldm-preferences");
         gtk_button_set_focus_on_click((GtkButton*)optionbutton, FALSE);
 
         g_signal_connect(G_OBJECT(optionbutton), "clicked",

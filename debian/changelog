@@ -1,3 +1,32 @@
+ldm (3.4.5-1) unstable; urgency=medium
+
+  * The German translation covers the whole interface again. It had 20 of
+    the 44 strings, and the 24 it was missing were not the incidental ones:
+
+      - every button in the dialogs - Cancel, Apply, OK - so a German
+        greeter offered "Abbrechen" nowhere and "Cancel" everywhere;
+      - every message a failed sign-in produces. Wrong password, unknown
+        user, locked account, expired password, unreachable authentication
+        server, clock skew, session taken over, account not allowed to log
+        on remotely - all of it English on an otherwise German screen, and
+        these are the words a user actually has to read and act on;
+      - the lockout warnings, including the one naming how long the
+        computer stays blocked.
+
+    The two that count durations, "%d second" and "%d minute", go through
+    ngettext, so po/de.po also gained the Plural-Forms header it had never
+    had. Without it those two could not have worked at all.
+
+    44 translated, none left untranslated.
+
+  * The Preferences button carries a name too: #ldm-preferences. It is
+    drawn with relief NONE - no ground of its own, sitting straight on the
+    theme's background image exactly as the four named labels do - so a
+    theme that lightens the labels for a dark photograph and has no way to
+    reach this one leaves a single word in the default near-black.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Sun, 20 Sep 2026 13:47:00 +0200
+
 ldm (3.4.4-1) unstable; urgency=medium
 
   * The greeter says so when the language it was asked for cannot be had.
