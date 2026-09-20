@@ -1,145 +1,112 @@
-ldm is the LTSP Display Manager which handles authentication for remote desktop clients.
+ldm - the LTSP Display Manager
+==============================
 
-Currently, it doesn't interface with a greeter, as this design will require a
-conversation with the greeter, rather than a simple "get name and password"
-of the existing greeter.
+ldm shows the login screen on a thin client, authenticates the user, and
+hands the session to a remote server. It is not an X display manager in the
+XDMCP sense: authentication goes over SSH, and the session itself runs
+wherever the chosen backend puts it.
 
-Work on the greeter will also be done.
-
-For now, We're using a simple GTK greeter that Ollie designed.  We'll make
-it more pretty.
-
-If you'd like to play with ldm, here's the steps.
-
-1) Get the branch (you've obviously done this already)
-2) Build ldm (standard ./configure --prefix=usr/local && make)
-3) Copy ldm to $CHROOT/usr/sbin
-4) Copy share/ldm-script to $CHROOT/usr/share/ldm
-5) Copy scripts/* to $CHROOT/usr/share/ldm/rc.d
-6) Install ldmgtkgreet to $CHROOT/usr/libexec/ldm
-
-Currently, most things work.  Sound and Localdev seems to setup ok.
-The command socket for ldm now lives in  /var/run/ldm_socket, snd the udev
-scripts have been patched up in my ltspfs-upstream branch.
-
-LDM_DIRECTX works!
-
-We've got a new scripting mechanism for startup and shutdown scripts.
-Right after the ssh connections been completed,
-"/usr/share/ldm/ldm-script start" is called, which exectutes everything
-called S* in the rc.d dir in the ldm share.
-
-Two environment variables are passed down:
-
-LDM_SERVER points to the server LDM is talking to, and
-LDM_SOCKET points to the command socket the ssh connection has set up.
-
-A three line script now replaces all the functionality of the delayed-mounter
-daemon.
-
-to exectute something on the server, you can simply do:
-
-ssh -M $LDM_SOCKET $LDM_SERVER "your server command here"
-
-After the X session's ended, ldm-script stop is called which looks for K*
-scripts.
-
-Note that the scripts are .'d so, exits in your rc scripts will be bad mojo.
-
-Have Fun!
-
---
-The LTSP Team
-http://www.ltsp.org
+This is the fork used by ltsp6 (https://github.com/MAButz/ltsp6): ported to
+GTK3, with an xfreerdp backend, for Debian 13.
 
 
-===============================================================================
-Building and packaging this fork (Debian 13 "Trixie")
-===============================================================================
+What it is made of
+------------------
 
-This is a fork of the last upstream ldm release (2:2.18.06, last packaged for
-Debian Buster) updated to build and run on current Debian: gtkgreet has been
-ported from GTK2 (removed from Debian's archive) to GTK3, an xfreerdp backend
-plugin was added alongside the original ssh one, and a number of security and
-correctness fixes were made (see debian/changelog for the full list). The
-version was bumped to 3.0.0 to reflect the GTK2->GTK3 switch, which is a
-breaking change for anyone still trying to build the old 2.18.06 tree.
+    src/                   ldm itself - the process that authenticates and
+                           starts the session
+    src/plugins/ssh/       the SSH backend: session over an SSH tunnel
+    src/plugins/xfreerdp/  the RDP backend, including pre-authentication
+    gtkgreet/              the greeter, a separate process ldm talks to
+                           over a pipe
+    themes/ltsp/           the default theme: background, logo, icons, CSS
+    po/                    translations, some forty languages
 
--------------------------------------------------------------------------
-1) Building from source, without packaging
--------------------------------------------------------------------------
 
-Install the build dependencies:
+How a login goes
+----------------
 
-    sudo apt install build-essential autoconf automake libtool intltool \
-        pkg-config libglib2.0-dev libgtk-3-dev libx11-dev libxext-dev \
-        gettext iso-codes
+ldm starts the greeter and asks it for a username and a password; the
+greeter draws the prompts and sends back what was typed. ldm hands both to
+the backend named by LDM_SESSION.
 
-Then, from the top of the source tree:
+With the xfreerdp backend and RDP_PREAUTH=ssh, the credentials are tried
+over SSH before xfreerdp is started at all. That is what keeps a wrong
+password inside the greeter, with a message, instead of handing the client
+to the RDP server's own login window - where a user can sit and retype a
+password that was already known to be wrong. It needs the server's host key
+to be known under the name RDP_SERVER uses.
+
+
+Configuration
+-------------
+
+Everything is environment variables, and on an LTSP client they come from
+lts.conf(5), which is where each one is described. ldm(1) summarises the
+ones that decide what the login screen says and how it looks:
+
+    LDM_SESSION           which backend: xfreerdp, ssh
+    RDP_SERVER            where the session runs
+    RDP_PREAUTH           ssh, to check the password before connecting
+    LDM_THEME             a directory under /usr/share/ldm/themes
+    LDM_USERNAME_PROMPT   the prompts, as Pango markup
+    LDM_PASSWORD_PROMPT
+    LDM_VERIFY_MESSAGE
+    LDM_CLOCK_FORMAT      strftime(3), markup allowed
+    LDM_SYSLOG            log to syslog instead of /var/log/ldm.log
+    LDM_LOGLEVEL          7 includes what pre-authentication asked and heard
+
+The greeter follows LANG for its own language, and needs that locale to be
+generated in the image - glibc translates nothing in the C locale, C.UTF-8
+included. It says so in the log when the locale is missing, rather than
+quietly coming up in English.
+
+
+Themes
+------
+
+A theme is a directory under /usr/share/ldm/themes. Files are looked up in
+it one at a time, and anything it does not carry comes from the ltsp theme
+instead - so a theme can be two images and nothing else.
+
+The other side of that rule is worth knowing: a theme that does carry a
+greeter.css replaces the default one outright rather than adding to it.
+
+    bg.png, logo.png     background and logo
+    greeter.css          GTK3 CSS, loaded above the GTK theme
+    preferences, host, session, language, reboot, shutdown, backend
+                         the icons on the buttons and menu entries, 24x24
+                         with an alpha channel
+
+Four labels carry a name so the CSS can address them one at a time:
+#ldm-prompt, #ldm-status, #ldm-host and #ldm-clock. On a dark background
+image that is usually all that is needed:
+
+    #ldm-prompt, #ldm-status, #ldm-host, #ldm-clock {
+        color: #f2f2f2;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
+    }
+
+
+Building
+--------
+
+Autotools, and the Debian packaging is in debian/:
 
     ./autogen.sh
-    ./configure --prefix=/usr
-    make -j$(nproc)
-    sudo make install
+    ./configure --prefix=/usr --libexecdir=/usr/libexec
+    make
 
-`./autogen.sh` regenerates the autotools files (configure, Makefile.in, ...)
-from configure.ac/Makefile.am; skip it if you're building from a tarball
-that already has a `configure` script.
-
-If your checkout came from a Windows git client, the shell scripts may have
-CRLF line endings, which breaks their shebang line ("/bin/sh -v\r" isn't a
-valid interpreter). Fix that first with:
-
-    find . -name .git -prune -o -type f \
-        \( -iname '*.png' -o -iname '*.jpg' \) -prune -o -type f -print \
-        | xargs dos2unix
-
--------------------------------------------------------------------------
-2) Building an installable .deb package (recommended)
--------------------------------------------------------------------------
-
-This is the normal Debian packaging workflow, using the debian/ directory
-in this tree - no separate packaging repo needed.
-
-Install the packaging + build dependencies (or let step 3 below do it for
-you):
-
-    sudo apt install build-essential debhelper debhelper-compat dpkg-dev \
-        autoconf automake libtool intltool pkg-config dctrl-tools \
-        libglib2.0-dev libgtk-3-dev libx11-dev libxext-dev \
-        gettext iso-codes locales python3
-
-Then, from the top of the source tree:
+or, for the package:
 
     dpkg-buildpackage -us -uc -b
 
-`-us -uc` skips GPG-signing the resulting .changes/.dsc files, which you
-don't need for a purely local build. `-b` builds binary packages only (no
-source package). This produces, one directory *above* the source tree:
+Built packages are published in the signed archive at
+https://mabutz.github.io/ltsp6 and attached to the releases of this
+repository.
 
-    ldm_3.0.0-1_amd64.deb        - the client (ldm core, gtkgreet, wwm,
-                                    ssh + xfreerdp plugins, ldm-dialog)
-    ldm-dbgsym_3.0.0-1_amd64.deb - debug symbols (safe to ignore/skip)
 
--------------------------------------------------------------------------
-3) Installing the .deb
--------------------------------------------------------------------------
+Licence
+-------
 
-Use `apt install ./<file>.deb` (not `dpkg -i`) so apt resolves and pulls in
-the runtime dependencies (openssh-client, xserver-xorg, etc.) automatically:
-
-    sudo apt install ./ldm_3.0.0-1_amd64.deb \
-
-For the xfreerdp backend specifically, also install (it's a Recommends,
-not a hard dependency, since the ssh backend works without it):
-
-    sudo apt install freerdp3-x11
-
-(Debian 13 only ships freerdp3-x11, whose binary is `xfreerdp3`; the
-xfreerdp plugin auto-detects this - see `RDP_XFREERDP_BIN` in lts.conf to
-override the auto-detection if needed.)
-
-To rebuild after making further source changes, just repeat step 2 - there's
-no need to clean the tree first; dpkg-buildpackage reruns autoreconf/configure
-each time.
-
+GPL-2+, as the LTSP project it derives from. See COPYING.
