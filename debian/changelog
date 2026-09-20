@@ -1,3 +1,28 @@
+ldm (3.4.4-1) unstable; urgency=medium
+
+  * The greeter says so when the language it was asked for cannot be had.
+
+    setlocale(LC_ALL, "") returns NULL when LANG names a locale the image
+    does not carry, and leaves the process in "C" - where glibc also
+    ignores LANGUAGE, deliberately, with C.UTF-8 counting as C for that
+    purpose. Every string then stays in English and nothing anywhere says
+    why. Somebody who has just written LANG into lts.conf and rebooted a
+    client deserves better than an unchanged screen:
+
+        locale "de_DE.UTF-8" is not generated in this image; staying in
+        "C" and showing English. Build the image with ltsp-build-client
+        --locale to include it.
+
+    and, for the case where LANGUAGE is set but the locale is C:
+
+        LANGUAGE is set but the locale is "C", and glibc ignores LANGUAGE
+        in the C locale. The image needs one real locale - any one - for
+        LANGUAGE to take effect.
+
+    Both at log level 3, so they appear without LDM_LOGLEVEL being raised.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Sun, 20 Sep 2026 08:44:01 +0200
+
 ldm (3.4.3-1) unstable; urgency=medium
 
   * The greeter shows the icons on its buttons and menu entries again.

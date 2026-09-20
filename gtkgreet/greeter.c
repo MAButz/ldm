@@ -746,6 +746,41 @@ main(int argc, char* argv[])
     log_init(ldm_getenv_bool("LDM_SYSLOG"),
         ldm_getenv_int("LDM_LOGLEVEL", -1));
 
+    /*
+     * Say so when the requested language cannot be had.
+     *
+     * setlocale(LC_ALL, "") above returns NULL when LANG names a locale the
+     * image does not carry, and leaves the process in "C". glibc then also
+     * ignores LANGUAGE - deliberately, and C.UTF-8 counts as C for that
+     * purpose - so every string stays in English and nothing anywhere says
+     * why. Somebody who has just written LANG into lts.conf and rebooted
+     * deserves better than an unchanged screen.
+     */
+    {
+        const char* asked = getenv("LC_ALL");
+        const char* got;
+
+        if (asked == NULL || *asked == '\0')
+            asked = getenv("LANG");
+        got = setlocale(LC_MESSAGES, NULL);
+        if (got == NULL)
+            got = "C";
+
+        if (strcmp(got, "C") == 0 || strcmp(got, "C.UTF-8") == 0) {
+            if (asked != NULL && *asked != '\0' && strcmp(asked, got) != 0)
+                log_entry("gtkgreet", 3,
+                    "locale \"%s\" is not generated in this image; staying "
+                    "in \"%s\" and showing English. Build the image with "
+                    "ltsp-build-client --locale to include it.", asked, got);
+            else if (getenv("LANGUAGE") != NULL)
+                log_entry("gtkgreet", 3,
+                    "LANGUAGE is set but the locale is \"%s\", and glibc "
+                    "ignores LANGUAGE in the C locale. The image needs one "
+                    "real locale - any one - for LANGUAGE to take effect.",
+                    got);
+        }
+    }
+
     gtk_init(&argc, &argv);
 
     /*
