@@ -223,3 +223,11 @@ msgstr "Sprache für diese Sitzung auswählen:"
 #: gtkgreet/prefwin.c:114 misc/ldm-dialog.c:232
 msgid "_OK"
 msgstr "_OK"
+
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:750
+msgid "Caps Lock is on"
+msgstr "Feststelltaste ist aktiviert"
+
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:752
+msgid "Num Lock is on"
+msgstr "Num-Lock ist aktiviert"

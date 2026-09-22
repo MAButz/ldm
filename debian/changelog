@@ -1,3 +1,19 @@
+ldm (3.4.6-1) unstable; urgency=medium
+
+  * The greeter says which lock keys are on, below the entry, the way a
+    Windows login screen does. Getting the password wrong because Caps
+    Lock was left on is a common way to be locked out, and on a thin
+    client the lamp on the keyboard need not agree with the session at
+    all.
+  * Translated: "Feststelltaste ist aktiviert" and "Num-Lock ist
+    aktiviert".
+  * The label is named #ldm-lockkeys so a theme can style it, and keeps
+    its line height when empty so nothing jumps around.
+  * Read through GDK's keymap rather than XKB by hand, so every change
+    is reported and there is nothing to poll.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Tue, 22 Sep 2026 09:27:09 +0200
+
 ldm (3.4.5-1) unstable; urgency=medium
 
   * The German translation covers the whole interface again. It had 20 of

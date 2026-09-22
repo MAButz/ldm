@@ -35,11 +35,15 @@ tooltip {
 }
 
 /*
- * The greeter names four of its labels, so a theme can address them one at a
- * time instead of colouring every label in the window:
+ * The greeter names several of its widgets, so a theme can address them one
+ * at a time instead of colouring every label in the window:
  *
  *     #ldm-prompt      the "Username" / "Password" line beside the entry
  *     #ldm-status      the status line under it
+ *     #ldm-lockkeys    says which lock keys are on, below the entry. Empty
+ *                      when neither is, and it keeps its line height then,
+ *                      so the dialogue does not jump as the text comes and
+ *                      goes
  *     #ldm-host        host name and address
  *     #ldm-clock       the clock
  *     #ldm-preferences the Preferences button, which has relief NONE and so
@@ -49,7 +53,8 @@ tooltip {
  * The shadow matters more than the colour: a photograph is light in some
  * places and dark in others, and a single colour cannot be right on both.
  *
- *     #ldm-prompt, #ldm-status, #ldm-host, #ldm-clock, #ldm-preferences {
+ *     #ldm-prompt, #ldm-status, #ldm-lockkeys, #ldm-host, #ldm-clock,
+ *     #ldm-preferences {
  *         color: #f2f2f2;
  *         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
  *     }

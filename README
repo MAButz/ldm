@@ -78,14 +78,21 @@ greeter.css replaces the default one outright rather than adding to it.
                          the icons on the buttons and menu entries, 24x24
                          with an alpha channel
 
-Four labels carry a name so the CSS can address them one at a time:
-#ldm-prompt, #ldm-status, #ldm-host and #ldm-clock. On a dark background
-image that is usually all that is needed:
+Several widgets carry a name so the CSS can address them one at a time:
+#ldm-prompt, #ldm-status, #ldm-lockkeys, #ldm-host, #ldm-clock and
+#ldm-preferences. On a dark background image that is usually all that is
+needed:
 
-    #ldm-prompt, #ldm-status, #ldm-host, #ldm-clock {
+    #ldm-prompt, #ldm-status, #ldm-lockkeys, #ldm-host, #ldm-clock,
+    #ldm-preferences {
         color: #f2f2f2;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85);
     }
+
+#ldm-lockkeys says which lock keys are on, the way a Windows login screen
+does, and is empty when neither is. Getting the password wrong because Caps
+Lock was left on is a common way to be locked out, and on a thin client the
+lamp on the keyboard need not agree with the session at all.
 
 
 Building

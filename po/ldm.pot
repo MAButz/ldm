@@ -94,3 +94,11 @@ msgstr ""
 #: ../gtkgreet/langwin.c:138
 msgid "Select the language for your session to use:"
 msgstr ""
+
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:750
+msgid "Caps Lock is on"
+msgstr ""
+
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:752
+msgid "Num Lock is on"
+msgstr ""

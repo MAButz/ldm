@@ -69,6 +69,7 @@
   */
 GtkWidget* UserPrompt;          /* prompt area before the entry */
 GtkWidget* StatusMessages;      /* Status msg area below entry */
+GtkWidget* LockKeys;            /* Caps/Num lock warning below entry */
 GtkWidget* entry;               /* entry box */
 GtkWidget* choiceCombo;
 GtkListStore* choiceList;
@@ -716,6 +717,46 @@ key_press_event(GtkWidget* widget, GdkEventKey* event, gpointer window)
     return FALSE;
 }
 
+/*
+ * Show which lock keys are on, the way a Windows login screen does.
+ *
+ * Getting a password wrong because Caps Lock was left on is a common way to
+ * be locked out, and on a thin client the lamp on the keyboard need not
+ * agree with the session at all - that is what the keyboard indicator work
+ * in xrdp is about. Here we report what this X server believes, which is
+ * what the entry below will act on.
+ *
+ * The label keeps its line height when empty, so nothing jumps around as
+ * the text appears and goes away.
+ */
+static void
+update_lock_keys(GdkKeymap* keymap, gpointer data)
+{
+    gboolean caps;
+    gboolean num;
+    gchar* text;
+
+    if (LockKeys == NULL || keymap == NULL)
+        return;
+
+    caps = gdk_keymap_get_caps_lock_state(keymap);
+    num = gdk_keymap_get_num_lock_state(keymap);
+
+    if (caps && num)
+        /* Both are on. The separator is a middle dot, U+00B7. */
+        text = g_strdup_printf("%s  \xc2\xb7  %s",
+            _("Caps Lock is on"), _("Num Lock is on"));
+    else if (caps)
+        text = g_strdup(_("Caps Lock is on"));
+    else if (num)
+        text = g_strdup(_("Num Lock is on"));
+    else
+        text = g_strdup("");
+
+    gtk_label_set_text(GTK_LABEL(LockKeys), text);
+    g_free(text);
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -971,6 +1012,9 @@ main(int argc, char* argv[])
 
         StatusMessages = gtk_label_new("");
         gtk_widget_set_name(StatusMessages, "ldm-status");
+
+        LockKeys = gtk_label_new("");
+        gtk_widget_set_name(LockKeys, "ldm-lockkeys");
         entry = gtk_entry_new();
         gtk_entry_set_width_chars(GTK_ENTRY(entry), 20);
         g_signal_connect(G_OBJECT(entry), "activate",
@@ -1038,6 +1082,7 @@ main(int argc, char* argv[])
 
         gtk_box_pack_start(GTK_BOX(vbox), logo, FALSE, FALSE, 5);
         gtk_box_pack_start(GTK_BOX(vbox), EntryBox, TRUE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(vbox), LockKeys, FALSE, FALSE, 0);
         if (allowguest)
             gtk_box_pack_start(GTK_BOX(vbox), guestbox, FALSE, FALSE, 0);
         gtk_box_pack_start(GTK_BOX(vbox), timeoutbox, FALSE, FALSE, 0);
@@ -1119,6 +1164,17 @@ main(int argc, char* argv[])
     gtk_widget_show_all(prefBar);
     gtk_window_move(GTK_WINDOW(loginWindow), 0, 0);
     gtk_window_move(GTK_WINDOW(prefBar), 0, height - BOTTOM_BAR_HEIGHT);
+
+    /* Follow the lock keys. GDK reports every change of the keyboard state,
+     * so there is nothing to poll and nothing to do with XKB by hand. */
+    {
+        GdkKeymap* keymap;
+
+        keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+        g_signal_connect(keymap, "state-changed",
+            G_CALLBACK(update_lock_keys), NULL);
+        update_lock_keys(keymap, NULL);
+    }
 #ifdef K12LINUX
     gtk_widget_show_all(topBar);
     gtk_window_move(GTK_WINDOW(topBar), 0, 0);
