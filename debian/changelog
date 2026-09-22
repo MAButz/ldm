@@ -13,7 +13,7 @@ ldm (3.4.7-1) unstable; urgency=high
     null pointer. The guest path in the ssh backend is untouched: it
     fills in a real user name and password of its own.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Tue, 22 Sep 2026 09:53:12 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Tue, 22 Sep 2026 09:53:12 +0200
 
 ldm (3.4.6-1) unstable; urgency=medium
 
@@ -29,7 +29,7 @@ ldm (3.4.6-1) unstable; urgency=medium
   * Read through GDK's keymap rather than XKB by hand, so every change
     is reported and there is nothing to poll.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Tue, 22 Sep 2026 09:27:09 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Tue, 22 Sep 2026 09:27:09 +0200
 
 ldm (3.4.5-1) unstable; urgency=medium
 
@@ -58,7 +58,7 @@ ldm (3.4.5-1) unstable; urgency=medium
     theme that lightens the labels for a dark photograph and has no way to
     reach this one leaves a single word in the default near-black.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Sun, 20 Sep 2026 13:47:00 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Sun, 20 Sep 2026 13:47:00 +0200
 
 ldm (3.4.4-1) unstable; urgency=medium
 
@@ -83,7 +83,7 @@ ldm (3.4.4-1) unstable; urgency=medium
 
     Both at log level 3, so they appear without LDM_LOGLEVEL being raised.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Sun, 20 Sep 2026 08:44:01 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Sun, 20 Sep 2026 08:44:01 +0200
 
 ldm (3.4.3-1) unstable; urgency=medium
 
@@ -107,7 +107,7 @@ ldm (3.4.3-1) unstable; urgency=medium
     - and nobody had seen it since GTK 3.10 anyway. Drawn for this package,
     24x24 like the rest of the set.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Sat, 19 Sep 2026 19:46:45 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Sat, 19 Sep 2026 19:46:45 +0200
 
 ldm (3.4.2-1) unstable; urgency=medium
 
@@ -144,7 +144,7 @@ ldm (3.4.2-1) unstable; urgency=medium
     worked example for a dark background are also in the default theme's
     greeter.css, where whoever copies that file will meet them.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Fri, 18 Sep 2026 15:35:53 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Fri, 18 Sep 2026 15:35:53 +0200
 
 ldm (3.4.1-1) unstable; urgency=medium
 
@@ -173,7 +173,7 @@ ldm (3.4.1-1) unstable; urgency=medium
     which is what the per-file fallback was always meant to do: a theme
     changes the picture and inherits the rest.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Fri, 18 Sep 2026 09:11:26 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Fri, 18 Sep 2026 09:11:26 +0200
 
 ldm (3.4.0-1) unstable; urgency=medium
 
@@ -216,7 +216,7 @@ ldm (3.4.0-1) unstable; urgency=medium
     build stopped with "missing files". It is gone; dh_auto_install now
     does the whole job by itself.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 18:34:34 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Thu, 17 Sep 2026 18:34:34 +0200
 
 ldm (3.3.4-1) unstable; urgency=medium
 
@@ -234,7 +234,7 @@ ldm (3.3.4-1) unstable; urgency=medium
     is - "%d.%m.%Y, <b>%H:%M</b>" for the German form. Documented in
     lts.conf(5).
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 16:50:35 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Thu, 17 Sep 2026 16:50:35 +0200
 
 ldm (3.3.3-1) unstable; urgency=medium
 
@@ -268,7 +268,7 @@ ldm (3.3.3-1) unstable; urgency=medium
     reply, and this one rejects a wrong password, accepts a right one, and
     still reports an unreachable server as unreachable.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 16:15:34 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Thu, 17 Sep 2026 16:15:34 +0200
 
 ldm (3.3.2-1) unstable; urgency=medium
 
@@ -303,7 +303,7 @@ ldm (3.3.2-1) unstable; urgency=medium
     3.3.1 read "publickey" in a method list as "no password was offered",
     and this one threw the answer away after reading it correctly.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 15:55:08 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Thu, 17 Sep 2026 15:55:08 +0200
 
 ldm (3.3.1-1) unstable; urgency=medium
 
@@ -332,7 +332,7 @@ ldm (3.3.1-1) unstable; urgency=medium
     keyboard-interactive, reversed method order, and the word "password"
     appearing in the text outside the list.
 
- -- Marc-Andre Butz <butz@labor-heidrich.de>  Thu, 17 Sep 2026 14:56:21 +0200
+ -- Marc-Andre Butz <ma@butz.online>  Thu, 17 Sep 2026 14:56:21 +0200
 
 ldm (3.3.0-1) unstable; urgency=medium
 
