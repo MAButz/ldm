@@ -72,13 +72,18 @@ start_ssh()
 {
     gboolean error = FALSE;
 
-    /* Variable validation */
-    if (!(sshinfo->username)) {
+    /*
+     * Variable validation. Empty counts as absent: a zero length string
+     * passes a NULL check and is not a credential. The guest path above
+     * fills both in with something real, so nothing legitimate is caught
+     * here.
+     */
+    if (!(sshinfo->username) || !*(sshinfo->username)) {
         log_entry("ssh", 3, "no username");
         error = TRUE;
     }
 
-    if (!(sshinfo->password)) {
+    if (!(sshinfo->password) || !*(sshinfo->password)) {
         log_entry("ssh", 3, "no password");
         error = TRUE;
     }

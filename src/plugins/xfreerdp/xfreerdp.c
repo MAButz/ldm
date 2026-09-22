@@ -978,12 +978,18 @@ start_xfreerdp()
         error = TRUE;
     }
 
-    if (!rdpinfo->username) {
+    /*
+     * Empty, not just absent. A zero length string passes a NULL check and
+     * then travels all the way to the RDP server, which asks for credentials
+     * itself - so the session starts without anything here having
+     * authenticated anybody.
+     */
+    if (!rdpinfo->username || !*rdpinfo->username) {
         log_entry("xfreerdp", 3, "no username");
         error = TRUE;
     }
 
-    if (!rdpinfo->password) {
+    if (!rdpinfo->password || !*rdpinfo->password) {
         log_entry("xfreerdp", 3, "no password");
         error = TRUE;
     }

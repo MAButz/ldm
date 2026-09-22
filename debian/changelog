@@ -1,3 +1,20 @@
+ldm (3.4.7-1) unstable; urgency=high
+
+  * An empty answer is no longer taken for a credential. The greeter
+    remaps Tab to Enter, so two taps sent an empty username and an empty
+    password straight through. Nothing rejected them: with no credentials
+    to ask about, the pre-authentication reports itself unavailable -
+    which is not a refusal - so the session started anyway and handed the
+    user the RDP server's own login window. Past the greeter, past the
+    pre-authentication, and past the failure count that goes with it.
+  * get_userid() and get_passwd() now ask again while the answer is
+    empty, which covers every backend and every way of submitting.
+  * Both backends treat an empty string as missing rather than only a
+    null pointer. The guest path in the ssh backend is untouched: it
+    fills in a real user name and password of its own.
+
+ -- Marc-Andre Butz <butz@labor-heidrich.de>  Tue, 22 Sep 2026 09:53:12 +0200
+
 ldm (3.4.6-1) unstable; urgency=medium
 
   * The greeter says which lock keys are on, below the entry, the way a

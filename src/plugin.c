@@ -32,7 +32,25 @@ get_userid(gchar ** username)
     fallback = g_strconcat("<b>", _("Username"), "</b>", NULL);
     prompt = ldm_getenv_str_default("LDM_USERNAME_PROMPT", fallback);
     cmd = g_strconcat("prompt ", prompt, "\nuserid\n", NULL);
-    *username = ask_value_greeter(cmd);
+
+    /*
+     * Keep asking while the answer is empty.
+     *
+     * The greeter remaps Tab to Enter, so two taps used to send an empty
+     * username and an empty password straight through. Nothing then rejects
+     * them: the pre-authentication has no credentials to ask about and
+     * reports itself unavailable, which is not a refusal, so the session
+     * starts anyway and the user is handed the RDP server's own login
+     * window - past the greeter, past the pre-authentication, and past the
+     * failure count that goes with it.
+     *
+     * An empty string is never a credential. Ask again.
+     */
+    *username = NULL;
+    do {
+        g_free(*username);
+        *username = ask_value_greeter(cmd);
+    } while (*username != NULL && **username == '\0');
 
     g_free(cmd);
     g_free(fallback);
@@ -52,7 +70,13 @@ get_passwd(gchar ** password)
     fallback = g_strconcat("<b>", _("Password"), "</b>", NULL);
     prompt = ldm_getenv_str_default("LDM_PASSWORD_PROMPT", fallback);
     cmd = g_strconcat("prompts ", prompt, "\npasswd\n", NULL);
-    *password = (gchar *) ask_value_greeter(cmd);
+
+    /* As in get_userid(): an empty answer is not a password. */
+    *password = NULL;
+    do {
+        g_free(*password);
+        *password = (gchar *) ask_value_greeter(cmd);
+    } while (*password != NULL && **password == '\0');
     g_free(fallback);
 
     /*
