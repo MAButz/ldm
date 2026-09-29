@@ -37,6 +37,16 @@ screen unchanged, so the value carries its own emphasis \(em the defaults are
 .IP "\fBLDM_VERIFY_MESSAGE\fR" 4
 The line shown while the password is being checked. Also Pango markup; the
 default is a bold, translated "Verifying password.  Please wait.".
+.IP "\fBLDM_NEWPASSWORD_PROMPT\fR, \fBLDM_NEWPASSWORD_AGAIN_PROMPT\fR" 4
+The two prompts shown when a domain password has to be changed at the greeter
+\(em see \fBPASSWORDS THAT MUST BE CHANGED\fR below. Pango markup as well; the
+defaults are \fB<b>New password</b>\fR and \fB<b>New password again</b>\fR.
+.IP "\fBLDM_NEWPASSWORD_MESSAGE\fR" 4
+The line shown above those prompts, saying why they appeared. The default is
+a bold, translated "This password must be changed before signing in." \(em
+which is worded to cover both cases, because the domain reports a password
+that ran out and one an administrator handed over as an initial password in
+exactly the same way.
 .IP "" 4
 Setting any of these replaces the translation for that string. Leave them unset
 and a localised image keeps its own wording.
@@ -83,6 +93,53 @@ light in some places and dark in others:
 }
 .fi
 .RE
+.SH "PASSWORDS THAT MUST BE CHANGED"
+.PP
+Where \fBRDP_PREAUTH\fR asks a Kerberos KDC, a password that has to be changed
+can be changed at the login screen instead of merely being reported. It is the
+only place a thin client can offer that: the client is not a domain member, and
+the session server would only repeat the refusal.
+.PP
+Two situations arrive here, and the protocol does not distinguish them. One is
+a password that ran out. The other is an account that never had one of the
+user's own \(em an administrator set an initial password and marked it to be
+replaced at first sign\-in, which is \fBpwdLastSet=0\fR in Active Directory and
+the \fBREQUIRES_PWCHANGE\fR attribute on an MIT KDC. Such an account has no
+expiry date at all, and the KDC still answers \fBKDC_ERR_KEY_EXPIRED\fR, which
+is why the wording here says a password must be changed rather than that it
+expired. Both end the same way: the user picks a password, and the attribute or
+the expiry is cleared by the domain as part of the change.
+.PP
+The KDC will, however, still issue a ticket for the service
+\fBkadmin/changepw\fR, and that exception is what makes the change possible at
+all. ldm asks for the new password twice, sets it with that ticket
+over the protocol from RFC 3244 (which is what Active Directory speaks), and
+then signs in with the new password so the session starts without asking again.
+.PP
+Three things follow from how this works, and are worth knowing before enabling
+it:
+.IP "" 4
+The rules are the domain's. Length, complexity, history and minimum age are
+checked by the controller, and when it refuses, its own wording is what the
+user is shown \(em it describes the rule that actually applies.
+.IP "" 4
+The change needs the controller holding the PDC emulator role. Signing in
+survives the loss of any one controller; changing a password does not, and the
+message says so rather than blaming the password.
+.IP "" 4
+The new password goes to the KDC and nowhere else. It reaches the session
+server only afterwards, as the account's actual password, and it is wiped from
+memory rather than freed.
+.PP
+\fBRDP_PREAUTH_CHANGE_PASSWORD=False\fR turns the offer off, leaving the
+expired password reported as before. Set it where passwords are changed
+somewhere else on purpose.
+.PP
+A KDC that does not answer is a different case and stops the login: the
+credentials were never checked by anyone, and starting a session with them
+would land the user in xrdp's own dialog with no way back \(em the dead end
+this check exists to avoid. The greeter says that the authentication server
+cannot be reached and that the password is not the problem.
 .SH "FILES"
 .IP "\fI/usr/share/ldm/themes/\fR" 4
 The themes. \fBltsp\fR is the default and the fallback for every file another

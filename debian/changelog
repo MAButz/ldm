@@ -1,3 +1,58 @@
+ldm (3.4.8-1) unstable; urgency=medium
+
+  * A domain password that has expired can be changed at the login
+    screen. Until now ldm said it had expired and stopped there, which is
+    the worse half of the message: a thin client is not a domain member,
+    and the session server only repeats the refusal, so there was nowhere
+    left to change it.
+  * It rests on one exception in the protocol: a KDC still issues a ticket
+    for kadmin/changepw when the password has expired. ldm asks for the
+    new password twice, sets it with that ticket over RFC 3244 - what
+    Active Directory speaks - and then signs in with the new password, so
+    the session starts without a second login. The same path covers an
+    administrator ticking "user must change password at next logon": the
+    KDC reports both as KDC_ERR_KEY_EXPIRED.
+  * An initial password counts as one that must be changed, and it is the
+    same path: an account an administrator set up and marked to be replaced
+    at first sign-in has no expiry date at all - pwdLastSet=0 in Active
+    Directory, REQUIRES_PWCHANGE on an MIT KDC - and the KDC still answers
+    KDC_ERR_KEY_EXPIRED. Measured against both, which is also why the
+    greeter says a password must be changed rather than that it expired:
+    for somebody who has just been handed one, "expired" is not true.
+    LDM_NEWPASSWORD_MESSAGE carries a site's own wording.
+  * The rules stay the domain's. Length, complexity, history and minimum
+    age are the controller's to enforce, and when it refuses, its own
+    wording is shown - it describes the rule that actually applies, which
+    nothing invented here could. Changing needs the PDC emulator, so a
+    site with a second controller can sign in while it is down but not
+    change passwords; the message says that rather than blaming the
+    password.
+  * Failures are told apart rather than lumped together: a controller that
+    cannot be reached, a password service that does not answer, and a
+    change the domain refused each say their own thing. Whoever reads the
+    message otherwise goes looking at the wrong machine.
+  * The new password goes to the KDC and nowhere else, reaches the session
+    server only afterwards as the account's actual password, and is wiped
+    from memory rather than freed. Nothing is written to a credential
+    cache on the client, as before.
+  * RDP_PREAUTH_CHANGE_PASSWORD=False turns the offer off, and
+    LDM_NEWPASSWORD_PROMPT and LDM_NEWPASSWORD_AGAIN_PROMPT carry their
+    own wording like the other prompts. The greeter needed no new
+    commands for any of this: its protocol already sets a prompt and takes
+    an answer with the entry hidden, so every existing theme works.
+  * A KDC that does not answer still stops the login, deliberately. The
+    credentials were never checked by anyone, and a session started with
+    them lands in the xrdp dialog this check exists to avoid. The message
+    now says the authentication server cannot be reached and that the
+    password is not the problem, and the krb5 detail goes to the log.
+  * The Kerberos code moved out of the xfreerdp plugin into src/ldmkrb5.c,
+    where its name says what it is. The plugin had grown to 1383 lines
+    doing three jobs; the lockout counting was already separate in
+    ldmlockout.c, and this follows it. ldm links -lkrb5 now and the plugin
+    no longer does, resolving ldm_krb5_* from the program that loads it.
+
+ -- Marc-Andre Butz <ma@butz.online>  Tue, 29 Sep 2026 15:46:36 +0200
+
 ldm (3.4.7-1) unstable; urgency=high
 
   * An empty answer is no longer taken for a credential. The greeter
