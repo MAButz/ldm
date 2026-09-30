@@ -2,6 +2,7 @@
 src/ldm.c
 src/ldmgreetercomm.c
 src/ldmutils.c
+src/ldmkrb5.c
 src/plugin.c
 src/plugins/xfreerdp/xfreerdp.c
 src/plugins/ssh/ssh.c

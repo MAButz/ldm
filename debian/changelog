@@ -1,3 +1,26 @@
+ldm (3.4.9-1) unstable; urgency=medium
+
+  * The password change speaks German again on a German client. Its
+    strings went through gettext from the start, but src/ldmkrb5.c was
+    never added to po/POTFILES.in when the Kerberos code moved there, so
+    they were never collected and no catalogue could hold them - the
+    prompt read "New password" beside a greeter that said Benutzername
+    and Passwort.
+  * Worse than missing: msgmerge had matched several of them to unrelated
+    old translations and marked them fuzzy, which gettext then refuses to
+    use. "The new password does not meet the rules of this domain" was
+    paired with "Diesen Benutzer gibt es in der Domaene nicht". All of
+    them are translated properly now: 61 messages, none fuzzy, none open.
+  * Also translated, having been missed before: the reboot notice from
+    I01-nbd-checkupdate, the question about a session elsewhere, and
+    S15-userLoginCheck's refusal.
+  * What stays in another language is the domain controller's own wording
+    when it refuses a password - "Password too short, password must be at
+    least 7 characters long" is its sentence, not ours, and showing it
+    unchanged is the point.
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 30 Sep 2026 16:40:45 +0200
+
 ldm (3.4.8-1) unstable; urgency=medium
 
   * A domain password that has expired can be changed at the login

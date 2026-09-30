@@ -1,9 +1,3 @@
-# German LDM translation
-# Copyright (C) 2007 Scott Balneaves
-# This file is distributed under the same license as the ldm package.
-# Oliver Grawert <ogra@ubuntu.com>, 2007.
-# Wolfgang Schweer <schweer@cityweb.de>, 2008-2011.
-#
 msgid ""
 msgstr ""
 "Project-Id-Version: ldm 2.1.1\n"
@@ -23,36 +17,89 @@ msgstr ""
 "X-Poedit-Language: German\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: src/plugin.c:32
-msgid "Username"
-msgstr "Benutzername"
+#: src/ldmkrb5.c:137
+msgid "The new password does not meet the rules of this domain."
+msgstr "Das neue Passwort entspricht nicht den Regeln dieser Domäne."
 
-#: src/plugin.c:52
-msgid "Password"
-msgstr "Passwort"
+#: src/ldmkrb5.c:140
+msgid "This account may not change its own password."
+msgstr "Dieses Konto darf sein Passwort nicht selbst ändern."
 
-#: src/plugin.c:62
-msgid "Verifying password.  Please wait."
-msgstr "Passwort wird überprüft. Bitte warten ..."
+#: src/ldmkrb5.c:146
+msgid "The password server refused the change."
+msgstr "Der Passwortdienst hat die Änderung abgelehnt."
 
-#: src/plugins/xfreerdp/xfreerdp.c:322 src/plugins/xfreerdp/xfreerdp.c:629
-#: src/plugins/xfreerdp/xfreerdp.c:792
-msgid "Wrong user name or password."
-msgstr "Benutzername oder Passwort ist falsch."
-
-#: src/plugins/xfreerdp/xfreerdp.c:327
-msgid "This user does not exist in the domain."
-msgstr "Diesen Benutzer gibt es in der Domäne nicht."
-
-#: src/plugins/xfreerdp/xfreerdp.c:338
-msgid "This account is locked or disabled."
-msgstr "Dieses Konto ist gesperrt oder deaktiviert."
-
-#: src/plugins/xfreerdp/xfreerdp.c:343
+#: src/ldmkrb5.c:176 src/ldmkrb5.c:518 src/ldmkrb5.c:524
 msgid "The password for this account has expired."
 msgstr "Das Passwort dieses Kontos ist abgelaufen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:352
+#: src/ldmkrb5.c:204
+msgid ""
+"The password for this account has expired, and the server that could change "
+"it cannot be reached. Ask an administrator."
+msgstr ""
+"Das Passwort dieses Kontos ist abgelaufen, und der Server, der es ändern "
+"könnte, ist nicht erreichbar. Wenden Sie sich an die Administration."
+
+#: src/ldmkrb5.c:209
+msgid ""
+"The password for this account has expired and cannot be changed from here. "
+"Ask an administrator."
+msgstr ""
+"Das Passwort dieses Kontos ist abgelaufen und lässt sich von hier aus nicht "
+"ändern. Wenden Sie sich an die Administration."
+
+#: src/ldmkrb5.c:228
+msgid "This password must be changed before signing in."
+msgstr "Dieses Passwort muss vor der Anmeldung geändert werden."
+
+#: src/ldmkrb5.c:245
+msgid "New password"
+msgstr "Neues Passwort"
+
+#: src/ldmkrb5.c:252
+msgid "New password again"
+msgstr "Neues Passwort wiederholen"
+
+#: src/ldmkrb5.c:262
+msgid "<b>The two entries did not match. Please try again.</b>"
+msgstr "<b>Die beiden Eingaben stimmen nicht überein. Bitte noch einmal.</b>"
+
+#: src/ldmkrb5.c:288
+msgid "The password could not be changed. Ask an administrator."
+msgstr ""
+"Das Passwort konnte nicht geändert werden. Wenden Sie sich an die "
+"Administration."
+
+#: src/ldmkrb5.c:325
+msgid "The password for this account has expired and was not changed."
+msgstr "Das Passwort dieses Kontos ist abgelaufen und wurde nicht geändert."
+
+#: src/ldmkrb5.c:444 src/plugins/xfreerdp/xfreerdp.c:402
+#: src/plugins/xfreerdp/xfreerdp.c:565
+msgid "Wrong user name or password."
+msgstr "Benutzername oder Passwort ist falsch."
+
+#: src/ldmkrb5.c:449
+msgid "This user does not exist in the domain."
+msgstr "Diesen Benutzer gibt es in der Domäne nicht."
+
+#: src/ldmkrb5.c:460
+msgid "This account is locked or disabled."
+msgstr "Dieses Konto ist gesperrt oder deaktiviert."
+
+#: src/ldmkrb5.c:510
+msgid ""
+"The password was changed, but signing in with it did not work. Try again."
+msgstr ""
+"Das Passwort wurde geändert, die Anmeldung damit hat aber nicht "
+"funktioniert. Bitte noch einmal versuchen."
+
+#.
+#. * Worth naming precisely: it looks exactly like a wrong password from
+#. * the outside, and no amount of retyping fixes it.
+#.
+#: src/ldmkrb5.c:533
 msgid ""
 "This computer's clock differs too much from the server's; ask an "
 "administrator."
@@ -60,15 +107,49 @@ msgstr ""
 "Die Uhr dieses Rechners weicht zu stark von der des Servers ab; wenden Sie "
 "sich an die Administration."
 
-#: src/plugins/xfreerdp/xfreerdp.c:358
-msgid "The authentication server cannot be reached."
-msgstr "Der Anmeldeserver ist nicht erreichbar."
+#: src/ldmkrb5.c:555
+msgid ""
+"The authentication server cannot be reached, so signing in is not possible "
+"from here. The password is not the problem - tell an administrator."
+msgstr ""
+"Der Anmeldeserver ist nicht erreichbar, eine Anmeldung ist von hier aus "
+"deshalb nicht möglich. Es liegt nicht am Passwort – bitte der Administration "
+"melden."
 
-#: src/plugins/xfreerdp/xfreerdp.c:367
+#: src/ldmkrb5.c:567
 msgid "Sign-in failed."
 msgstr "Die Anmeldung ist fehlgeschlagen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:644
+#.
+#. * The prompt is Pango markup and reaches the greeter unchanged, the same
+#. * way LDM_CLOCK_FORMAT does: a site that wants different wording, or a
+#. * colour that stands off its own background image, writes the whole
+#. * span. The default is the bold label the greeter has always drawn, and
+#. * it still goes through gettext, so nothing has to be set to keep a
+#. * translated greeter translated.
+#.
+#: src/plugin.c:32
+msgid "Username"
+msgstr "Benutzername"
+
+#: src/plugin.c:70
+msgid "Password"
+msgstr "Passwort"
+
+#.
+#. * set_message() copies what it is given, so the string built here has to
+#. * be freed by us. It was not, until now.
+#.
+#: src/plugin.c:86
+msgid "Verifying password.  Please wait."
+msgstr "Passwort wird überprüft. Bitte warten ..."
+
+#.
+#. * Not failing open here is the whole point: an unknown or changed
+#. * host key is the case this check exists to catch, and proceeding
+#. * would send the password to whatever answered.
+#.
+#: src/plugins/xfreerdp/xfreerdp.c:417
 msgid ""
 "The session server could not be verified. Tell your administrator before "
 "trying again."
@@ -76,53 +157,54 @@ msgstr ""
 "Der Sitzungsserver konnte nicht überprüft werden. Sagen Sie der "
 "Administration Bescheid, bevor Sie es erneut versuchen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:650
+#: src/plugins/xfreerdp/xfreerdp.c:423
 msgid "Cannot reach the authentication server."
 msgstr "Der Anmeldeserver antwortet nicht."
 
-#: src/plugins/xfreerdp/xfreerdp.c:708
+#: src/plugins/xfreerdp/xfreerdp.c:481
 #, c-format
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d Sekunde"
 msgstr[1] "%d Sekunden"
 
-#: src/plugins/xfreerdp/xfreerdp.c:711
+#: src/plugins/xfreerdp/xfreerdp.c:484
 #, c-format
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d Minute"
 msgstr[1] "%d Minuten"
 
-#: src/plugins/xfreerdp/xfreerdp.c:773
+#: src/plugins/xfreerdp/xfreerdp.c:546
 msgid "Session closed: idle for too long."
 msgstr "Sitzung beendet: zu lange ohne Eingabe."
 
-#: src/plugins/xfreerdp/xfreerdp.c:776
+#: src/plugins/xfreerdp/xfreerdp.c:549
 msgid "The server did not complete the logon in time."
 msgstr "Der Server hat die Anmeldung nicht rechtzeitig abgeschlossen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:779
+#: src/plugins/xfreerdp/xfreerdp.c:552
 msgid "This session was taken over by another connection."
 msgstr "Diese Sitzung wurde von einer anderen Verbindung übernommen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:782
+#: src/plugins/xfreerdp/xfreerdp.c:555
 msgid "The session server ran out of memory."
 msgstr "Dem Sitzungsserver ist der Speicher ausgegangen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:786
+#: src/plugins/xfreerdp/xfreerdp.c:559
 msgid "The session server refused the connection."
 msgstr "Der Sitzungsserver hat die Verbindung abgewiesen."
 
-#: src/plugins/xfreerdp/xfreerdp.c:789
+#: src/plugins/xfreerdp/xfreerdp.c:562
 msgid "This account is not allowed to log on remotely."
 msgstr "Dieses Konto darf sich nicht über das Netz anmelden."
 
-#: src/plugins/xfreerdp/xfreerdp.c:796
+#. ldm_wait() reports -1 when the client was killed by a signal.
+#: src/plugins/xfreerdp/xfreerdp.c:569
 msgid "The remote desktop client was terminated."
 msgstr "Der Remotedesktop-Client wurde beendet."
 
-#: src/plugins/xfreerdp/xfreerdp.c:1157
+#: src/plugins/xfreerdp/xfreerdp.c:936
 #, c-format
 msgid ""
 "Too many failed sign-in attempts from this computer. It stays blocked for "
@@ -131,55 +213,63 @@ msgstr ""
 "Zu viele fehlgeschlagene Anmeldeversuche von diesem Rechner. Er bleibt noch "
 "%s gesperrt. Die Sperre gilt für alle Bildschirme dieses Rechners."
 
-#: src/plugins/xfreerdp/xfreerdp.c:1190
+#: src/plugins/xfreerdp/xfreerdp.c:988
 #, c-format
 msgid "%s One more failed attempt will block this computer for %s."
 msgstr "%s Ein weiterer Fehlversuch sperrt diesen Rechner für %s."
 
-#: src/plugins/xfreerdp/xfreerdp.c:1192
+#: src/plugins/xfreerdp/xfreerdp.c:990
 #, c-format
 msgid "%s This computer is now blocked for about %s."
 msgstr "%s Dieser Rechner ist jetzt für etwa %s gesperrt."
 
-#: src/plugins/xfreerdp/xfreerdp.c:1368
+#: src/plugins/xfreerdp/xfreerdp.c:1166
 #, c-format
 msgid "Connection failed (remote desktop client code %d)."
 msgstr "Verbindung fehlgeschlagen (Remotedesktop-Client, Code %d)."
 
-#: src/plugins/ssh/ssh.c:339
+#: src/plugins/ssh/ssh.c:344
 msgid "No response from server, restarting..."
 msgstr "Keine Antwort des Servers, Neustart ..."
 
-#: gtkgreet/greeter.c:291
+#: gtkgreet/greeter.c:292
 #, c-format
 msgid "Automatic login in %d seconds"
 msgstr "Automatische Anmeldung in %d Sekunden"
 
-#: gtkgreet/greeter.c:579
+#: gtkgreet/greeter.c:580
 msgid "Select _Language ..."
 msgstr "_Sprache wählen ..."
 
-#: gtkgreet/greeter.c:591
+#: gtkgreet/greeter.c:592
 msgid "Select _Session ..."
 msgstr "_Sitzungsart wählen ..."
 
-#: gtkgreet/greeter.c:602
+#: gtkgreet/greeter.c:603
 msgid "Select _Host ..."
 msgstr "_Rechner wählen ..."
 
-#: gtkgreet/greeter.c:637
+#: gtkgreet/greeter.c:638
 msgid "_Reboot"
 msgstr "_Neustart"
 
-#: gtkgreet/greeter.c:645
+#: gtkgreet/greeter.c:646
 msgid "Shut_down"
 msgstr "_Ausschalten"
 
-#: gtkgreet/greeter.c:905
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:750
+msgid "Caps Lock is on"
+msgstr "Feststelltaste ist aktiviert"
+
+#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:752
+msgid "Num Lock is on"
+msgstr "Num-Lock ist aktiviert"
+
+#: gtkgreet/greeter.c:946
 msgid "_Preferences"
 msgstr "_Einstellungen"
 
-#: gtkgreet/greeter.c:1008
+#: gtkgreet/greeter.c:1060
 msgid "Login as Guest"
 msgstr "Anmeldung als Gast"
 
@@ -224,10 +314,25 @@ msgstr "Sprache für diese Sitzung auswählen:"
 msgid "_OK"
 msgstr "_OK"
 
-#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:750
-msgid "Caps Lock is on"
-msgstr "Feststelltaste ist aktiviert"
+#: rc.d/I01-nbd-checkupdate:51
+#, sh-format
+msgid "A new version of the system is available, rebooting in 10s."
+msgstr "Eine neue Fassung des Systems liegt bereit, Neustart in 10 s."
 
-#: gtkgreet/greeter.c:748 gtkgreet/greeter.c:752
-msgid "Num Lock is on"
-msgstr "Num-Lock ist aktiviert"
+#: rc.d/S15-userLoginCheck:39 rc.d/S99-ltsp-cluster:12
+#, sh-format
+msgid ""
+"The system thinks you are logged in elsewhere.  Would you like to close the "
+"other session and continue to log in?"
+msgstr ""
+"Das System meint, Sie seien anderswo angemeldet. Soll die andere Sitzung "
+"geschlossen und die Anmeldung fortgesetzt werden?"
+
+#: rc.d/S20-restrictUser:21
+#, sh-format
+msgid "User ${LDM_USERNAME} is not allowed to log into this workstation."
+msgstr ""
+"Der Benutzer ${LDM_USERNAME} darf sich an diesem Arbeitsplatz nicht anmelden."
+
+#~ msgid "The authentication server cannot be reached."
+#~ msgstr "Der Anmeldeserver ist nicht erreichbar."
