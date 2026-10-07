@@ -129,18 +129,64 @@ ldm_theme_file(char* file)
     return filename;
 }
 
-void
-get_default_display_size(gint* width, gint* height)
-{
-    GdkDisplay* display = NULL;
-    GdkScreen* screen = NULL;
-    GdkRectangle my_rect;
+/*
+ * The monitor the login prompt goes on, which is also the one everything on
+ * the prompt is measured by.
+ *
+ * This used to be two different answers that agreed only by luck: the size
+ * came from monitor 0, while every window was placed at the top-left corner
+ * of the screen. LTSP sets several outputs side by side by default
+ * (XRANDR_AUTO_MULTIHEAD, each output --left-of the one before), so the
+ * monitor at that corner is the last output rather than the first. With
+ * outputs of different sizes the prompt sat on one monitor and was sized -
+ * background included - for another: off-centre, on a picture that stopped
+ * short of the edge, or ran past it.
+ *
+ * The prompt stays where it has always been, on the monitor at the top-left
+ * corner, and now takes that monitor's size as well.
+ */
+static GdkRectangle login_area;
 
-    display = gdk_display_get_default();
-    screen = gdk_display_get_default_screen(display);
-    gdk_screen_get_monitor_geometry(screen, 0, &my_rect);
-    *width = my_rect.width;
-    *height = my_rect.height;
+static void
+get_login_area(GdkRectangle* area)
+{
+    GdkDisplay* display = gdk_display_get_default();
+    GdkMonitor* monitor = NULL;
+
+    if (gdk_display_get_n_monitors(display) > 0)
+        monitor = gdk_display_get_monitor_at_point(display, 0, 0);
+
+    if (monitor != NULL) {
+        gdk_monitor_get_geometry(monitor, area);
+    }
+    else {
+        area->x = 0;
+        area->y = 0;
+        gdk_window_get_geometry(gdk_get_default_root_window(), NULL, NULL,
+            &area->width, &area->height);
+    }
+}
+
+/*
+ * Paint the picture into one monitor's part of the surface, fitted to that
+ * monitor the way it used to be fitted to monitor 0.
+ */
+static void
+paint_background_on(cairo_t* ctx, GdkPixbuf* pixbuf, const GdkRectangle* r,
+    gboolean scale)
+{
+    cairo_save(ctx);
+    cairo_rectangle(ctx, r->x, r->y, r->width, r->height);
+    cairo_clip(ctx);
+    cairo_translate(ctx, r->x, r->y);
+    if (scale) {
+        cairo_scale(ctx,
+            (double)r->width / gdk_pixbuf_get_width(pixbuf),
+            (double)r->height / gdk_pixbuf_get_height(pixbuf));
+    }
+    gdk_cairo_set_source_pixbuf(ctx, pixbuf, 0, 0);
+    cairo_paint(ctx);
+    cairo_restore(ctx);
 }
 
 /*
@@ -171,23 +217,42 @@ load_root_background(const gchar* filename, gboolean scale,
     GtkWidget* image = gtk_image_new_from_file(filename);
     g_object_ref(G_OBJECT(image));
     GdkPixbuf* pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(image));
-    double img_width = (double)gdk_pixbuf_get_width(pixbuf);
-    double img_height = (double)gdk_pixbuf_get_height(pixbuf);
 
-    gint width, height;
-    get_default_display_size(&width, &height);
+    /*
+     * One surface for the whole screen, with the picture fitted to each
+     * monitor on its own: a small monitor next to a large one shows the
+     * whole picture too, not a corner of the large one's.
+     *
+     * Only monitors beside the one with the prompt, though, not ones that
+     * overlap it. Mirrored outputs of different sizes share one picture by
+     * definition, and fitting it to the larger one as well puts a second
+     * horizon around the first - measured, and worse than the black border
+     * those clients have always had.
+     */
+    GdkDisplay* display = gdk_display_get_default();
+    gint n = gdk_display_get_n_monitors(display);
+    GdkRectangle login, r;
+    gint width, height, i;
 
-    // create an off-screen surface to hold the scaled wallpaper
+    get_login_area(&login);
+    width = login.x + login.width;
+    height = login.y + login.height;
+    for (i = 0; i < n; i++) {
+        gdk_monitor_get_geometry(gdk_display_get_monitor(display, i), &r);
+        width = MAX(width, r.x + r.width);
+        height = MAX(height, r.y + r.height);
+    }
+
     root_bg_surface =
         cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 
-    // paint the wallpaper onto the surface
     cairo_t* ctx = cairo_create(root_bg_surface);
-    if (scale) {
-        cairo_scale(ctx, width / img_width, height / img_height);
+    for (i = 0; i < n; i++) {
+        gdk_monitor_get_geometry(gdk_display_get_monitor(display, i), &r);
+        if (!gdk_rectangle_intersect(&r, &login, NULL))
+            paint_background_on(ctx, pixbuf, &r, scale);
     }
-    gdk_cairo_set_source_pixbuf(ctx, pixbuf, 0, 0);
-    cairo_paint(ctx);
+    paint_background_on(ctx, pixbuf, &login, scale);
     cairo_destroy(ctx);
 
     g_object_unref(G_OBJECT(image));
@@ -905,7 +970,9 @@ main(int argc, char* argv[])
     /* Set the background */
     load_root_background(ldm_theme_file("bg"), TRUE, FALSE);
 
-    get_default_display_size(&width, &height);
+    get_login_area(&login_area);
+    width = login_area.width;
+    height = login_area.height;
 
     /* Setup the time and system labels */
     {
@@ -1158,12 +1225,45 @@ main(int argc, char* argv[])
             GTK_WIDGET(timelabel), FALSE, FALSE, 5);
     }
 #endif
+    /*
+     * The monitors beside the one with the prompt get the picture as well,
+     * one undecorated window each, painted from the same surface. Without
+     * them they show the bare root window. Monitors that overlap the prompt's
+     * are left alone, for the reason given in load_root_background().
+     *
+     * They are shown first so that the prompt's windows are mapped - and so
+     * stacked - above them; there is no window manager here to decide that.
+     */
+    {
+        GdkDisplay* display = gdk_display_get_default();
+        gint i, n = gdk_display_get_n_monitors(display);
+
+        for (i = 0; i < n; i++) {
+            GdkRectangle r;
+            GtkWidget* w;
+
+            gdk_monitor_get_geometry(gdk_display_get_monitor(display, i), &r);
+            if (gdk_rectangle_intersect(&r, &login_area, NULL))
+                continue;
+
+            w = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+            gtk_window_set_decorated(GTK_WINDOW(w), FALSE);
+            gtk_window_set_accept_focus(GTK_WINDOW(w), FALSE);
+            gtk_widget_set_app_paintable(w, TRUE);
+            g_signal_connect(w, "draw", G_CALLBACK(draw_background), NULL);
+            gtk_widget_set_size_request(w, r.width, r.height);
+            gtk_widget_show(w);
+            gtk_window_move(GTK_WINDOW(w), r.x, r.y);
+        }
+    }
+
     /* Show everything */
 
     gtk_widget_show_all(loginWindow);
     gtk_widget_show_all(prefBar);
-    gtk_window_move(GTK_WINDOW(loginWindow), 0, 0);
-    gtk_window_move(GTK_WINDOW(prefBar), 0, height - BOTTOM_BAR_HEIGHT);
+    gtk_window_move(GTK_WINDOW(loginWindow), login_area.x, login_area.y);
+    gtk_window_move(GTK_WINDOW(prefBar), login_area.x,
+        login_area.y + height - BOTTOM_BAR_HEIGHT);
 
     /* Follow the lock keys. GDK reports every change of the keyboard state,
      * so there is nothing to poll and nothing to do with XKB by hand. */
@@ -1177,15 +1277,17 @@ main(int argc, char* argv[])
     }
 #ifdef K12LINUX
     gtk_widget_show_all(topBar);
-    gtk_window_move(GTK_WINDOW(topBar), 0, 0);
+    gtk_window_move(GTK_WINDOW(topBar), login_area.x, login_area.y);
 #endif
 
-    // Center the mouse pointer on the default display
+    // Center the mouse pointer on the monitor with the prompt. GTK centres
+    // the host, language and preference windows on the monitor under the
+    // pointer, so this also decides where those open.
     GdkDisplay* display = gdk_display_get_default();
     GdkScreen* screen = gdk_display_get_default_screen(display);
-    GdkRectangle bbox;
-    gdk_screen_get_monitor_geometry(screen, 0, &bbox);
-    gdk_display_warp_pointer(display, screen, bbox.width / 2, bbox.height / 2);
+    gdk_display_warp_pointer(display, screen,
+        login_area.x + login_area.width / 2,
+        login_area.y + login_area.height / 2);
     gdk_window_set_cursor(root, normcursor);
 
 #ifdef K12LINUX

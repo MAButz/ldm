@@ -1,3 +1,28 @@
+ldm (3.4.11-1) unstable; urgency=medium
+
+  * The greeter is sized for the monitor it is on. It took its size from
+    monitor 0 and put every window at the top-left corner of the screen,
+    which are the same monitor only by luck. LTSP sets several outputs
+    side by side, each --left-of the one before, so the monitor at that
+    corner is the last output rather than the first. With outputs of
+    different sizes the prompt sat on a large monitor sized for a small
+    one: the picture filled a corner, the rest was black, and the fields
+    and the pointer were off-centre. Measured with two outputs, 2560x1440
+    at the corner and 1920x1080 as monitor 0.
+  * The prompt stays on the monitor at the top-left corner, where it has
+    always been, and takes that monitor's size, background included. The
+    host, language and preference windows follow, because GTK centres them
+    under the pointer and the pointer now starts in the middle of that
+    monitor.
+  * Monitors beside it show the picture too, fitted to their own size,
+    instead of the bare root window. Monitors that overlap it - mirrored
+    outputs - are left as they were: the picture fitted to the larger one
+    as well put a second horizon around the first.
+  * A single monitor and mirrored outputs look exactly as before, compared
+    pixel by pixel against 3.4.10-1.
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 07 Oct 2026 15:32:02 +0200
+
 ldm (3.4.10-1) unstable; urgency=medium
 
   * RDP3_OPTIONS and RDP2_OPTIONS: options a client reads only when it is
