@@ -1,3 +1,24 @@
+ldm (3.4.10-1) unstable; urgency=medium
+
+  * RDP3_OPTIONS and RDP2_OPTIONS: options a client reads only when it is
+    about to run that major version of FreeRDP, with RDP3_OPTIONS_<screen>
+    beside the existing RDP_OPTIONS_<screen>. For a fleet halfway through
+    a migration, where one RDP_OPTIONS line cannot serve both.
+  * FreeRDP 3 rejects spellings FreeRDP 2 required, and rejects them by
+    printing its whole help and exiting before it connects - which on a
+    client is a session that ends the instant the greeter disappears, with
+    nothing said. /cert-ignore, /kbd:0x00000407, -sec-nla, /gfx-h264: and
+    +async-input all behave that way, measured against 3.15.0.
+  * The client decides for itself: the binary's name settles the version in
+    the normal case, and where it does not, the binary is asked once with
+    --version. So which machines are which need not be known in advance,
+    and the RDP_OPTIONS line the old fleet depends on is left alone.
+  * The variable that won is written to the log. The first question when a
+    session dies at once is which line it was started with, and until now
+    the log said only "Verwende Standard RDP_OPTIONS".
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 07 Oct 2026 09:27:17 +0200
+
 ldm (3.4.9-1) unstable; urgency=medium
 
   * The password change speaks German again on a German client. Its

@@ -632,6 +632,128 @@ detect_xfreerdp_binary()
 }
 
 /*
+ * freerdp_major
+ *
+ * Which FreeRDP this client is about to run: 2, 3, or 0 when it cannot be
+ * told. The name settles it in the normal case - Debian ships FreeRDP 3 as
+ * xfreerdp3 and FreeRDP 2 as xfreerdp - and only where it does not is the
+ * binary asked, once per login.
+ */
+static int
+freerdp_major(const gchar *binary)
+{
+    gchar *base;
+    gchar *out = NULL;
+    gchar *argv[3];
+    const gchar *found;
+    gint status = 0;
+    int major = 0;
+
+    if (binary == NULL || *binary == '\0')
+        return 0;
+
+    base = g_path_get_basename(binary);
+    if (g_str_has_suffix(base, "3")) {
+        g_free(base);
+        return 3;
+    }
+    if (g_str_has_suffix(base, "2")) {
+        g_free(base);
+        return 2;
+    }
+    g_free(base);
+
+    argv[0] = (gchar *) binary;
+    argv[1] = (gchar *) "--version";
+    argv[2] = NULL;
+    if (g_spawn_sync(NULL, argv, NULL, G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL,
+                     &out, NULL, &status, NULL) && out != NULL) {
+        /* "This is FreeRDP version 3.15.0 (n/a)" */
+        found = strstr(out, "version ");
+        if (found != NULL)
+            major = atoi(found + strlen("version "));
+    }
+    g_free(out);
+
+    if (major == 0)
+        log_entry("xfreerdp", 4, "cannot tell which FreeRDP '%s' is; "
+                  "version-specific options will be skipped", binary);
+    return major;
+}
+
+/*
+ * rdp_options_for
+ *
+ * The options to hand the client, looked up in the order a half-migrated
+ * site needs them:
+ *
+ *     RDP3_OPTIONS_07   this FreeRDP major, this screen
+ *     RDP3_OPTIONS      this FreeRDP major
+ *     RDP_OPTIONS_07    this screen, whatever the version
+ *     RDP_OPTIONS       everybody
+ *
+ * Why the version-specific pair exists. FreeRDP 3 rejects spellings FreeRDP 2
+ * required, and it rejects them by printing its entire help and exiting
+ * before it connects - which on a client looks like the session ending the
+ * instant the greeter disappears, with nothing said anywhere the user can
+ * see. /cert-ignore, /kbd:0x00000407, -sec-nla, /gfx-h264: and +async-input
+ * all behave that way; measured against 3.15.0.
+ *
+ * So a fleet halfway through a migration cannot have one RDP_OPTIONS line
+ * that works on both, and rewriting it for the new clients breaks every old
+ * one. RDP3_OPTIONS is read only by a client that is about to run FreeRDP 3,
+ * so the line the old fleet depends on is left exactly as it is - and which
+ * clients are which does not have to be known in advance, because each one
+ * decides for itself from the binary it found.
+ *
+ * The name that won is logged, because the first question when a session dies
+ * at once is which line it was started with.
+ */
+static gchar *
+rdp_options_for(const gchar *screen_formatted, int major)
+{
+    const gchar *value;
+    gchar *name;
+    gchar *result;
+
+    if (major > 0) {
+        name = g_strdup_printf("RDP%d_OPTIONS_%s", major, screen_formatted);
+        value = getenv(name);
+        if (value != NULL) {
+            log_entry("xfreerdp", 6, "using %s '%s'", name, value);
+            result = g_strdup(value);
+            g_free(name);
+            return result;
+        }
+        g_free(name);
+
+        name = g_strdup_printf("RDP%d_OPTIONS", major);
+        value = getenv(name);
+        if (value != NULL) {
+            log_entry("xfreerdp", 6, "using %s '%s'", name, value);
+            result = g_strdup(value);
+            g_free(name);
+            return result;
+        }
+        g_free(name);
+    }
+
+    name = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
+    value = getenv(name);
+    if (value != NULL) {
+        log_entry("xfreerdp", 6, "using %s '%s'", name, value);
+        result = g_strdup(value);
+        g_free(name);
+        return result;
+    }
+    g_free(name);
+
+    value = getenv("RDP_OPTIONS");
+    log_entry("xfreerdp", 6, "using RDP_OPTIONS '%s'", value ? value : "");
+    return g_strdup(value);
+}
+
+/*
  * init_xfreerdp
  *  Callback function for initialization
  */
@@ -676,29 +798,22 @@ init_xfreerdp()
         return;
     }
     
-    // Dynamische Prüfung der RDP_OPTIONS_<screen>, RDP_SERVER_<screen> und
-    // RDP_DEFAULT_DOMAIN_<screen>
-    gchar *screen_rdpoptions_var = g_strdup_printf("RDP_OPTIONS_%s", screen_formatted);
+    // Dynamische Prüfung der RDP_SERVER_<screen> und
+    // RDP_DEFAULT_DOMAIN_<screen>; die Optionen holt rdp_options_for(),
+    // das zusätzlich die FreeRDP-Hauptversion berücksichtigt.
     gchar *screen_rdpserver_var = g_strdup_printf("RDP_SERVER_%s", screen_formatted);
     gchar *screen_rdpdomain_var = g_strdup_printf("RDP_DEFAULT_DOMAIN_%s", screen_formatted);
-    if (screen_rdpoptions_var == NULL || screen_rdpserver_var == NULL ||
-        screen_rdpdomain_var == NULL) {
+    if (screen_rdpserver_var == NULL || screen_rdpdomain_var == NULL) {
         log_entry("xfreerdp", 3, "Fehler: Keine Umgebungsvariablen für spezifische RDP Optionen und oder Server gefunden.");
         g_free(screen_formatted);
         return;
     }
 
-    const gchar *rdpoptions_value = getenv(screen_rdpoptions_var);
     const gchar *rdpserver_value = getenv(screen_rdpserver_var);
     const gchar *rdpdomain_value = getenv(screen_rdpdomain_var);
 
-    if (rdpoptions_value) {
-        rdpinfo->rdpoptions = g_strdup(rdpoptions_value);
-        log_entry("xfreerdp", 6, "Verwende spezifische RDP_OPTIONS '%s'", rdpoptions_value);
-    } else {
-        rdpinfo->rdpoptions = g_strdup(getenv("RDP_OPTIONS"));
-        log_entry("xfreerdp", 6, "Verwende Standard RDP_OPTIONS");
-    }
+    rdpinfo->rdpoptions = rdp_options_for(screen_formatted,
+                                          freerdp_major(rdpinfo->binary));
 
     if (rdpserver_value) {
         rdpinfo->server = g_strdup(rdpserver_value);
@@ -728,7 +843,6 @@ init_xfreerdp()
 
     // Speicher freigeben
     g_free(display_env);
-    g_free(screen_rdpoptions_var);
     g_free(screen_rdpserver_var);
     g_free(screen_rdpdomain_var);
     g_free(screen_formatted);
