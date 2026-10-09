@@ -8,4 +8,4 @@ libxfreerdp_la_CFLAGS = $(GLIB_CFLAGS) $(GOBJECT_CFLAGS)
 # plugin: libkrb5-3 and libgssapi-krb5-2 are already present in a Debian
 # client image, so this adds no packages to the image itself.
 libxfreerdp_la_LDFLAGS = $(GLIB_LIBS) $(GOBJECT_LIBS)
-libxfreerdp_la_SOURCES = xfreerdp.c
+libxfreerdp_la_SOURCES = xfreerdp.c rdpsound.c rdpsound.h

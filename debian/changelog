@@ -1,3 +1,24 @@
+ldm (3.4.12-1) unstable; urgency=medium
+
+  * A missing sound server costs the sound, not the session. FreeRDP's
+    pulse backends do not degrade: with /sound:sys:pulse or
+    /microphone:sys:pulse and no server answering, xfreerdp ends the whole
+    connection right after it is made - measured against 3.15.0 for either
+    option alone - and the user sees the greeter come back with nothing
+    said. Before starting it, ldm now looks for the server the way libpulse
+    would: PULSE_SERVER, $XDG_RUNTIME_DIR/pulse/native,
+    /run/user/<uid>/pulse/native and /run/pulse/native, counting a socket
+    only if something accepts a connection on it.
+  * Found, it is handed to xfreerdp as PULSE_SERVER - the greeter runs
+    without the login session that would otherwise point libpulse at
+    /run/user/0. Not found, /sound, /audio, /microphone and /mic are left
+    out, and the log names the places looked at. /audio-mode stays.
+  * The check lives in src/plugins/xfreerdp/rdpsound.c, tested on its own:
+    no server, a dead socket, a stale socket file, a listening server via
+    XDG_RUNTIME_DIR and via PULSE_SERVER, and a tcp: PULSE_SERVER.
+
+ -- Marc-Andre Butz <ma@butz.online>  Fri, 09 Oct 2026 13:48:03 +0200
+
 ldm (3.4.11-1) unstable; urgency=medium
 
   * The greeter is sized for the monitor it is on. It took its size from

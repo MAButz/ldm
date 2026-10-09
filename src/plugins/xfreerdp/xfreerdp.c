@@ -24,6 +24,7 @@
 #include "../../logging.h"
 #include "../../plugin.h"
 #include "xfreerdp.h"
+#include "rdpsound.h"
 
 int screen;
 
@@ -1204,7 +1205,45 @@ xfreerdp_session()
     if (rdpinfo->rdpoptions &&
         g_shell_parse_argv(rdpinfo->rdpoptions, NULL, &rdpoptions_argv,
                             NULL)) {
+        /*
+         * Sound and microphone only if there is a sound server to talk to.
+         * Without one FreeRDP ends the whole connection rather than the
+         * channel; see rdpsound.c. Found, it is handed on as PULSE_SERVER,
+         * since the greeter runs without the login session that would
+         * otherwise point libpulse at it.
+         */
+        gboolean wants_sound = FALSE;
+        gboolean drop_sound = FALSE;
+
         for (i = 0; rdpoptions_argv[i] != NULL; i++) {
+            if (rdp_sound_is_option(rdpoptions_argv[i]))
+                wants_sound = TRUE;
+        }
+        if (wants_sound) {
+            gchar *looked = NULL;
+            gchar *server = rdp_sound_find_server(&looked);
+
+            if (server) {
+                setenv("PULSE_SERVER", server, 1);
+                log_entry("xfreerdp", 6, "sound server for /sound and "
+                          "/microphone: %s", server);
+            } else {
+                drop_sound = TRUE;
+                log_entry("xfreerdp", 4, "no sound server answers (looked "
+                          "at %s); starting the session without /sound and "
+                          "/microphone instead of letting xfreerdp end it",
+                          looked);
+            }
+            g_free(server);
+            g_free(looked);
+        }
+
+        for (i = 0; rdpoptions_argv[i] != NULL; i++) {
+            if (drop_sound && rdp_sound_is_option(rdpoptions_argv[i])) {
+                log_entry("xfreerdp", 6, "left out: %s", rdpoptions_argv[i]);
+                g_free(rdpoptions_argv[i]);
+                continue;
+            }
             g_ptr_array_add(argv, rdpoptions_argv[i]);
         }
         /* Ownership of the individual strings moved into argv above, so
