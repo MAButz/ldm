@@ -1,3 +1,17 @@
+ldm (3.4.13-1) unstable; urgency=medium
+
+  * No cyan flash at shutdown and reboot. wwm paints the frame of the
+    focused window cyan4, a colour meant for a border that, at DEF_BW 0,
+    no frame has. It still showed in the moment between a client window
+    going away and its frame following: the greeter's windows cover the
+    whole screen, so when they ended first at shutdown the screen was
+    cyan for about a quarter of a second, filmed on a thin client.
+  * Frames without a border now have no background at all and are never
+    cleared, so X leaves on screen what was there. With a border the
+    colours stay as they were.
+
+ -- Marc-Andre Butz <ma@butz.online>  Fri, 16 Oct 2026 10:03:25 +0200
+
 ldm (3.4.12-1) unstable; urgency=medium
 
   * A missing sound server costs the sound, not the session. FreeRDP's

@@ -191,4 +191,5 @@ void next(Client *c);
 void hide(Client *c);
 void focus_client(Client *c, int raiseit);
 void unfocus_client(Client *c);
+void set_frame_colour(Client *c, unsigned long pixel);
 void switch_vdesk(int v);

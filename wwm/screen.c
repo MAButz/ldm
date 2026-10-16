@@ -296,9 +296,7 @@ focus_client(Client * c, int raiseit)
             unfocus_client(cp);
     unhide(c, raiseit);
     XSetInputFocus(display, c->window, RevertToPointerRoot, CurrentTime);
-    XSetWindowBackground(display, c->parent,
-                         (c->vdesk == LOCKED) ? fc.pixel : fg.pixel);
-    XClearWindow(display, c->parent);
+    set_frame_colour(c, (c->vdesk == LOCKED) ? fc.pixel : fg.pixel);
     XGrabButton(display, AnyButton, WMMODMASK, c->parent, False,
                 ButtonMask, GrabModeAsync, GrabModeSync, None, None);
     c->focus = 1;
@@ -310,8 +308,25 @@ void
 unfocus_client(Client * c)
 {
     XSetInputFocus(display, PointerRoot, RevertToPointerRoot, CurrentTime);
-    XSetWindowBackground(display, c->parent, bg.pixel);
-    XClearWindow(display, c->parent);
+    set_frame_colour(c, bg.pixel);
     c->focus = 0;
     current = NULL;
+}
+
+/*
+ * The colour of a frame is the colour of its border, and with DEF_BW 0 there
+ * is no border to see. It still showed in one moment: between a client
+ * window going away and the frame following it. The greeter's windows cover
+ * the whole screen, so when they ended at shutdown or reboot the screen was
+ * cyan4 - the focus colour - for about a quarter of a second, filmed on a
+ * thin client. Without a border the frame keeps background None from
+ * reparent() and is never cleared, so X leaves on screen whatever was there.
+ */
+void
+set_frame_colour(Client * c, unsigned long pixel)
+{
+    if (c->border == 0)
+        return;
+    XSetWindowBackground(display, c->parent, pixel);
+    XClearWindow(display, c->parent);
 }

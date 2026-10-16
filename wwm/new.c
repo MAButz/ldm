@@ -192,6 +192,8 @@ reparent(Client * c)
     XSelectInput(display, c->window, EnterWindowMask | PropertyChangeMask);
 
     p_attr.override_redirect = True;
+    /* No border, no background: see set_frame_colour() */
+    p_attr.background_pixmap = None;
     p_attr.background_pixel = bg.pixel;
     p_attr.event_mask =
         ChildMask | ButtonPressMask | ExposureMask | EnterWindowMask;
@@ -201,7 +203,8 @@ reparent(Client * c)
                       c->height + (2 * c->border), 0, DefaultDepth(display,
                                                                    screen),
                       CopyFromParent, DefaultVisual(display, screen),
-                      CWOverrideRedirect | CWBackPixel | CWEventMask,
+                      CWOverrideRedirect | CWEventMask |
+                      (c->border == 0 ? CWBackPixmap : CWBackPixel),
                       &p_attr);
 
     XAddToSaveSet(display, c->window);

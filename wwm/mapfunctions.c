@@ -162,9 +162,7 @@ lock_window(Client * c)
 {
     if (!c)
         return;
-    XSetWindowBackground(display, c->parent,
-                         c->vdesk == LOCKED ? fg.pixel : fc.pixel);
-    XClearWindow(display, c->parent);
+    set_frame_colour(c, c->vdesk == LOCKED ? fg.pixel : fc.pixel);
     c->vdesk = c->vdesk == LOCKED ? vdesk_get() : LOCKED;
 }
 
