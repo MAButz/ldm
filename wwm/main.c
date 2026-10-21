@@ -66,8 +66,14 @@ main(int argc, char *argv[])
 
     term = strdup(DEF_TERM);
 
-    if (!DEF_DL)
-        scan_windows();
+    /*
+     * Take on the windows already there. ldm starts the greeter right after
+     * wwm, and when the greeter was quicker - after a session had ended in a
+     * hurry, say - its windows were mapped before wwm asked to manage them.
+     * This scan was switched off (DEF_DL), so they stayed unmanaged and
+     * nothing ever gave the login prompt the focus.
+     */
+    scan_windows();
 
     /*
      * Scan for the shape extention if it exists.

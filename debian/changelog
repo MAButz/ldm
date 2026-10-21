@@ -1,3 +1,20 @@
+ldm (3.4.16-1) unstable; urgency=medium
+
+  * The login prompt no longer depends on wwm for the keyboard focus. Seen
+    on a thin client after leaving a session with Ctrl+Alt+D: no cursor in
+    the prompt, clicking into it did nothing, and only after the
+    preferences menu had been opened once could it be clicked into. When
+    the greeter maps its windows before wwm is up, wwm never managed them:
+    the scan for existing windows was switched off (DEF_DL). It now runs,
+    and works: a scanned window was let go again at once, because the
+    UnmapNotify of reparenting it was to be ignored by a count that
+    focus_client() reset right after - and the Client struct came from
+    malloc(), so that count started out as whatever was in memory.
+  * The greeter sets the focus on its prompt itself once that is on
+    screen, and a click into the entry always brings the focus there.
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 21 Oct 2026 16:00:00 +0200
+
 ldm (3.4.15-1) unstable; urgency=medium
 
   * "Num Lock is on" shows from the start. The greeter asked GDK, which

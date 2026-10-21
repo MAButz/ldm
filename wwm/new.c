@@ -22,7 +22,8 @@ make_new_client(Window w)
      * Allocate a new client structure
      */
 
-    if (!(c = malloc(sizeof(Client))))
+    /* Zeroed: ignore_unmap and focus were read before ever being set. */
+    if (!(c = calloc(1, sizeof(Client))))
         return;
 
     /*
@@ -110,9 +111,7 @@ make_new_client(Window w)
      */
     c->input = !(hints && (hints->flags & InputHint) && !hints->input);
 
-    if (attr.map_state == IsViewable)
-        c->ignore_unmap++;
-    else {
+    if (attr.map_state != IsViewable) {
         init_position(c);
         if (hints && hints->flags & StateHint)
             set_wm_state(c, hints->initial_state);
@@ -142,6 +141,16 @@ make_new_client(Window w)
     }
 
     focus_client(c, RAISE);                      /* new windows get focus */
+
+    /*
+     * Reparenting a window that is already mapped unmaps it, and that
+     * UnmapNotify arrives after we return. Ignore it - counted only now,
+     * because focus_client() above goes through unhide(), which zeroes the
+     * count. Counted before, as it was, the window was let go again at once:
+     * windows that existed when wwm started were never managed.
+     */
+    if (attr.map_state == IsViewable)
+        c->ignore_unmap++;
 }
 
 void

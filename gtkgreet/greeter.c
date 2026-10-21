@@ -612,6 +612,57 @@ handle_choice(GtkComboBox* combo, GdkWindow* window)
 }
 
 /*
+ * The prompt takes the keyboard focus itself instead of waiting for wwm to
+ * hand it over. wwm does that only for windows it manages, and when the
+ * greeter was quicker than wwm - right after a session had ended - nobody
+ * did: the prompt showed no cursor, and as wwm does not focus on a click,
+ * clicking into it changed nothing until the preferences menu, which grabs
+ * the keyboard for itself, had been opened once.
+ *
+ * XSetInputFocus directly, not gdk_window_focus(): without a window manager
+ * that speaks EWMH that also raises the window, and the full screen prompt
+ * would then cover the bottom bar.
+ */
+static void
+take_focus(GtkWidget* widget)
+{
+    GdkWindow* window = gtk_widget_get_window(gtk_widget_get_toplevel(widget));
+    GdkDisplay* gdpy = gdk_display_get_default();
+
+    if (window == NULL || !GDK_IS_X11_DISPLAY(gdpy))
+        return;
+
+    /* BadMatch while the window is not viewable yet is no reason to die */
+    gdk_x11_display_error_trap_push(gdpy);
+    XSetInputFocus(GDK_DISPLAY_XDISPLAY(gdpy), GDK_WINDOW_XID(window),
+        RevertToPointerRoot, CurrentTime);
+    gdk_x11_display_error_trap_pop_ignored(gdpy);
+}
+
+static gboolean
+take_focus_later(gpointer widget)
+{
+    take_focus(GTK_WIDGET(widget));
+    return G_SOURCE_REMOVE;
+}
+
+/* Once on screen; the delay lets wwm finish reparenting the window first. */
+static gboolean
+login_window_mapped(GtkWidget* widget, GdkEvent* event, gpointer data)
+{
+    g_timeout_add(300, take_focus_later, widget);
+    return FALSE;
+}
+
+/* A click into the entry always brings the focus there. */
+static gboolean
+entry_clicked(GtkWidget* widget, GdkEventButton* event, gpointer data)
+{
+    take_focus(widget);
+    return FALSE;
+}
+
+/*
  * A message - why the last session ended, a wrong password - has been read
  * once somebody starts typing again. Left standing, it seemed to be about
  * the new attempt. Emptying the entry, as handle_entry() does, is not typing.
@@ -1067,6 +1118,8 @@ main(int argc, char* argv[])
 
     /**** Create the login window ****/
     loginWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(G_OBJECT(loginWindow), "map-event",
+        G_CALLBACK(login_window_mapped), NULL);
 
     /* Create the options button */
     {
@@ -1153,6 +1206,8 @@ main(int argc, char* argv[])
             G_CALLBACK(key_press_event), loginWindow);
         g_signal_connect(G_OBJECT(entry), "changed",
             G_CALLBACK(clear_status_on_typing), NULL);
+        g_signal_connect(G_OBJECT(entry), "button-press-event",
+            G_CALLBACK(entry_clicked), NULL);
 
         choiceList = gtk_list_store_new(1, G_TYPE_STRING);
         choiceCombo =

@@ -4,7 +4,6 @@
 #define DEF_FC                      "Blue"
 #define DEF_TERM                    "xterm"
 #define DEF_BW                      0
-#define DEF_DL                      1
 #define MOUSERAISE                  1
 
 #define DEF_KEY_NEXT_CLIENT         XK_Tab
