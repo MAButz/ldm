@@ -1,4 +1,6 @@
+#include <errno.h>
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <libintl.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -104,16 +106,37 @@ close_greeter()
 }
 
 /*
+ * A message for a greeter that is already gone - why the RDP session just
+ * ended, say - is kept here for the next one. ldm exits after every session
+ * and the screen script starts it again with a new X server, so this file is
+ * the only thing that outlives the greeter. /run is a tmpfs: a reboot clears
+ * it, and nothing stale survives that.
+ */
+#define LDM_MESSAGE_DIR  "/run/ldm"
+#define LDM_MESSAGE_FILE LDM_MESSAGE_DIR "/message"
+
+/*
  * set_message
- *  Ask greeter to print a message to UI
+ *  Ask greeter to print a message to UI, or keep it for the next greeter
+ *  when there is none
  */
 int
 set_message(gchar * msg)
 {
     gchar *cmd;
 
-    if (!greeterpid)
-        return 1;
+    if (!greeterpid) {
+        GError *error = NULL;
+
+        if (g_mkdir_with_parents(LDM_MESSAGE_DIR, 0700) != 0
+            || !g_file_set_contents(LDM_MESSAGE_FILE, msg, -1, &error)) {
+            log_entry("ldm", 4, "cannot keep message for the next greeter: %s",
+                      error ? error->message : g_strerror(errno));
+            g_clear_error(&error);
+            return 1;
+        }
+        return 0;
+    }
 
     cmd = g_strconcat("msg ", msg, "\n", NULL);
     if (ask_greeter(cmd)) {
@@ -123,6 +146,25 @@ set_message(gchar * msg)
     g_free(cmd);
 
     return 0;
+}
+
+/*
+ * show_saved_message
+ *  Hand a message kept by set_message() to the greeter that is now running,
+ *  once. Without a greeter (autologin) it is dropped, not kept for later.
+ */
+void
+show_saved_message(void)
+{
+    gchar *msg = NULL;
+
+    if (!g_file_get_contents(LDM_MESSAGE_FILE, &msg, NULL, NULL))
+        return;
+    g_unlink(LDM_MESSAGE_FILE);
+
+    if (greeterpid && *msg)
+        set_message(msg);
+    g_free(msg);
 }
 
 /*

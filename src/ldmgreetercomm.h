@@ -7,6 +7,7 @@
 int ask_greeter(gchar*);
 int listen_greeter(gchar**, gsize*, gsize*);
 int set_message(gchar*);
+void show_saved_message(void);
 void close_greeter();
 gchar *ask_value_greeter(gchar*);
 

@@ -33,9 +33,10 @@ next_client_on_vdesk(Client * c)
     if (!c)
         return NULL;
 
+    /* Only windows that take the focus are candidates for it. */
     do
         newc = (newc->next ? newc->next : head_client);
-    while (newc != marker && newc->vdesk != v);
+    while (newc != marker && (newc->vdesk != v || !newc->input));
 
     return ((newc == marker) ? NULL : newc);
 }

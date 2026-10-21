@@ -291,6 +291,11 @@ focus_client(Client * c, int raiseit)
 {
     Client *cp;
 
+    if (!c->input) {                             /* see make_new_client() */
+        unhide(c, raiseit);
+        return;
+    }
+
     for (cp = head_client; cp; cp = cp->next)
         if ((cp->vdesk == vdesk_get() || cp->vdesk == LOCKED) && cp->focus)
             unfocus_client(cp);

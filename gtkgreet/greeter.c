@@ -1170,6 +1170,10 @@ main(int argc, char* argv[])
         g_signal_connect(prefBar, "draw",
             G_CALLBACK(draw_background), NULL);
         gtk_window_set_decorated(GTK_WINDOW(prefBar), FALSE);
+        /* Nothing here is typed into, and wwm gave every new window the
+         * focus: when the bar was mapped last, the login prompt lost it for
+         * good. The options button still answers a click. */
+        gtk_window_set_accept_focus(GTK_WINDOW(prefBar), FALSE);
         gtk_widget_set_size_request(prefBar, width, BOTTOM_BAR_HEIGHT);
 
         BottomBarBox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

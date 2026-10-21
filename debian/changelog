@@ -1,3 +1,20 @@
+ldm (3.4.14-1) unstable; urgency=medium
+
+  * The login prompt keeps the keyboard focus. wwm gave the focus to every
+    new window, the greeter's bottom bar included; the prompt only got it
+    back from the EnterNotify of the pointer resting on it, so which came
+    last decided where typing went. Sporadically, on thin clients after a
+    session had ended, it was the bar, and as wwm does not focus on a
+    click, only a reboot brought the prompt back. wwm now never focuses a
+    window whose WM_HINTS say it takes no input, and the greeter says so
+    for the bar, as it already did for the backdrops of further monitors.
+  * Why an RDP session ended reaches the screen. The greeter is gone by
+    the time xfreerdp exits, so "taken over by another connection", "idle
+    for too long" and the rest went only to the log. They are now kept in
+    /run/ldm/message and shown by the next greeter.
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 21 Oct 2026 11:00:00 +0200
+
 ldm (3.4.13-1) unstable; urgency=medium
 
   * No cyan flash at shutdown and reboot. wwm paints the frame of the

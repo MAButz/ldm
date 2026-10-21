@@ -172,6 +172,9 @@ main(int argc, char *argv[])
         ldm.greeterw = g_io_channel_unix_new(wfd);
         set_greeter_write_channel(ldm.greeterw);
 
+        /* Why the last session ended, if it said */
+        show_saved_message();
+
         /* if a backend is forced, leave no choice */
         if (!getenv("LDM_FORCE_BACKEND")) {
             gchar *cmd;
@@ -211,6 +214,7 @@ main(int argc, char *argv[])
             ldm_setup_plugin();
         } while (ldm_auth_plugin());
     } else {
+        show_saved_message();                    /* no greeter: dropped */
         auth_plugin = g_strdup(getenv("LDM_DEFAULT_BACKEND"));
         if (!auth_plugin)
             auth_plugin = g_strdup(DEFAULT_AUTH_PLUGIN);

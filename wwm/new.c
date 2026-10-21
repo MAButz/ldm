@@ -99,6 +99,17 @@ make_new_client(Window w)
 
     hints = XGetWMHints(display, w);
 
+    /*
+     * A window that says it takes no input - GTK's accept-focus FALSE, which
+     * the greeter sets on its bottom bar and the backdrops of further
+     * monitors - is never given the focus. Every new window used to get it,
+     * so whether the login prompt ended up with it depended on which arrived
+     * last, the bar or the pointer's EnterNotify on the prompt. When the bar
+     * won, typing went nowhere, and since there is no click to focus here
+     * nothing at the screen got the prompt back.
+     */
+    c->input = !(hints && (hints->flags & InputHint) && !hints->input);
+
     if (attr.map_state == IsViewable)
         c->ignore_unmap++;
     else {

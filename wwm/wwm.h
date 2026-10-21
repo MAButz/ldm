@@ -61,6 +61,7 @@ struct Client
   int border;                           /* border size */
   int vdesk;                            /* Which vdesk we're on */
   int focus;                            /* Do we think we have focus */
+  int input;                            /* Takes keyboard focus (WM_HINTS) */
 };
 
 struct wmkeys {
