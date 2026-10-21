@@ -35,6 +35,10 @@
 #include "ldmutils.h"
 #include "logging.h"
 
+#ifndef N_
+#define N_(text) (text)
+#endif
+
 GList *host_list = NULL;
 volatile sig_atomic_t unexpected_child = 0;
 volatile sig_atomic_t child_exited = 0;
@@ -180,15 +184,27 @@ main(int argc, char *argv[])
             gchar *cmd;
             gchar *backends;
 
-            /* allow choosing backend */
+            /*
+             * allow choosing backend. Title and menu entry go over in English
+             * and the greeter translates them; N_() puts them in the catalog.
+             */
             backends = g_strjoinv("|", ldm_get_plugins());
-            cmd =
-                g_strconcat
-                ("pref choice;backend;Authentication Backend;Select _Backend ...;session;",
-                 backends, "\n", NULL);
+            cmd = g_strconcat("pref choice;backend;",
+                              N_("Authentication Backend"), ";",
+                              N_("Select _Backend ..."), ";session;",
+                              backends, "\n", NULL);
             if (ask_greeter(cmd))
                 die("ldm", "%s from greeter failed", cmd);
             g_free(backends);
+            g_free(cmd);
+
+            /* Name the backend that "Default" picks, as the loop below does */
+            cmd = g_strconcat("pref default;backend;",
+                              ldm_getenv_str_default("LDM_DEFAULT_BACKEND",
+                                                     DEFAULT_AUTH_PLUGIN),
+                              "\n", NULL);
+            if (ask_greeter(cmd))
+                die("ldm", "%s from greeter failed", cmd);
             g_free(cmd);
         }
 

@@ -5,7 +5,7 @@ ldmlibexec_PROGRAMS = ldmgtkgreet
 ldmgtkgreet_SOURCES = hostwin.c greeter.c langwin.c sesswin.c prefs.c prefwin.c \
 					  ../src/ldminfo.c ../src/logging.c
 
-ldmgtkgreet_LDADD = $(GTK_LIBS)
+ldmgtkgreet_LDADD = $(GTK_LIBS) -lX11
 ldmgtkgreet_LDFLAGS = -pie
 ldmgtkgreet_CFLAGS = -fPIE
 AM_CPPFLAGS = $(GTK_CFLAGS) \

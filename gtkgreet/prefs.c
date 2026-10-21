@@ -75,6 +75,7 @@ greeter_pref_destroy(const gchar * name)
     if (value->icon) {
         g_free(value->icon);
     }
+    g_free(value->default_label);
 
     g_free(value);
     g_free(key);

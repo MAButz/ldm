@@ -277,6 +277,14 @@ msgstr "Anmeldung als Gast"
 msgid "Default"
 msgstr "Voreinstellung"
 
+#: src/ldm.c:189
+msgid "Authentication Backend"
+msgstr "Anmeldeverfahren"
+
+#: src/ldm.c:190
+msgid "Select _Backend ..."
+msgstr "Anmelde_verfahren wählen ..."
+
 #: gtkgreet/sesswin.c:109
 msgid "Failsafe xterm"
 msgstr "Xterm als Notlösung"

@@ -66,6 +66,9 @@ prefwin_accept(GtkWidget * widget, PrefData * data)
 void
 populate_pref_combo_box(const char *choice, GtkWidget * pref_combo_box)
 {
+    /* greeter_pref_new() starts the list with an empty element */
+    if (choice == NULL)
+        return;
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pref_combo_box),
                               choice);
     ++choice_total;
@@ -86,8 +89,19 @@ prefwin(GtkWidget * widget, gpointer pref_name)
      * Populate lang with default host hash
      */
 
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pref_combo),
-                              g_strdup(_("Default")));
+    /*
+     * Name what Default stands for when ldm has said: "Default" alone left
+     * nobody able to tell which backend they were about to log in with.
+     */
+    if (pref->default_label) {
+        gchar *label = g_strdup_printf("%s (%s)", _("Default"),
+                                       pref->default_label);
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pref_combo), label);
+        g_free(label);
+    } else {
+        gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(pref_combo),
+                                  _("Default"));
+    }
     g_list_foreach(pref->choices,
                    (GFunc) populate_pref_combo_box, pref_combo);
 

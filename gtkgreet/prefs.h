@@ -39,6 +39,7 @@ typedef struct {
     gchar* menu;
     gchar* icon;
     GList* choices;
+    gchar* default_label;               /* what "Default" stands for, or NULL */
 } GreeterPref;
 
 

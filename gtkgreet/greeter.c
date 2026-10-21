@@ -42,6 +42,8 @@
 #include <cairo.h>
 #include <config.h>
 #include <gdk/gdkkeysyms.h>
+#include <gdk/gdkx.h>
+#include <X11/XKBlib.h>
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <gtk/gtk.h>
@@ -524,6 +526,20 @@ handle_command(GIOChannel* io_input)
         g_strfreev(choices);
         g_strfreev(args);
     }
+    else if (!g_ascii_strncasecmp(buf->str, "pref default", 12)) {
+        // pref default;key;what Default stands for
+        gchar** args;
+        GreeterPref* pref;
+
+        g_strchomp(buf->str);
+        args = g_strsplit(buf->str, ";", 3);
+        pref = g_strv_length(args) == 3 ? greeter_pref_get_pref(args[1]) : NULL;
+        if (pref) {
+            g_free(pref->default_label);
+            pref->default_label = g_strdup(args[2]);
+        }
+        g_strfreev(args);
+    }
     else if (!g_ascii_strncasecmp(buf->str, "value", 5)) {
         gchar* name = buf->str + 6;
         gchar* valstr;
@@ -595,6 +611,18 @@ handle_choice(GtkComboBox* combo, GdkWindow* window)
     g_free(selection);
 }
 
+/*
+ * A message - why the last session ended, a wrong password - has been read
+ * once somebody starts typing again. Left standing, it seemed to be about
+ * the new attempt. Emptying the entry, as handle_entry() does, is not typing.
+ */
+static void
+clear_status_on_typing(GtkEditable* editable, gpointer data)
+{
+    if (*gtk_entry_get_text(GTK_ENTRY(editable)) != '\0')
+        gtk_label_set_text(GTK_LABEL(StatusMessages), "");
+}
+
 static void
 handle_entry(GtkEntry* entry, GdkWindow* window)
 {
@@ -636,10 +664,20 @@ popup_menu(GtkWidget* widget, GtkWindow* window)
         * haltico;
     gchar custom_env_var[20], * custom_mnemonic, * custom_command;
     int i;
+    /*
+     * The language and session choosers list what the selected server
+     * offers. Nothing fills those lists since ldminfod is gone (see
+     * ldminfo.h), so they held only "Default" - an entry to choose that
+     * chose nothing. They are offered again once there is something in them.
+     */
+    ldminfo* curr_host =
+        ldminfo_lookup(g_list_nth_data(host_list, selected_host_id));
+    gboolean have_languages = curr_host && curr_host->language_names;
+    gboolean have_sessions = curr_host && curr_host->session_names;
 
     menu = gtk_menu_new();
 
-    if (getenv("LDM_FORCE_LANGUAGE") == NULL) {
+    if (getenv("LDM_FORCE_LANGUAGE") == NULL && have_languages) {
         lang_item =
             gtk_image_menu_item_new_with_mnemonic(_
             ("Select _Language ..."));
@@ -651,7 +689,7 @@ popup_menu(GtkWidget* widget, GtkWindow* window)
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), lang_item);
     }
 
-    if (getenv("LDM_FORCE_SESSION") == NULL) {
+    if (getenv("LDM_FORCE_SESSION") == NULL && have_sessions) {
         sess_item =
             gtk_image_menu_item_new_with_mnemonic(_
             ("Select _Session ..."));
@@ -793,19 +831,43 @@ key_press_event(GtkWidget* widget, GdkEventKey* event, gpointer window)
  *
  * The label keeps its line height when empty, so nothing jumps around as
  * the text appears and goes away.
+ *
+ * The state is read from the X server's XKB indicators, not from the
+ * GdkKeymap. GDK learns it only from the first key event, so the Num Lock
+ * that numlockx switches on before ldm starts was not reported until
+ * somebody had typed something. The keymap's state-changed signal still
+ * says when to look again.
  */
+static gboolean
+lock_indicator_on(Display* dpy, const char* name)
+{
+    Bool on = False;
+
+    XkbGetNamedIndicator(dpy, XInternAtom(dpy, name, False),
+        NULL, &on, NULL, NULL);
+    return on;
+}
+
 static void
 update_lock_keys(GdkKeymap* keymap, gpointer data)
 {
     gboolean caps;
     gboolean num;
     gchar* text;
+    GdkDisplay* gdpy = gdk_display_get_default();
 
     if (LockKeys == NULL || keymap == NULL)
         return;
 
-    caps = gdk_keymap_get_caps_lock_state(keymap);
-    num = gdk_keymap_get_num_lock_state(keymap);
+    if (GDK_IS_X11_DISPLAY(gdpy)) {
+        Display* dpy = GDK_DISPLAY_XDISPLAY(gdpy);
+
+        caps = lock_indicator_on(dpy, "Caps Lock");
+        num = lock_indicator_on(dpy, "Num Lock");
+    } else {
+        caps = gdk_keymap_get_caps_lock_state(keymap);
+        num = gdk_keymap_get_num_lock_state(keymap);
+    }
 
     if (caps && num)
         /* Both are on. The separator is a middle dot, U+00B7. */
@@ -1089,6 +1151,8 @@ main(int argc, char* argv[])
         // Remap tab on entry to behave as enter
         g_signal_connect(G_OBJECT(entry), "key_press_event",
             G_CALLBACK(key_press_event), loginWindow);
+        g_signal_connect(G_OBJECT(entry), "changed",
+            G_CALLBACK(clear_status_on_typing), NULL);
 
         choiceList = gtk_list_store_new(1, G_TYPE_STRING);
         choiceCombo =

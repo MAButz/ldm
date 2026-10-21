@@ -1,3 +1,23 @@
+ldm (3.4.15-1) unstable; urgency=medium
+
+  * "Num Lock is on" shows from the start. The greeter asked GDK, which
+    learns the lock state only from the first key event, so the Num Lock
+    numlockx turns on before ldm starts appeared once somebody had typed.
+    It now reads the XKB indicators of the X server.
+  * A message under the prompt goes when somebody starts typing. Why the
+    last session ended, or that a password was wrong, stood there through
+    the next attempt and seemed to be about it.
+  * The backend chooser names the backend "Default" stands for, from
+    LDM_DEFAULT_BACKEND, instead of a bare "Default".
+  * Select Language and Select Session are offered only when there is
+    something to select. Since ldminfod is gone nothing fills their lists,
+    and they held "Default" alone.
+  * The backend chooser's title and menu entry are translated. ldm sends
+    them for the greeter to translate, but without N_() they never made it
+    into the catalog. German: "Anmeldeverfahren".
+
+ -- Marc-Andre Butz <ma@butz.online>  Wed, 21 Oct 2026 14:00:00 +0200
+
 ldm (3.4.14-1) unstable; urgency=medium
 
   * The login prompt keeps the keyboard focus. wwm gave the focus to every
